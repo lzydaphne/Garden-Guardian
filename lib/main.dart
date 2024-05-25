@@ -6,7 +6,7 @@ import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/theme.dart'; // Import your theme
 
 void main() {
-  runApp(const MyApp()); // Test
+  runApp(const MyApp()); // 
 }
 
 class MyApp extends StatelessWidget {
