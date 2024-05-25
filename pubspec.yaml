@@ -46,6 +46,8 @@ dependencies:
   image_picker: ^1.1.1
   flutter_svg: ^2.0.10+1
   chat_gpt_sdk: 3.0.8
+  
+
 
 
 dev_dependencies:

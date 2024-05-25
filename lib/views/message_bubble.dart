@@ -8,29 +8,28 @@ class MessageBubble extends StatelessWidget {
     required this.text,
     required this.isMine,
     required this.isLast,
+    this.imageUrl,
   });
 
-  // Create a amessage bubble that continues the sequence.
+  // Create a message bubble that continues the sequence.
   const MessageBubble({
     super.key,
     required this.text,
     required this.isMine,
     required this.isLast,
-   
-  })  : userName = null;
+    this.imageUrl,
+  }) : userName = null;
 
   // Whether this message bubble is the last in a sequence of messages from the same user. Modifies the message bubble slightly for these different cases - only shows user image for the first message from the same user, and changes the shape of the bubble for messages thereafter.
   final bool isLast;
 
-  // Username of the user.  Not required if the message is not the first in a sequence.
+  // Username of the user. Not required if the message is not the first in a sequence.
   final String? userName;
+  final String? imageUrl;
   final String text;
 
   // Controls how the MessageBubble will be aligned.
   final bool isMine;
-
-  // Callback to delete the message.
- // Function()? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -112,31 +111,40 @@ class MessageBubble extends StatelessWidget {
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          // crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(
-                              text,
-                              style: TextStyle(
-                                // Add a little line spacing to make the text look nicer when multilined.
-                                height: 1.3,
-                                color: isMine
-                                    ? theme.colorScheme.onPrimary
-                                    : theme.colorScheme.onPrimaryContainer,
+                            if (imageUrl != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Image.network(
+                                  imageUrl!,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                              softWrap: true,
-                            ),
-                            // if (onDelete != null)
-                            //   IconButton(
-                            //     icon: Icon(
-                            //       Icons.close,
-                            //       size: 16,
-                            //       color: isMine
-                            //           ? theme.colorScheme.onPrimary
-                            //           : theme.colorScheme.onPrimaryContainer,
-                            //     ),
-                            //     color: theme.colorScheme.onPrimary,
-                            //     onPressed: onDelete,
-                            //   ),
+                            if (imageUrl != null)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                text,
+                                style: TextStyle(
+                                  // Add a little line spacing to make the text look nicer when multilined.
+                                  height: 1.3,
+                                  color: isMine
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onPrimaryContainer,
+                                ),
+                                softWrap: true,
+                              ),
+                            ) else Text(
+                                text,
+                                style: TextStyle(
+                                  // Add a little line spacing to make the text look nicer when multilined.
+                                  height: 1.3,
+                                  color: isMine
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onPrimaryContainer,
+                                ),
+                                softWrap: true,
+                              ) ,
                           ],
                         ),
                       ),

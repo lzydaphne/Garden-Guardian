@@ -89,12 +89,14 @@ class _MessageListState extends State<MessageList> {
         final isNextUserSame = nextMessageUsername == messageUsername;
         final preMessageUserId = prevMessage?.userName;
         final isPreUserSame = preMessageUserId == messageUsername;
+        final imageUrl = message.imageUrl ; 
 
         if (isNextUserSame) {
           return MessageBubble(
             text: message.text,
             isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,
+            imageUrl: imageUrl,
           );
         } else {
           return MessageBubble.withUser(
@@ -102,6 +104,7 @@ class _MessageListState extends State<MessageList> {
             text: message.text,
             isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,
+            imageUrl: imageUrl,
           );
         }
       },
