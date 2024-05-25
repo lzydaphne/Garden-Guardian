@@ -40,10 +40,6 @@ You are a very angry assistant , answer every question in a angry way !!
     return responseText ?? 'Error'; 
   }
 
-   
-
-  
-
   Future<String?>? _chatCompletion(String message) async {
    
     final request = ChatCompleteText(messages: [
@@ -51,9 +47,6 @@ You are a very angry assistant , answer every question in a angry way !!
     ], maxToken: 200, model:Gpt4ChatModel());
 
     final response = await openAI.onChatCompletion(request: request);
-    // for (var element in response!.choices) {
-    //   print("data -> ${element.message?.content}");
-    // }
     return response!.choices[0].message?.content ; 
   }
 }

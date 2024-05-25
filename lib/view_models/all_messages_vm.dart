@@ -8,14 +8,18 @@ import 'package:flutter_app/services/chat_bot_service.dart';
 
 class AllMessagesViewModel with ChangeNotifier {
   final ChatBot chatService; 
-  AllMessagesViewModel({required this.chatService});
+  AllMessagesViewModel({required this.chatService}){
+    _messages.add(Message(text: "Hi , how can I help you", userName: "BOT"));
+  }
  
-  List<Message> _messages = [];
+  final List<Message> _messages = [];
   List<Message> get messages => _messages;
 
   Future<void> addMessage(Message newMessage) async {
-    _messages.add(newMessage) ; 
-    notifyListeners();
+    if (_messages.isNotEmpty ){ // _messsage empty then welcome user
+      _messages.add(newMessage) ; 
+      notifyListeners();
+    } 
     final response = await chatService.doResponse(newMessage);
     _messages.add(Message(text: response, userName: "BOT")) ; 
     notifyListeners();

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class MessageBubble extends StatelessWidget {
   // Create a message bubble which is meant to be the first in the sequence.
-  MessageBubble.withUser({
+  const MessageBubble.withUser({
     super.key,
     required this.userName,
     required this.text,
@@ -11,7 +11,7 @@ class MessageBubble extends StatelessWidget {
   });
 
   // Create a amessage bubble that continues the sequence.
-  MessageBubble({
+  const MessageBubble({
     super.key,
     required this.text,
     required this.isMine,

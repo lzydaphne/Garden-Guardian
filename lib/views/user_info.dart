@@ -10,7 +10,7 @@ class UserInfo extends StatelessWidget {
           children: [
             const CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage('assets/avatar.png'), // Replace with your image path
+              backgroundImage: AssetImage('assets/images/avatar.jpg'), // Replace with your image path
             ),
             const SizedBox(height: 10),
             const Text(

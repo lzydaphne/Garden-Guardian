@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_app/services/authentication.dart';
-//import 'package:flutter_app/services/push_messaging.dart';
-//import 'package:flutter_app/view_models/me_vm.dart';
 import 'package:flutter_app/views/message_list.dart';
 import 'package:flutter_app/views/new_message_bar.dart';
 import 'package:flutter_app/views/user_info.dart';
@@ -11,11 +8,11 @@ class ChatPage extends StatelessWidget {
   @override Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
           IconButton(
             onPressed: () {
-            //  Provider.of<AuthenticationService>(context, listen: false)
-           //       .logOut();
+              // Information button logic
             },
             icon: Icon(
               Icons.info_outline_rounded,
@@ -24,7 +21,7 @@ class ChatPage extends StatelessWidget {
           ),
         ],
       ),
-      body: const Column(
+      body:  Column(
         children: [
           UserInfo(),
           Expanded(

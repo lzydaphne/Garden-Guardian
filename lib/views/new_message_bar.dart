@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
-// import 'package:flutter_app/view_models/me_vm.dart';
 import 'package:provider/provider.dart';
 
 class NewMessageBar extends StatefulWidget {
@@ -32,11 +31,8 @@ class _NewMessageBarState extends State<NewMessageBar> {
     FocusScope.of(context).unfocus();
     _messageController.clear();
 
-   // final meViewModel = Provider.of<MeViewModel>(context, listen: false);
-    final allMessagesViewModel =
-        Provider.of<AllMessagesViewModel>(context, listen: false);
-
-
+    final allMessagesViewModel = Provider.of<AllMessagesViewModel>(context, listen: false);
+    
     allMessagesViewModel.addMessage(
       Message(
         text: enteredMessage,

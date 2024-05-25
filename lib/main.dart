@@ -3,10 +3,10 @@ import 'package:flutter_app/services/chat_bot_service.dart';
 import 'package:flutter_app/views/chat_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
-import 'package:flutter_app/theme.dart'; // Import your theme
+import 'package:flutter_app/theme.dart'; 
 
 void main() {
-  runApp(const MyApp()); // 
+  runApp(const MyApp()); 
 }
 
 class MyApp extends StatelessWidget {
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const materialTheme = MaterialTheme(TextTheme()); // Create an instance of your MaterialTheme
+    const materialTheme = MaterialTheme(TextTheme()); 
 
     return MultiProvider(
       providers: [
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         theme: materialTheme.light(), // Apply the light theme
-        darkTheme: materialTheme.dark(), // Apply the dark theme
+       // darkTheme: materialTheme.dark(), // Apply the dark theme
         home: const ChatPage(),
       ),
     );
