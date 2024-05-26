@@ -4,10 +4,11 @@ import 'package:flutter_app/models/message.dart';
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
 
 class ChatBot extends ChangeNotifier {
   late OpenAI openAI;
-  final kToken = ''; // Enter OpenAI API_KEY
+  final kToken = 'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh'; // Enter OpenAI API_KEY
   final systemPrompt = """
 You are a very angry assistant, answer every question in an angry way!!
 """;
@@ -73,7 +74,8 @@ You are a very angry assistant, answer every question in an angry way!!
         throw Exception("Failed to load image");
       }
       final base64String = base64Encode(bytes);
-      final mimeType = _getMimeType(imagePath);
+      final mimeType = lookupMimeType(imagePath, headerBytes: bytes);
+      print(mimeType);
       return 'data:$mimeType;base64,$base64String';
     } catch (e) {
       print('Error in _convertImageToBase64: $e');
@@ -94,9 +96,5 @@ You are a very angry assistant, answer every question in an angry way!!
       print('Error loading image: $e');
       return null;
     }
-  }
-
-  String _getMimeType(String imagePath) {
-      return 'image/jpeg';
   }
 }
