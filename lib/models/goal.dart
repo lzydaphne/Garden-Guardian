@@ -7,7 +7,9 @@ class Goal {
     required this.content,
     required this.icon,
     required this.total,
-    this.completed = 0
+    this.progress = 0,
+    this.completed = 0,
+    this.done = false
   });
 
   final String id;
@@ -15,5 +17,7 @@ class Goal {
   final String content;
   final IconData icon;
   final int total;
+  final int progress;
   final int completed;
+  final bool done;
 }
