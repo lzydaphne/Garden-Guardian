@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/goal.dart';
+import 'package:flutter_app/models/goal_detail.dart';
 
 const dummyGoals = {
   'g1': Goal(
@@ -43,5 +44,20 @@ const dummyGoals = {
     content: 'achieve all the goals',
     icon: Icons.stars_rounded,
     total: 1
+  )
+};
+
+const dummyGoalDetails = {
+  'gd1': GoalDetail(
+    id: 'gd1',
+    goal: 'g1',
+    title: 'You have to sign-in 1 day!',
+    total: 1,
+  ),
+  'gd2': GoalDetail(
+    id: 'gd2',
+    goal: 'g1',
+    title: 'You have to sign-in 3 days!',
+    total: 3,
   )
 };
