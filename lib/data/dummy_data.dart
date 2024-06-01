@@ -4,37 +4,44 @@ import 'package:flutter_app/models/goal.dart';
 const dummyGoals = {
   'g1': Goal(
     id: 'g1',
-    title: 'title1',
-    content: 'content1\ncontent1\ncontent1\ncontent1\ncontent1\ncontent1\ncontent1\ncontent1\n',
-    icon: Icons.face,
+    title: 'daily sign-in',
+    content: 'content1',
+    icon: Icons.check_box,
     total: 1
   ),
   'g2': Goal(
     id: 'g2',
-    title: 'title2',
-    content: 'content2\ncontent2\ncontent2\ncontent2\ncontent2\ncontent2\ncontent2\ncontent2\n',
-    icon: Icons.face_2,
+    title: 'plant amount',
+    content: 'content2',
+    icon: Icons.nature,
     total: 2
   ),
   'g3': Goal(
     id: 'g3',
-    title: 'title3',
-    content: 'content3\ncontent3\ncontent3\ncontent3\ncontent3\ncontent3\ncontent3\ncontent3\n',
+    title: 'plant category',
+    content: 'content3',
     icon: Icons.face_3,
     total: 3
   ),
   'g4': Goal(
     id: 'g4',
-    title: 'title4',
+    title: 'watering',
     content: 'content4',
-    icon: Icons.face_4,
+    icon: Icons.water_drop,
     total: 4
   ),
   'g5': Goal(
     id: 'g5',
-    title: 'title5',
+    title: 'drink water',
     content: 'content5',
-    icon: Icons.face_5,
+    icon: Icons.local_drink,
     total: 5
+  ),
+  'g6': Goal(
+    id: 'g6',
+    title: 'all achievements',
+    content: 'achieve all the goals',
+    icon: Icons.stars_rounded,
+    total: 1
   )
 };

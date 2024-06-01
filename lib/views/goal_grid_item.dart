@@ -22,7 +22,7 @@ class GoalGridItem extends StatelessWidget {
         child: Row(
           children: [
             Icon(goal.icon),
-            const SizedBox(width: 5),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +33,7 @@ class GoalGridItem extends StatelessWidget {
                 ]
               ),
             ),
-            const SizedBox(width: 5),
+            const SizedBox(width: 10),
             Text('${goal.completed}/${goal.total}')
           ]
         )

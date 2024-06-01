@@ -3,7 +3,7 @@ import 'package:flutter_app/services/chat_bot_service.dart';
 import 'package:flutter_app/views/chat_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
-import 'package:flutter_app/theme.dart'; 
+import 'package:flutter_app/theme.dart';
 
 void main() {
   runApp(const MyApp()); 
