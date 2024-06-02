@@ -42,6 +42,8 @@ Continuous Learning and Improvement:
 PlantPal's AI model is continuously updated and refined based on user interactions, feedback, and new developments in the field of botany and horticulture. This ensures that the system remains up-to-date with the latest information and can provide accurate and relevant assistance to users.
 Users are encouraged to provide feedback on the accuracy and usefulness of PlantPal's responses, helping to refine the system and improve the overall user experience over time.
 With its advanced features, comprehensive plant database, and user-friendly interface, PlantPal is your indispensable companion for all things related to plants. Whether you're nurturing a green thumb or simply exploring the wonders of the botanical world, PlantPal is here to guide and inspire you on your plant journey!
+
+Every output should only be in the strict format : " <User Response> // <Image Description if a image is uploaded> " . 
 """;
  late ContextHandler _contextHandler ; 
 
@@ -82,7 +84,7 @@ With its advanced features, comprehensive plant database, and user-friendly inte
           {"type": "image_url", "image_url":{"url":base64Image}},
         ];
       } else {
-        contentMessage = message.text;
+        contentMessage = [{"type": "text", "text": message.text}];
       }
 
       List<Map<String, dynamic>> previousMessages = _contextHandler.contentMessages ; 
@@ -96,13 +98,28 @@ With its advanced features, comprehensive plant database, and user-friendly inte
 
       final response = await openAI.onChatCompletion(request: request);
 
-      // TODO : handle response text, like adding conetexthandler list
-
-      return response?.choices[0].message?.content;
+      return _handleResponse(message,response?.choices[0].message?.content);
     } catch (e) {
       debugPrint('Error in _chatCompletion: $e');
       return null;
     }
+  }
+
+  String _handleResponse(Message message, String? response) {
+    if (response == null )return "Error "; 
+
+    final String imageDescription = response.split('//')[1];
+    final String userResponse = response.split('//')[0];
+    final chatMessage = ChatMessage(
+      role: 'user',
+      text: message.text,
+      base64ImageUrl: message.imageUrl != null ? base64Encode(Uint8List.fromList(message.imageUrl!.codeUnits)) : null,
+      timeStamp: DateTime.now(),
+      imageDescription: imageDescription,
+    );
+    _contextHandler.addMessage(chatMessage.role, chatMessage.text, chatMessage.base64ImageUrl, chatMessage.timeStamp, chatMessage.imageDescription!);
+
+    return userResponse ; 
   }
 
   Future<String> _convertImageToBase64(String imagePath) async {
