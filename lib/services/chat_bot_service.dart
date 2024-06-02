@@ -7,7 +7,6 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatBot extends ChangeNotifier {
   late OpenAI openAI;
@@ -44,6 +43,7 @@ PlantPal's AI model is continuously updated and refined based on user interactio
 Users are encouraged to provide feedback on the accuracy and usefulness of PlantPal's responses, helping to refine the system and improve the overall user experience over time.
 With its advanced features, comprehensive plant database, and user-friendly interface, PlantPal is your indispensable companion for all things related to plants. Whether you're nurturing a green thumb or simply exploring the wonders of the botanical world, PlantPal is here to guide and inspire you on your plant journey!
 """;
+ late ContextHandler _contextHandler ; 
 
   ChatBot() {
     openAI = OpenAI.instance.build(
@@ -54,7 +54,10 @@ With its advanced features, comprehensive plant database, and user-friendly inte
       ),
       enableLog: true,
     );
+    _contextHandler = ContextHandler(maxInputTokens : 1000,openAI : openAI) ; 
   }
+
+ 
 
   Future<String> doResponse(Message userInp) async {
     try {
@@ -68,7 +71,8 @@ With its advanced features, comprehensive plant database, and user-friendly inte
 
   Future<String?> _chatCompletion(Message message) async {
     try {
-      dynamic contentMessage;
+      dynamic contentMessage; 
+    
       if (message.imageUrl != null) {
         
         final base64Image = await _convertImageToBase64(message.imageUrl!);
@@ -81,16 +85,19 @@ With its advanced features, comprehensive plant database, and user-friendly inte
         contentMessage = message.text;
       }
 
+      List<Map<String, dynamic>> previousMessages = _contextHandler.contentMessages ; 
+      previousMessages.insert(0, {"role": "system", "content": systemPrompt});
+
       final request = ChatCompleteText(
-        messages: [
-          {"role": "system", "content": systemPrompt},
-          {"role": "user", "content": contentMessage},
-        ],
+        messages: previousMessages + contentMessage ,
         maxToken: 200,
         model: ChatModelFromValue(model: 'gpt-4o'),
       );
 
       final response = await openAI.onChatCompletion(request: request);
+
+      // TODO : handle response text, like adding conetexthandler list
+
       return response?.choices[0].message?.content;
     } catch (e) {
       debugPrint('Error in _chatCompletion: $e');
@@ -133,19 +140,18 @@ With its advanced features, comprehensive plant database, and user-friendly inte
 
 
 class ContextHandler {
-  final FirebaseFirestore firestore;
   List<ChatMessage> messages = [];
   int currentTokenCount = 0;
   final int maxInputTokens;
   final OpenAI openAI;
 
-  ContextHandler({required this.maxInputTokens, required this.openAI, required this.firestore});
+  ContextHandler({required this.maxInputTokens, required this.openAI});
 
-  void addMessage(String text, String base64ImageUrl, DateTime timestamp) {
-    messages.add(ChatMessage(text: text, base64ImageUrl: base64ImageUrl));
+  void addMessage(String role , String text, String? base64ImageUrl, DateTime timeStamp,String imageDescription) {
+    messages.add(ChatMessage(role: role , text: text, base64ImageUrl: base64ImageUrl,timeStamp: timeStamp, imageDescription: imageDescription));
 
     // Calculate tokens for the new messages
-    currentTokenCount += _calculateTokenCount(text) + _calculateTokenCount(base64ImageUrl);
+    currentTokenCount +=  _calculateTokenCount(text) + _calculateTokenCount(base64ImageUrl) + _calculateTokenCount(timeStamp as String) + _calculateTokenCount(imageDescription) ; 
 
     // Check if tokens exceed the threshold
     if (currentTokenCount * 1.3 > maxInputTokens) {
@@ -153,8 +159,9 @@ class ContextHandler {
     }
   }
 
-  int _calculateTokenCount(String content) {
+  int _calculateTokenCount(String? content) {
     // A simple approximation of token count
+    if (content == null )return 0 ; 
     return content.length ~/ 4;
   }
 
@@ -165,11 +172,12 @@ class ContextHandler {
 
     List<List<double>> embeddings = [];
     for (var message in messagesToEmbed) {
-      String combinedContent = '${message.formattedString} ${DateTime.now()}';
+      String combinedContent = '${message.text}${message.imageDescription}${message.timeStamp}';
 
       final request = EmbedRequest(
         model: TextEmbeddingAda002EmbedModel(),
         input: combinedContent,
+        dimensions: 1525,
       );
 
       final response = await openAI.embed.embedding(request);
@@ -184,17 +192,32 @@ class ContextHandler {
   }
 
   int _calculateTotalTokenCount() {
-    return messages.fold(0, (sum, message) => sum + _calculateTokenCount(message.text) + _calculateTokenCount(message.base64ImageUrl));
+    return messages.fold(0, (sum, message) => sum + _calculateTokenCount(message.text) + _calculateTokenCount(message.base64ImageUrl) + _calculateTokenCount(message.timeStamp as String) + _calculateTokenCount(message.imageDescription));
   }
 
   void _storeInDatabase(List<List<double>> embedding) {
     // Implement the logic to store embeddings in your long-term memory database
     // For example:
     // Database.store('embeddings', embedding);
+
+
+    // Should implement cloud functions in index.js , use http call to get service
   }
 
   void vectorSearch(List<double> queryEmbedding){
+
+
+     // Should implement cloud functions in index.js , use http call to get service
     return null ; 
+
+  }
+
+  List<Map<String,dynamic>> get contentMessages {
+   List<Map<String,dynamic>> contentMessages  =  messages.map((message) {
+    return message.contentMessage ; 
+  }).toList();
+  return contentMessages ; 
+    
 
   }
 
@@ -209,14 +232,8 @@ class ContextHandler {
     final response = await openAI.embed.embedding(request);
     final queryEmbedding = response.data.last.embedding;
 
-    //final results = vectorSearch(queryEmbedding);
-    final results = await firestore.collection('embeddings')
-          .orderBy('embedding')
-          .startAt([queryEmbedding])
-          .endAt([queryEmbedding])
-          .get();
-
-
+    final results = vectorSearch(queryEmbedding);
+    
     if (results.docs.isEmpty) {
       debugPrint('No similar documents found.');
       return;
@@ -227,8 +244,11 @@ class ContextHandler {
     // Step 3: Retrieve the document and convert it into a Message object
     final data = mostSimilarDoc.data();
     final similarMessage = ChatMessage(
+      role: data['role'] ?? '', 
       text: data['text'] ?? '',
       base64ImageUrl: data['base64ImageUrl'] ?? '',
+      timeStamp : data['timeStamp'] ?? '', 
+      imageDescription: data['imageDescription'] ?? '', 
     );
 
     // Step 4: Append the retrieved Message object to the head of the list
@@ -240,20 +260,26 @@ class ContextHandler {
 
 class ChatMessage {
   final String text;
-  final String base64ImageUrl;
+  final String? base64ImageUrl;
+  final String role; 
+  final DateTime timeStamp ; 
+  final String? imageDescription;
 
-  ChatMessage({required this.text, required this.base64ImageUrl});
+  ChatMessage({required this.role , required this.text, required this.base64ImageUrl , required this.timeStamp,this.imageDescription});
 
-  String get formattedString {
-    List<String> contentList = [];
+  Map<String,dynamic>  get contentMessage {
+    List<Map<String,dynamic>> contentList = [];
 
     if (text.isNotEmpty) {
-      contentList.add('{"type": "text", "text": "$text"}');
+      contentList.add({"type": "text", "text": text});
     }
-    if (base64ImageUrl.isNotEmpty) {
-      contentList.add('{"type": "image_url", "image_url": {"url": "$base64ImageUrl"}}');
+    if (base64ImageUrl != null) {
+      contentList.add({"type": "image_url", "image_url": {"url": "$base64ImageUrl"}});
     }
 
-    return contentList.join(', ');
+    return {"role": role, "content": contentList} ; 
   }
 }
+
+
+// embedd with image description
