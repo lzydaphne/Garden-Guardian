@@ -4,6 +4,7 @@ import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter_app/services/chat_bot_service.dart' ; 
 
 class NewMessageBar extends StatefulWidget {
   const NewMessageBar({super.key});
@@ -56,7 +57,7 @@ class _NewMessageBarState extends State<NewMessageBar> {
       Message(
         text: enteredMessage,
         userName: "ME",
-        imageUrl: _pickedImage?.path, // Add the image path to the message
+        base64ImageUrl: await convertImageToBase64(_pickedImage?.path), // Add the image path to the message
       )
     );
 

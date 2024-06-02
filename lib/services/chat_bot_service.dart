@@ -7,6 +7,39 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 
+  Future<String?> convertImageToBase64(String? imagePath) async {
+    if (imagePath == null )return null; 
+    try {
+      debugPrint(imagePath);
+      final bytes = await readImageAsBytes(imagePath);
+      if (bytes == null) {
+        throw Exception("Failed to load image");
+      }
+      final base64String = base64Encode(bytes);
+      final mimeType = lookupMimeType(imagePath, headerBytes: bytes);
+      debugPrint(mimeType);
+      return 'data:$mimeType;base64,$base64String';
+    } catch (e) {
+      debugPrint('Error in convertImageToBase64: $e');
+      return 'Error';
+    }
+  }
+
+  Future<Uint8List?> readImageAsBytes(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        debugPrint('Failed to load image: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('Error loading image: $e');
+      return null;
+    }
+  }
+
 
 class ChatBot extends ChangeNotifier {
   late OpenAI openAI;
@@ -75,9 +108,9 @@ Every output should only be in the strict format : " <User Response> // <Image D
     try {
       dynamic contentMessage; 
     
-      if (message.imageUrl != null) {
+      if (message.base64ImageUrl != null) {
         
-        final base64Image = await _convertImageToBase64(message.imageUrl!);
+        final base64Image = await convertImageToBase64(message.base64ImageUrl!);
       
         contentMessage = [
           {"type": "text", "text": message.text},
@@ -110,65 +143,34 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
     final String imageDescription = response.split('//')[1];
     final String userResponse = response.split('//')[0];
-    final chatMessage = ChatMessage(
-      role: 'user',
+    final m = Message(
+      userName: message.userName,
       text: message.text,
-      base64ImageUrl: message.imageUrl != null ? base64Encode(Uint8List.fromList(message.imageUrl!.codeUnits)) : null,
+      base64ImageUrl: message.base64ImageUrl != null ? base64Encode(Uint8List.fromList(message.base64ImageUrl!.codeUnits)) : null,
       timeStamp: DateTime.now(),
       imageDescription: imageDescription,
     );
-    _contextHandler.addMessage(chatMessage.role, chatMessage.text, chatMessage.base64ImageUrl, chatMessage.timeStamp, chatMessage.imageDescription!);
+    _contextHandler.addMessage(m);
 
     return userResponse ; 
   }
-
-  Future<String> _convertImageToBase64(String imagePath) async {
-    try {
-      debugPrint(imagePath);
-      final bytes = await readImageAsBytes(imagePath);
-      if (bytes == null) {
-        throw Exception("Failed to load image");
-      }
-      final base64String = base64Encode(bytes);
-      final mimeType = lookupMimeType(imagePath, headerBytes: bytes);
-      debugPrint(mimeType);
-      return 'data:$mimeType;base64,$base64String';
-    } catch (e) {
-      debugPrint('Error in _convertImageToBase64: $e');
-      return 'Error';
-    }
-  }
-
-  Future<Uint8List?> readImageAsBytes(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else {
-        debugPrint('Failed to load image: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      debugPrint('Error loading image: $e');
-      return null;
-    }
-  }
+  
 }
 
 
 class ContextHandler {
-  List<ChatMessage> messages = [];
+  List<Message> messages = [];
   int currentTokenCount = 0;
   final int maxInputTokens;
   final OpenAI openAI;
 
   ContextHandler({required this.maxInputTokens, required this.openAI});
 
-  void addMessage(String role , String text, String? base64ImageUrl, DateTime timeStamp,String imageDescription) {
-    messages.add(ChatMessage(role: role , text: text, base64ImageUrl: base64ImageUrl,timeStamp: timeStamp, imageDescription: imageDescription));
+  void addMessage(Message m) {
+    messages.add(m);
 
     // Calculate tokens for the new messages
-    currentTokenCount +=  _calculateTokenCount(text) + _calculateTokenCount(base64ImageUrl) + _calculateTokenCount(timeStamp as String) + _calculateTokenCount(imageDescription) ; 
+    currentTokenCount +=  _calculateTokenCount(m.text) + _calculateTokenCount(m.base64ImageUrl) + _calculateTokenCount(m.timeStamp as String) + _calculateTokenCount(m.imageDescription) ; 
 
     // Check if tokens exceed the threshold
     if (currentTokenCount * 1.3 > maxInputTokens) {
@@ -185,7 +187,7 @@ class ContextHandler {
   void _embedAndStoreMessages() async {
     int half = messages.length ~/ 2;
     
-    List<ChatMessage> messagesToEmbed = messages.sublist(0, half);
+    List<Message> messagesToEmbed = messages.sublist(0, half);
 
     
     for (var message in messagesToEmbed) {
@@ -212,7 +214,7 @@ class ContextHandler {
     return messages.fold(0, (sum, message) => sum + _calculateTokenCount(message.text) + _calculateTokenCount(message.base64ImageUrl) + _calculateTokenCount(message.timeStamp as String) + _calculateTokenCount(message.imageDescription));
   }
 
-  Future<void> _storeInDatabase(List<double> embeddings, ChatMessage chatMessage) async {
+  Future<void> _storeInDatabase(List<double> embeddings, Message Message) async {
   final url = 'https://<your-cloud-function-url>/storeInDatabase'; // Replace with your cloud function URL
 
   final response = await http.post(
@@ -221,11 +223,11 @@ class ContextHandler {
       'Content-Type': 'application/json',
     },
     body: json.encode({
-      'role': chatMessage.role,
-      'text': chatMessage.text,
-      'base64ImageUrl': chatMessage.base64ImageUrl,
-      'timeStamp': chatMessage.timeStamp.toIso8601String(),
-      'imageDescription': chatMessage.imageDescription,
+      'role': Message.userName,
+      'text': Message.text,
+      'base64ImageUrl': Message.base64ImageUrl,
+      'timeStamp': Message.timeStamp.toString(),
+      'imageDescription': Message.imageDescription,
       'embeddings': embeddings,
     }),
   );
@@ -289,8 +291,8 @@ class ContextHandler {
     
     // Step 3: Retrieve the document and convert it into a Message object
     final data = results;
-    final similarMessage = ChatMessage(
-      role: data['role'] ?? '', 
+    final similarMessage = Message(
+      userName: data['userName'] ?? '', 
       text: data['text'] ?? '',
       base64ImageUrl: data['base64ImageUrl'] ?? '',
       timeStamp : data['timeStamp'] ?? '', 
@@ -304,28 +306,7 @@ class ContextHandler {
 
 
 
-class ChatMessage {
-  final String text;
-  final String? base64ImageUrl;
-  final String role; 
-  final DateTime timeStamp ; 
-  final String? imageDescription;
 
-  ChatMessage({required this.role , required this.text, required this.base64ImageUrl , required this.timeStamp,this.imageDescription});
-
-  Map<String,dynamic>  get contentMessage {
-    List<Map<String,dynamic>> contentList = [];
-
-    if (text.isNotEmpty) {
-      contentList.add({"type": "text", "text": text});
-    }
-    if (base64ImageUrl != null) {
-      contentList.add({"type": "image_url", "image_url": {"url": "$base64ImageUrl"}});
-    }
-
-    return {"role": role, "content": contentList} ; 
-  }
-}
 
 
 // embedd with image description

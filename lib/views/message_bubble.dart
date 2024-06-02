@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -8,7 +10,7 @@ class MessageBubble extends StatelessWidget {
     required this.text,
     required this.isMine,
     required this.isLast,
-    this.imageUrl,
+    this.base64ImageUrl,
   });
 
   // Create a message bubble that continues the sequence.
@@ -17,7 +19,7 @@ class MessageBubble extends StatelessWidget {
     required this.text,
     required this.isMine,
     required this.isLast,
-    this.imageUrl,
+    this.base64ImageUrl,
   }) : userName = null;
 
   // Whether this message bubble is the last in a sequence of messages from the same user. Modifies the message bubble slightly for these different cases - only shows user image for the first message from the same user, and changes the shape of the bubble for messages thereafter.
@@ -25,7 +27,7 @@ class MessageBubble extends StatelessWidget {
 
   // Username of the user. Not required if the message is not the first in a sequence.
   final String? userName;
-  final String? imageUrl;
+  final String? base64ImageUrl;
   final String text;
 
   // Controls how the MessageBubble will be aligned.
@@ -112,15 +114,12 @@ class MessageBubble extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (imageUrl != null)
+                            if (base64ImageUrl != null)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
-                                child: Image.network(
-                                  imageUrl!,
-                                  fit: BoxFit.cover,
-                                ),
+                                child:  Image.memory(base64Decode(base64ImageUrl as String))
                               ),
-                            if (imageUrl != null)
+                            if (base64ImageUrl != null)
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
