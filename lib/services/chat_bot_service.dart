@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
+import 'package:chat_gpt_sdk/src/model/embedding/enum/embed_model.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatBot extends ChangeNotifier {
   late OpenAI openAI;
@@ -58,7 +61,7 @@ With its advanced features, comprehensive plant database, and user-friendly inte
       final responseText = await _chatCompletion(userInp);
       return responseText ?? 'Error';
     } catch (e) {
-      print('Error in doResponse: $e');
+      debugPrint('Error in doResponse: $e');
       return 'Error';
     }
   }
@@ -90,24 +93,24 @@ With its advanced features, comprehensive plant database, and user-friendly inte
       final response = await openAI.onChatCompletion(request: request);
       return response?.choices[0].message?.content;
     } catch (e) {
-      print('Error in _chatCompletion: $e');
+      debugPrint('Error in _chatCompletion: $e');
       return null;
     }
   }
 
   Future<String> _convertImageToBase64(String imagePath) async {
     try {
-      print(imagePath);
+      debugPrint(imagePath);
       final bytes = await readImageAsBytes(imagePath);
       if (bytes == null) {
         throw Exception("Failed to load image");
       }
       final base64String = base64Encode(bytes);
       final mimeType = lookupMimeType(imagePath, headerBytes: bytes);
-      print(mimeType);
+      debugPrint(mimeType);
       return 'data:$mimeType;base64,$base64String';
     } catch (e) {
-      print('Error in _convertImageToBase64: $e');
+      debugPrint('Error in _convertImageToBase64: $e');
       return 'Error';
     }
   }
@@ -118,12 +121,139 @@ With its advanced features, comprehensive plant database, and user-friendly inte
       if (response.statusCode == 200) {
         return response.bodyBytes;
       } else {
-        print('Failed to load image: ${response.statusCode}');
+        debugPrint('Failed to load image: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Error loading image: $e');
+      debugPrint('Error loading image: $e');
       return null;
     }
+  }
+}
+
+
+class ContextHandler {
+  final FirebaseFirestore firestore;
+  List<ChatMessage> messages = [];
+  int currentTokenCount = 0;
+  final int maxInputTokens;
+  final OpenAI openAI;
+
+  ContextHandler({required this.maxInputTokens, required this.openAI, required this.firestore});
+
+  void addMessage(String text, String base64ImageUrl, DateTime timestamp) {
+    messages.add(ChatMessage(text: text, base64ImageUrl: base64ImageUrl));
+
+    // Calculate tokens for the new messages
+    currentTokenCount += _calculateTokenCount(text) + _calculateTokenCount(base64ImageUrl);
+
+    // Check if tokens exceed the threshold
+    if (currentTokenCount * 1.3 > maxInputTokens) {
+      _embedAndStoreMessages();
+    }
+  }
+
+  int _calculateTokenCount(String content) {
+    // A simple approximation of token count
+    return content.length ~/ 4;
+  }
+
+  void _embedAndStoreMessages() async {
+    int half = messages.length ~/ 2;
+    
+    List<ChatMessage> messagesToEmbed = messages.sublist(0, half);
+
+    List<List<double>> embeddings = [];
+    for (var message in messagesToEmbed) {
+      String combinedContent = '${message.formattedString} ${DateTime.now()}';
+
+      final request = EmbedRequest(
+        model: TextEmbeddingAda002EmbedModel(),
+        input: combinedContent,
+      );
+
+      final response = await openAI.embed.embedding(request);
+      embeddings.add(response.data.last.embedding);
+    }
+
+    _storeInDatabase(embeddings); 
+
+    // Remove embedded messages and adjust token count
+    messages = messages.sublist(half);
+    currentTokenCount = _calculateTotalTokenCount();
+  }
+
+  int _calculateTotalTokenCount() {
+    return messages.fold(0, (sum, message) => sum + _calculateTokenCount(message.text) + _calculateTokenCount(message.base64ImageUrl));
+  }
+
+  void _storeInDatabase(List<List<double>> embedding) {
+    // Implement the logic to store embeddings in your long-term memory database
+    // For example:
+    // Database.store('embeddings', embedding);
+  }
+
+  void vectorSearch(List<double> queryEmbedding){
+    return null ; 
+
+  }
+
+
+  Future<void> findAndAppendSimilarMessage(String query) async {
+    // Step 1: Embed the query string
+    final request = EmbedRequest(
+      model: TextEmbeddingAda002EmbedModel(),
+      input: query,
+    );
+
+    final response = await openAI.embed.embedding(request);
+    final queryEmbedding = response.data.last.embedding;
+
+    //final results = vectorSearch(queryEmbedding);
+    final results = await firestore.collection('embeddings')
+          .orderBy('embedding')
+          .startAt([queryEmbedding])
+          .endAt([queryEmbedding])
+          .get();
+
+
+    if (results.docs.isEmpty) {
+      debugPrint('No similar documents found.');
+      return;
+    }
+
+    final mostSimilarDoc = results.docs.first;
+
+    // Step 3: Retrieve the document and convert it into a Message object
+    final data = mostSimilarDoc.data();
+    final similarMessage = ChatMessage(
+      text: data['text'] ?? '',
+      base64ImageUrl: data['base64ImageUrl'] ?? '',
+    );
+
+    // Step 4: Append the retrieved Message object to the head of the list
+    messages.insert(0, similarMessage);
+  }
+}
+
+
+
+class ChatMessage {
+  final String text;
+  final String base64ImageUrl;
+
+  ChatMessage({required this.text, required this.base64ImageUrl});
+
+  String get formattedString {
+    List<String> contentList = [];
+
+    if (text.isNotEmpty) {
+      contentList.add('{"type": "text", "text": "$text"}');
+    }
+    if (base64ImageUrl.isNotEmpty) {
+      contentList.add('{"type": "image_url", "image_url": {"url": "$base64ImageUrl"}}');
+    }
+
+    return contentList.join(', ');
   }
 }
