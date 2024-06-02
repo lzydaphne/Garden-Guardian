@@ -187,7 +187,7 @@ class ContextHandler {
     
     List<ChatMessage> messagesToEmbed = messages.sublist(0, half);
 
-    List<List<double>> embeddings = [];
+    
     for (var message in messagesToEmbed) {
       String combinedContent = '${message.text}${message.imageDescription}${message.timeStamp}';
 
@@ -198,10 +198,10 @@ class ContextHandler {
       );
 
       final response = await openAI.embed.embedding(request);
-      embeddings.add(response.data.last.embedding);
+      _storeInDatabase(response.data.last.embedding,message); 
     }
 
-    _storeInDatabase(embeddings); 
+   
 
     // Remove embedded messages and adjust token count
     messages = messages.sublist(half);
@@ -212,22 +212,58 @@ class ContextHandler {
     return messages.fold(0, (sum, message) => sum + _calculateTokenCount(message.text) + _calculateTokenCount(message.base64ImageUrl) + _calculateTokenCount(message.timeStamp as String) + _calculateTokenCount(message.imageDescription));
   }
 
-  void _storeInDatabase(List<List<double>> embedding) {
-    // Implement the logic to store embeddings in your long-term memory database
-    // For example:
-    // Database.store('embeddings', embedding);
+  Future<void> _storeInDatabase(List<double> embeddings, ChatMessage chatMessage) async {
+  final url = 'https://<your-cloud-function-url>/storeInDatabase'; // Replace with your cloud function URL
 
+  final response = await http.post(
+    Uri.parse(url),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: json.encode({
+      'role': chatMessage.role,
+      'text': chatMessage.text,
+      'base64ImageUrl': chatMessage.base64ImageUrl,
+      'timeStamp': chatMessage.timeStamp.toIso8601String(),
+      'imageDescription': chatMessage.imageDescription,
+      'embeddings': embeddings,
+    }),
+  );
 
-    // Should implement cloud functions in index.js , use http call to get service
+  if (response.statusCode == 200) {
+    print('Chat message and embeddings stored successfully');
+  } else {
+    print('Failed to store chat message and embeddings: ${response.body}');
   }
+}
 
-  void vectorSearch(List<double> queryEmbedding){
 
+  Future<dynamic> vectorSearch(List<double> queryEmbedding) async {
+  final url = 'https://<your-cloud-function-url>/vectorSearch'; // Replace with your cloud function URL
 
-     // Should implement cloud functions in index.js , use http call to get service
+  final response = await http.post(
+    Uri.parse(url),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: json.encode({
+      'queryEmbedding': queryEmbedding,
+      'limit': 5, // You can adjust this as needed
+      'distanceMeasure': 'EUCLIDEAN', // You can adjust this as needed
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    final results = json.decode(response.body);
+    print('Search results: $results');
+    return results;
+  } else {
+    print('Failed to perform vector search: ${response.body}');
     return null ; 
-
   }
+  
+}
+
 
   List<Map<String,dynamic>> get contentMessages {
    List<Map<String,dynamic>> contentMessages  =  messages.map((message) {
@@ -249,17 +285,10 @@ class ContextHandler {
     final response = await openAI.embed.embedding(request);
     final queryEmbedding = response.data.last.embedding;
 
-    final results = vectorSearch(queryEmbedding);
+    final results = await vectorSearch(queryEmbedding);
     
-    if (results.docs.isEmpty) {
-      debugPrint('No similar documents found.');
-      return;
-    }
-
-    final mostSimilarDoc = results.docs.first;
-
     // Step 3: Retrieve the document and convert it into a Message object
-    final data = mostSimilarDoc.data();
+    final data = results;
     final similarMessage = ChatMessage(
       role: data['role'] ?? '', 
       text: data['text'] ?? '',
