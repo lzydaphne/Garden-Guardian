@@ -223,7 +223,7 @@ class ContextHandler {
       'Content-Type': 'application/json',
     },
     body: json.encode({
-      'role': Message.userName,
+      'userName': Message.userName,
       'text': Message.text,
       'base64ImageUrl': Message.base64ImageUrl,
       'timeStamp': Message.timeStamp.toString(),

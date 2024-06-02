@@ -25,10 +25,14 @@ class Message {
   final String text;
   final String? base64ImageUrl;
   final String userName ; 
-  final DateTime? timeStamp ; 
+  final DateTime timeStamp ; 
   final String? imageDescription;
+  String get role {
+    return userName != "Bot" ? "user" : "assistant" ; 
 
-  Message({required this.userName , required this.text, this.base64ImageUrl , this.timeStamp,this.imageDescription});
+  }
+
+  Message({required this.userName , required this.text, this.base64ImageUrl , required this.timeStamp,this.imageDescription});
 
   Map<String,dynamic>  get contentMessage {
     List<Map<String,dynamic>> contentList = [];
@@ -40,7 +44,7 @@ class Message {
       contentList.add({"type": "image_url", "image_url": {"url": "$base64ImageUrl"}});
     }
 
-    return {"role": userName != "Bot" ? "user" : "assistant", "content": contentList} ; 
+    return {"role": role , "content": contentList} ; 
   }
 
   @override

@@ -9,7 +9,7 @@ import 'package:flutter_app/services/chat_bot_service.dart';
 class AllMessagesViewModel with ChangeNotifier {
   final ChatBot chatService; 
   AllMessagesViewModel({required this.chatService}){
-    _messages.add(Message(text: "Hi , how can I help you", userName: "BOT"));
+    _messages.add(Message(text: "Hi , how can I help you", userName: "BOT",timeStamp: DateTime.now()));
   }
  
   final List<Message> _messages = [];
@@ -21,7 +21,7 @@ class AllMessagesViewModel with ChangeNotifier {
       notifyListeners();
     } 
     final response = await chatService.doResponse(newMessage);
-    _messages.add(Message(text: response, userName: "BOT")) ; 
+    _messages.add(Message(text: response, userName: "BOT",timeStamp: DateTime.now())) ; 
     notifyListeners();
     return ;
   }
