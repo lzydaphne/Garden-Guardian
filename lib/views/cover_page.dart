@@ -1,64 +1,125 @@
-//import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-/*class CoverPage extends StatelessWidget {
+class CoverPage extends StatelessWidget {
+  const CoverPage({super.key});
+
   @override
   Widget build(BuildContext context) {
+    var screenWidth = MediaQuery.of(context).size.width;
+    var screenHeight = MediaQuery.of(context).size.height;
+
     return Stack(
       children: [
         Column(
           children: [
             Expanded(
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage('https://d41chssnpqdne.cloudfront.net/user_upload_by_module/chat_bot/files/19605239/WhsaCqYhoytnDvQi.png?Expires=1718379824&Signature=jbsulYZInDbcixxuzQ~ndjOM75UJTT0esgpYKycjKwitI-61hKt3nQEsr7ngnQDhMx61vaew-yWeWLEai-3tQoAFx22itldS-517mEuC9DZbptQcIfeA8TlFSeWFghtJ7VnuHRZntueWLeC~q6sZSml4YNQEKQSDICGOX5MUMTqiTeGEfkSz5eAn2OGZ47Y8LSpt20b4EQ0vuE2e4tm-fA5xtcbhnJxqoigBqCr8yksVZBnuHUAHj9viymBOmg2UnLtlj3~FVkUyYMn8w8NHPMdb9XYRa~nvRVYP4klJEoXSPuKvQxzcEf7xthlFEtR3K9WTGVu9zdw58cqT63lhuQ__&Key-Pair-Id=K3USGZIKWMDCSX'),
+                    image: AssetImage('assets/images/avatar.jpg'),
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
             ),
             Container(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               color: Colors.black,
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Garden Guardian',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.bold,
+                  Center(
+                    child: Text(
+                      'Garden Guardian',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 40.0,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.none
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16.0),
-                  Text(
-                    '綠指智能：您的專屬AI植物照護助手！\n'
-                    '照護排程：依據植物狀態，自動提醒照護排程\n'
-                    '圖像辨識：只需一張照片，識別植物種類\n'
-                    '身心療癒與成長：和您的植物一起成長',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.0,
+                  ),  //Icon(Icons.task_alt)
+                  SizedBox(height: 60.0),
+                  SizedBox(
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                          '✔     綠指智能：您的專屬AI植物照護助手！',
+                          style: TextStyle(
+                            color: Color.fromARGB(232, 255, 255, 255),
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w100,
+                            decoration: TextDecoration.none
+                          ),),
+                          SizedBox(height:20),
+                          Text(
+                          '✔     照護排程：依據植物狀態，自動提醒照護排程',
+                          style: TextStyle(
+                            color: Color.fromARGB(232, 255, 255, 255),
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w100,
+                            decoration: TextDecoration.none
+                          ),),
+                          SizedBox(height:20),
+                          Text(
+                          '✔     圖像辨識：只需一張照片，識別植物種類',
+                          style: TextStyle(
+                            color: Color.fromARGB(232, 255, 255, 255),
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w100,
+                            decoration: TextDecoration.none
+                          ),),
+                          SizedBox(height:20),
+                          Text(
+                          '✔     身心療癒與成長：和您的植物一起成長',
+                          style: TextStyle(
+                            color: Color.fromARGB(232, 255, 255, 255),
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w100,
+                            decoration: TextDecoration.none
+                          ),),
+                        ]
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 16.0),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  textStyle: TextStyle(fontSize: 20.0),
-                ),
-                child: Text('I love it!'),
+            SizedBox(
+              height: 40.0, 
+              child: Container(
+                color: Colors.black,
               ),
             ),
-            SizedBox(height: 16.0),
+            Container(
+              width: screenWidth,
+              color: Colors.black,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: 
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      textStyle: const TextStyle(fontSize: 20.0, color: Colors.white),
+                      minimumSize: Size(screenWidth * 0.6, 48), // 按鈕寬度為螢幕寬度的80%
+                    ),
+                    child: const Center(child: Text('I love it!', style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.0,
+                            ),)),
+                  ),
+              ),
+            ),
+            SizedBox(
+              height: 16.0, 
+              child: Container(
+                color: Colors.black,
+              ),
+            ),
           ],
         ),
         Positioned(
@@ -66,12 +127,12 @@
           left: 0,
           right: 0,
           child: Container(
-            height: 250.0,
+            height: (screenHeight - 370 < 0)? 0 : screenHeight - 370,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [Colors.black.withOpacity(1), Colors.transparent],
               ),
             ),
           ),
@@ -80,4 +141,3 @@
     );
   }
 }
-*/
