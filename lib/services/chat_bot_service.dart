@@ -6,18 +6,20 @@ import 'package:chat_gpt_sdk/src/model/embedding/enum/embed_model.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
+class ImageHandler {
   Future<String?> convertImageToBase64(String? imagePath) async {
-    if (imagePath == null )return null; 
+    if (imagePath == null) return null;
     try {
-      debugPrint(imagePath);
+      debugPrint('Converting image to base64: $imagePath');
       final bytes = await readImageAsBytes(imagePath);
       if (bytes == null) {
         throw Exception("Failed to load image");
       }
       final base64String = base64Encode(bytes);
       final mimeType = lookupMimeType(imagePath, headerBytes: bytes);
-      debugPrint(mimeType);
+      debugPrint('MIME type: $mimeType');
       return 'data:$mimeType;base64,$base64String';
     } catch (e) {
       debugPrint('Error in convertImageToBase64: $e');
@@ -27,6 +29,7 @@ import 'package:mime/mime.dart';
 
   Future<Uint8List?> readImageAsBytes(String url) async {
     try {
+      debugPrint('Reading image as bytes from URL: $url');
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         return response.bodyBytes;
@@ -40,11 +43,13 @@ import 'package:mime/mime.dart';
     }
   }
 
+  // TODO : compress image for file space
+}
 
 class ChatBot extends ChangeNotifier {
   late OpenAI openAI;
-  final kToken = 'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh'; // Enter OpenAI API_KEY
-  final systemPrompt = """
+  final String kToken = 'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh';
+  final String systemPrompt = """
 You are a personal plant assistant, called PlantPal!
 
 PlantPal is an advanced AI-powered assistant designed to provide comprehensive information and assistance related to plants. Whether you're a seasoned gardener, a beginner plant parent, or simply curious about the world of flora, PlantPal is here to help. Below are the detailed functionalities and capabilities of PlantPal:
@@ -78,7 +83,9 @@ With its advanced features, comprehensive plant database, and user-friendly inte
 
 Every output should only be in the strict format : " <User Response> // <Image Description if a image is uploaded> " . 
 """;
- late ContextHandler _contextHandler ; 
+  late ContextHandler _contextHandler;
+ 
+  
 
   ChatBot() {
     openAI = OpenAI.instance.build(
@@ -89,13 +96,12 @@ Every output should only be in the strict format : " <User Response> // <Image D
       ),
       enableLog: true,
     );
-    _contextHandler = ContextHandler(maxInputTokens : 1000,openAI : openAI) ; 
+    _contextHandler = ContextHandler(maxInputTokens: 1000, openAI: openAI);
   }
-
- 
 
   Future<String> doResponse(Message userInp) async {
     try {
+      debugPrint('Generating response for user input');
       final responseText = await _chatCompletion(userInp);
       return responseText ?? 'Error';
     } catch (e) {
@@ -106,32 +112,35 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
   Future<String?> _chatCompletion(Message message) async {
     try {
-      dynamic contentMessage; 
-    
+      debugPrint('Starting chat completion');
+      dynamic contentMessage;
+
       if (message.base64ImageUrl != null) {
-        
-        final base64Image = await convertImageToBase64(message.base64ImageUrl!);
-      
         contentMessage = [
           {"type": "text", "text": message.text},
-          {"type": "image_url", "image_url":{"url":base64Image}},
+          {"type": "image_url", "image_url": {"url": message.base64ImageUrl}},
         ];
       } else {
         contentMessage = [{"type": "text", "text": message.text}];
       }
 
-      List<Map<String, dynamic>> previousMessages = _contextHandler.contentMessages ; 
+      final currentMessage = [{"role": "user", "content": contentMessage}] ; 
+
+      List<Map<String, dynamic>> previousMessages = _contextHandler.contentMessages;
       previousMessages.insert(0, {"role": "system", "content": systemPrompt});
 
       final request = ChatCompleteText(
-        messages: previousMessages + contentMessage ,
+        messages: previousMessages + currentMessage,
         maxToken: 200,
         model: ChatModelFromValue(model: 'gpt-4o'),
       );
 
       final response = await openAI.onChatCompletion(request: request);
+      debugPrint('Chat completion response received');
 
-      return _handleResponse(message,response?.choices[0].message?.content);
+     // _contextHandler.findAndAppendSimilarMessage(message.text);
+
+      return _handleResponse(message, response?.choices[0].message?.content);
     } catch (e) {
       debugPrint('Error in _chatCompletion: $e');
       return null;
@@ -139,146 +148,144 @@ Every output should only be in the strict format : " <User Response> // <Image D
   }
 
   String _handleResponse(Message message, String? response) {
-    if (response == null )return "Error "; 
+    if (response == null) return "Error";
 
-    final String imageDescription = response.split('//')[1];
+    final String imageDescription = response.split('//').length == 1 ? "" : response.split('//')[1];
     final String userResponse = response.split('//')[0];
-    final m = Message(
+    debugPrint('Handling response: $userResponse // $imageDescription');
+    var m = Message(
       userName: message.userName,
       text: message.text,
-      base64ImageUrl: message.base64ImageUrl != null ? base64Encode(Uint8List.fromList(message.base64ImageUrl!.codeUnits)) : null,
+      base64ImageUrl: message.base64ImageUrl != null
+          ? base64Encode(Uint8List.fromList(message.base64ImageUrl!.codeUnits))
+          : null,
       timeStamp: DateTime.now(),
       imageDescription: imageDescription,
     );
     _contextHandler.addMessage(m);
 
-    return userResponse ; 
-  }
-  
-}
+    m = Message(
+      userName: "BOT",
+      text: userResponse,
+      base64ImageUrl: null,
+      timeStamp: DateTime.now(),
+      imageDescription: null,
+    );
 
+    _contextHandler.addMessage(m);
+
+    return userResponse;
+  }
+}
 
 class ContextHandler {
   List<Message> messages = [];
+  final List<String> fakedb  =  [] ; 
+  final List<List<double>> fakeEmbed = []; 
   int currentTokenCount = 0;
   final int maxInputTokens;
   final OpenAI openAI;
 
   ContextHandler({required this.maxInputTokens, required this.openAI});
 
+  List<Map<String, dynamic>> get contentMessages {
+    return messages.map((message) => message.contentMessage).toList();
+  }
+
   void addMessage(Message m) {
+    debugPrint('Adding message: ${m.text}');
     messages.add(m);
 
-    // Calculate tokens for the new messages
-    currentTokenCount +=  _calculateTokenCount(m.text) + _calculateTokenCount(m.base64ImageUrl) + _calculateTokenCount(m.timeStamp as String) + _calculateTokenCount(m.imageDescription) ; 
+    currentTokenCount += _calculateTokenCount(m.text) +
+        _calculateTokenCount(m.base64ImageUrl) +
+        _calculateTokenCount(m.timeStamp.toString()) +
+        _calculateTokenCount(m.imageDescription);
 
-    // Check if tokens exceed the threshold
-    if (currentTokenCount * 1.3 > maxInputTokens) {
+    if (currentTokenCount * 1.3 > maxInputTokens - maxInputTokens) { // for debug
       _embedAndStoreMessages();
     }
   }
 
   int _calculateTokenCount(String? content) {
-    // A simple approximation of token count
-    if (content == null )return 0 ; 
+    if (content == null) return 0;
     return content.length ~/ 4;
   }
 
-  void _embedAndStoreMessages() async {
-    int half = messages.length ~/ 2;
-    
-    List<Message> messagesToEmbed = messages.sublist(0, half);
+  int _calculateTotalTokenCount() {
+    return messages.fold(0, (sum, message) =>
+        sum + _calculateTokenCount(message.text) +
+            _calculateTokenCount(message.base64ImageUrl) +
+            _calculateTokenCount(message.timeStamp.toString()) +
+            _calculateTokenCount(message.imageDescription));
+  }
 
-    
+  Future<void> _embedAndStoreMessages() async {
+    debugPrint('Embedding and storing messages');
+    int half = messages.length ~/ 2 == 0 ? 1 : messages.length ~/ 2;
+    //List<Message> messagesToEmbed = messages.sublist(0, half);
+    List<Message> messagesToEmbed = [messages.last] ; // for debug
+
     for (var message in messagesToEmbed) {
       String combinedContent = '${message.text}${message.imageDescription}${message.timeStamp}';
-
       final request = EmbedRequest(
         model: TextEmbeddingAda002EmbedModel(),
         input: combinedContent,
-        dimensions: 1525,
       );
 
       final response = await openAI.embed.embedding(request);
-      _storeInDatabase(response.data.last.embedding,message); 
+      debugPrint('Embedding response received' ) ; 
+     // debugPrint('Embedding response received :  ${response.data.last.embedding} ' );
+      await _storeInDatabase(response.data.last.embedding, message);
     }
 
-   
-
-    // Remove embedded messages and adjust token count
     messages = messages.sublist(half);
     currentTokenCount = _calculateTotalTokenCount();
   }
 
-  int _calculateTotalTokenCount() {
-    return messages.fold(0, (sum, message) => sum + _calculateTokenCount(message.text) + _calculateTokenCount(message.base64ImageUrl) + _calculateTokenCount(message.timeStamp as String) + _calculateTokenCount(message.imageDescription));
-  }
+  Future<dynamic> _storeInDatabase(List<double> embeddings, Message message) async {
+    debugPrint('Storing message in database: ${message.text}');
+    // final HttpsCallable callable = FirebaseFunctions.instance
+    //     .httpsCallable('storeInDatabase');
+    // final response = await callable.call(<String, dynamic>{
+    //   'userName': message.userName,
+    //   'text': message.text,
+    //   'base64ImageUrl': message.base64ImageUrl,
+    //   'timeStamp': message.timeStamp.toString(),
+    //   'imageDescription': message.imageDescription,
+    //   'embeddings': embeddings,
+    // });
 
-  Future<void> _storeInDatabase(List<double> embeddings, Message Message) async {
-  final url = 'https://<your-cloud-function-url>/storeInDatabase'; // Replace with your cloud function URL
-
-  final response = await http.post(
-    Uri.parse(url),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: json.encode({
-      'userName': Message.userName,
-      'text': Message.text,
-      'base64ImageUrl': Message.base64ImageUrl,
-      'timeStamp': Message.timeStamp.toString(),
-      'imageDescription': Message.imageDescription,
-      'embeddings': embeddings,
-    }),
-  );
-
-  if (response.statusCode == 200) {
-    print('Chat message and embeddings stored successfully');
-  } else {
-    print('Failed to store chat message and embeddings: ${response.body}');
-  }
-}
-
-
-  Future<dynamic> vectorSearch(List<double> queryEmbedding) async {
-  final url = 'https://<your-cloud-function-url>/vectorSearch'; // Replace with your cloud function URL
-
-  final response = await http.post(
-    Uri.parse(url),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: json.encode({
-      'queryEmbedding': queryEmbedding,
-      'limit': 5, // You can adjust this as needed
-      'distanceMeasure': 'EUCLIDEAN', // You can adjust this as needed
-    }),
-  );
-
-  if (response.statusCode == 200) {
-    final results = json.decode(response.body);
-    print('Search results: $results');
-    return results;
-  } else {
-    print('Failed to perform vector search: ${response.body}');
-    return null ; 
-  }
-  
-}
-
-
-  List<Map<String,dynamic>> get contentMessages {
-   List<Map<String,dynamic>> contentMessages  =  messages.map((message) {
-    return message.contentMessage ; 
-  }).toList();
-  return contentMessages ; 
+    fakedb.add(message.text) ; 
+    fakeEmbed.add(embeddings);
+    debugPrint("FakeDB : $fakedb , fakeEmbed : ${fakeEmbed.length} " ) ; 
+    
     
 
+   // debugPrint('Store in database response: ${response.data}');
+   // return response.data;
+   return null ; 
   }
 
+  Future<dynamic> _vectorSearch(List<double> queryEmbedding) async {
+    debugPrint('Performing vector search');
+    // final HttpsCallable callable = FirebaseFunctions.instance
+    //     .httpsCallable('vectorSearch');
+
+    // final response = await callable.call(<String, dynamic>{
+    //   'queryEmbedding': queryEmbedding,
+    //   'limit': 5,
+    //   'distanceMeasure': 'EUCLIDEAN',
+    // });
+    // debugPrint('Vector search response: ${response.data}');
+    // return response.data;
+    debugPrint(queryEmbedding as String);
+    debugPrint(fakeEmbed as String );
+
+    return null ; 
+  }
 
   Future<void> findAndAppendSimilarMessage(String query) async {
-    // Step 1: Embed the query string
+    debugPrint('Finding and appending similar message for query: $query');
     final request = EmbedRequest(
       model: TextEmbeddingAda002EmbedModel(),
       input: query,
@@ -287,26 +294,17 @@ class ContextHandler {
     final response = await openAI.embed.embedding(request);
     final queryEmbedding = response.data.last.embedding;
 
-    final results = await vectorSearch(queryEmbedding);
-    
-    // Step 3: Retrieve the document and convert it into a Message object
+    final results = await _vectorSearch(queryEmbedding);
     final data = results;
     final similarMessage = Message(
-      userName: data['userName'] ?? '', 
+      userName: data['userName'] ?? '',
       text: data['text'] ?? '',
       base64ImageUrl: data['base64ImageUrl'] ?? '',
-      timeStamp : data['timeStamp'] ?? '', 
-      imageDescription: data['imageDescription'] ?? '', 
+      timeStamp: data['timeStamp'] ?? '',
+      imageDescription: data['imageDescription'] ?? '',
     );
 
-    // Step 4: Append the retrieved Message object to the head of the list
     messages.insert(0, similarMessage);
+    debugPrint('Similar message appended: ${similarMessage.text}');
   }
 }
-
-
-
-
-
-
-// embedd with image description
