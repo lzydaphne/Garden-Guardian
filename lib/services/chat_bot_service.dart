@@ -138,7 +138,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
       final response = await openAI.onChatCompletion(request: request);
       debugPrint('Chat completion response received');
 
-     // _contextHandler.findAndAppendSimilarMessage(message.text);
+      _contextHandler.findAndAppendSimilarMessage("Brocolli");
 
       return _handleResponse(message, response?.choices[0].message?.content);
     } catch (e) {
@@ -192,7 +192,7 @@ class ContextHandler {
     return messages.map((message) => message.contentMessage).toList();
   }
 
-  void addMessage(Message m) {
+  void addMessage(Message m) async {
     debugPrint('Adding message: ${m.text}');
     messages.add(m);
 
@@ -202,7 +202,7 @@ class ContextHandler {
         _calculateTokenCount(m.imageDescription);
 
     if (currentTokenCount * 1.3 > maxInputTokens - maxInputTokens) { // for debug
-      _embedAndStoreMessages();
+       await _storeInDatabase(m);
     }
   }
 
@@ -219,82 +219,50 @@ class ContextHandler {
             _calculateTokenCount(message.imageDescription));
   }
 
-  Future<void> _embedAndStoreMessages() async {
-    debugPrint('Embedding and storing messages');
-    int half = messages.length ~/ 2 == 0 ? 1 : messages.length ~/ 2;
-    //List<Message> messagesToEmbed = messages.sublist(0, half);
-    List<Message> messagesToEmbed = [messages.last] ; // for debug
 
-    for (var message in messagesToEmbed) {
-      String combinedContent = '${message.text}${message.imageDescription}${message.timeStamp}';
-      final request = EmbedRequest(
-        model: TextEmbeddingAda002EmbedModel(),
-        input: combinedContent,
-      );
-
-      final response = await openAI.embed.embedding(request);
-      debugPrint('Embedding response received' ) ; 
-     // debugPrint('Embedding response received :  ${response.data.last.embedding} ' );
-      await _storeInDatabase(response.data.last.embedding, message);
-    }
-
-    messages = messages.sublist(half);
-    currentTokenCount = _calculateTotalTokenCount();
-  }
-
-  Future<dynamic> _storeInDatabase(List<double> embeddings, Message message) async {
+  Future<void> _storeInDatabase(Message message) async {
+  try {
     debugPrint('Storing message in database: ${message.text}');
-    // final HttpsCallable callable = FirebaseFunctions.instance
-    //     .httpsCallable('storeInDatabase');
-    // final response = await callable.call(<String, dynamic>{
-    //   'userName': message.userName,
-    //   'text': message.text,
-    //   'base64ImageUrl': message.base64ImageUrl,
-    //   'timeStamp': message.timeStamp.toString(),
-    //   'imageDescription': message.imageDescription,
-    //   'embeddings': embeddings,
-    // });
-
-    fakedb.add(message.text) ; 
-    fakeEmbed.add(embeddings);
-    debugPrint("FakeDB : $fakedb , fakeEmbed : ${fakeEmbed.length} " ) ; 
     
+    final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('storeInDatabase');
     
+    debugPrint('Callable created, waiting for response from database');
 
-   // debugPrint('Store in database response: ${response.data}');
-   // return response.data;
-   return null ; 
+    final response = await callable.call(<String, dynamic>{
+      'role': message.role,
+      'text': message.text,
+      'base64ImageUrl': message.base64ImageUrl,
+      'timeStamp': message.timeStamp.toString(),
+      'imageDescription': message.imageDescription,
+      'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
+    });
+
+    debugPrint('Received response from database: ${response.data}');
+  } catch (e) {
+    debugPrint('Error storing message in database: $e');
   }
+}
 
-  Future<dynamic> _vectorSearch(List<double> queryEmbedding) async {
+  Future<dynamic> _vectorSearch(String searchString) async {
     debugPrint('Performing vector search');
-    // final HttpsCallable callable = FirebaseFunctions.instance
-    //     .httpsCallable('vectorSearch');
 
-    // final response = await callable.call(<String, dynamic>{
-    //   'queryEmbedding': queryEmbedding,
-    //   'limit': 5,
-    //   'distanceMeasure': 'EUCLIDEAN',
-    // });
-    // debugPrint('Vector search response: ${response.data}');
-    // return response.data;
-    debugPrint(queryEmbedding as String);
-    debugPrint(fakeEmbed as String );
+    final HttpsCallable callable = FirebaseFunctions.instance
+        .httpsCallable('ext-firestore-vector-search-queryCallable');
+    
 
-    return null ; 
+    final response = await callable.call(<String, dynamic>{
+      'query': searchString,
+      'limit': 20,
+    });
+    debugPrint('Vector search response: ${response.data}');
+     return response.data;
+
   }
 
   Future<void> findAndAppendSimilarMessage(String query) async {
     debugPrint('Finding and appending similar message for query: $query');
-    final request = EmbedRequest(
-      model: TextEmbeddingAda002EmbedModel(),
-      input: query,
-    );
 
-    final response = await openAI.embed.embedding(request);
-    final queryEmbedding = response.data.last.embedding;
-
-    final results = await _vectorSearch(queryEmbedding);
+    final results = await _vectorSearch(query);
     final data = results;
     final similarMessage = Message(
       userName: data['userName'] ?? '',
@@ -306,5 +274,7 @@ class ContextHandler {
 
     messages.insert(0, similarMessage);
     debugPrint('Similar message appended: ${similarMessage.text}');
+
+    return ; 
   }
 }
