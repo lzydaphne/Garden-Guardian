@@ -15,5 +15,17 @@
         "*.local"
       ]
     }
-  ]
+  ],
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "finaltest-c212e",
+          "configurations": {
+            "web": "1:269215038220:web:83fe071399b1237fd22729"
+          }
+        }
+      }
+    }
+  }
 }

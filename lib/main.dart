@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/services/chat_bot_service.dart';
 import 'package:flutter_app/views/chat_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/theme.dart'; 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-void main() {
+
+Future<void> main() async {
+   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  // Defer the first frame until `FlutterNativeSplash.remove()` is called
+  //FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  // Make sure you have your Firebase options configured
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp()); 
 }
 

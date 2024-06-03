@@ -1,12 +1,13 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
-import 'package:chat_gpt_sdk/src/model/embedding/enum/embed_model.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ImageHandler {
   Future<String?> convertImageToBase64(String? imagePath) async {
@@ -138,7 +139,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
       final response = await openAI.onChatCompletion(request: request);
       debugPrint('Chat completion response received');
 
-      _contextHandler.findAndAppendSimilarMessage("Brocolli");
+      //_contextHandler.findAndAppendSimilarMessage("Brocolli"); this works great but just comment
 
       return _handleResponse(message, response?.choices[0].message?.content);
     } catch (e) {
@@ -224,7 +225,7 @@ class ContextHandler {
   try {
     debugPrint('Storing message in database: ${message.text}');
     
-    final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('storeInDatabase');
+    final HttpsCallable callable =  FirebaseFunctions.instance.httpsCallable('storeInDatabase');
     
     debugPrint('Callable created, waiting for response from database');
 
@@ -243,19 +244,46 @@ class ContextHandler {
   }
 }
 
-  Future<dynamic> _vectorSearch(String searchString) async {
-    debugPrint('Performing vector search');
+  Future<Message?> _vectorSearch(String searchString) async {
+    try { 
 
-    final HttpsCallable callable = FirebaseFunctions.instance
-        .httpsCallable('ext-firestore-vector-search-queryCallable');
+      UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
+      debugPrint('Signed in anonymously as: ${userCredential.user?.uid}');
+
+      debugPrint('Performing vector search');
+
+      final HttpsCallable callable = FirebaseFunctions.instance
+          .httpsCallable('ext-firestore-vector-search-queryCallable');
+      
+
+      final response = await callable.call(<String, dynamic>{
+        'query': searchString,
+        'limit': 1,
+      });
+      debugPrint('Vector search response: ${response.data}');
+
+      debugPrint('Fetching message from Firestore with ID: ${response.data['ids'][0]}');
+      final docSnapshot = await FirebaseFirestore.instance.collection('user').doc(response.data['ids'][0]).get();
     
-
-    final response = await callable.call(<String, dynamic>{
-      'query': searchString,
-      'limit': 20,
-    });
-    debugPrint('Vector search response: ${response.data}');
-     return response.data;
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data();
+        return Message(
+          userName: data?['userName'] ?? '',
+          text: data?['text'] ?? '',
+          base64ImageUrl: data?['base64ImageUrl'] ?? '',
+          timeStamp: DateTime.parse(data?['timeStamp'] ?? ''),
+          imageDescription: data?['imageDescription'] ?? '',
+        );
+      }
+      else{
+        return null  ; 
+      }
+    }catch (e)
+    {
+      debugPrint('Error in vector search: $e');
+    }
+    return null;
+    
 
   }
 
@@ -263,17 +291,13 @@ class ContextHandler {
     debugPrint('Finding and appending similar message for query: $query');
 
     final results = await _vectorSearch(query);
-    final data = results;
-    final similarMessage = Message(
-      userName: data['userName'] ?? '',
-      text: data['text'] ?? '',
-      base64ImageUrl: data['base64ImageUrl'] ?? '',
-      timeStamp: data['timeStamp'] ?? '',
-      imageDescription: data['imageDescription'] ?? '',
-    );
+    if (results == null ){
+       debugPrint("error");
+       return ; 
+    }
 
-    messages.insert(0, similarMessage);
-    debugPrint('Similar message appended: ${similarMessage.text}');
+    messages.insert(0, results);
+    debugPrint('Similar message appended: ${results.text}');
 
     return ; 
   }
