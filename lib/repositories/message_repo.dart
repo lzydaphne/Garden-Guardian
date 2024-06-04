@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -84,6 +85,68 @@ class MessageRepository {
     debugPrint('Error storing message in database: $e');
   }
 }
+
+Future<void> findAndAppendSimilarMessage(String query) async {
+    debugPrint('Finding and appending similar message for query: $query');
+
+    final results = await _vectorSearch(query);
+    if (results == null ){
+       debugPrint("error");
+       return ; 
+    }
+
+    //messages.insert(0, results); TODO add system message info to database
+    
+    debugPrint('Similar message appended: ${results.text}');
+
+    return ; 
+  }
+
+Future<Message?> _vectorSearch(String searchString) async {
+    try { 
+
+      UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
+      debugPrint('Signed in anonymously as: ${userCredential.user?.uid}');
+
+      debugPrint('Performing vector search');
+
+      final HttpsCallable callable = FirebaseFunctions.instance
+          .httpsCallable('ext-firestore-vector-search-queryCallable');
+      
+
+      final response = await callable.call(<String, dynamic>{ // TODO : add a prefilter with username != null (don;t consider system message)
+        'query': searchString,
+        'limit': 1,
+      });
+      debugPrint('Vector search response: ${response.data}');
+
+      debugPrint('Fetching message from Firestore with ID: ${response.data['ids'][0]}');
+      final docSnapshot = await FirebaseFirestore.instance.collection('user').doc(response.data['ids'][0]).get();
+    
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data();
+        return Message(
+          userName: data?['userName'] ?? '',
+          text: data?['text'] ?? '',
+          base64ImageUrl: data?['base64ImageUrl'] ?? '',
+          timeStamp: DateTime.parse(data?['timeStamp'] ?? ''),
+          imageDescription: data?['imageDescription'] ?? '',
+        );
+      }
+      else{
+        return null  ; 
+      }
+    }catch (e)
+    {
+      debugPrint('Error in vector search: $e');
+    }
+    return null;
+    
+
+  }
+
+
+
 
   
 }
