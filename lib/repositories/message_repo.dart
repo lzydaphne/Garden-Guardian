@@ -89,7 +89,7 @@ Future<void> findAndAppendSimilarMessage(String query) async {
     }
     String systemHeader = "I send you a message in ${results.timeStamp}, it says : " ; // system header for retrieve memory 
 
-    await _storeInDatabase(Message(text:systemHeader + results.text , role: 'system' , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl));
+    await _storeInDatabase(Message(text:systemHeader + results.text , role: 'user' , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl));// can't be assistant or system , both failed 
     
     debugPrint('Similar message appended: ${results.text}');
 

@@ -215,7 +215,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
   Future<String> _handleResponse(Message message, String? response) async {
     if (response == null) return "Error";
-
+    final String needRetrieval = "YES" ;//response.split('//').length <= 2 ? "" : response.split('//')[2];
     final String imageDescription = response.split('//').length == 1 ? "" : response.split('//')[1];
     final String userResponse = response.split('//')[0];
     debugPrint('Handling response: $userResponse // $imageDescription');
@@ -228,29 +228,70 @@ Every output should only be in the strict format : " <User Response> // <Image D
     );
 
     await _messageRepository.addMessage(m);
-
-    //TODO : Implement the memory retrieval logic , and produce the query string 
-    await _messageRepository.findAndAppendSimilarMessage("Brocolli");
-
-    // Redo the chatcompletion , with the same question again 
-
-    //remember now the new system message added is not in the knowledge scope of gpt, since the thing we sent to GPT hadn't contained the retricve memory system message yet
-
-    
-
-
-    m = Message(
+    debugPrint(response);
+    if(needRetrieval == 'YES') {
+      await _messageRepository.findAndAppendSimilarMessage("Brocolli");
+       m = Message(
+      role: "assistant",
+      text: await _chatCompletion2(m) as String,
+      base64ImageUrl: null,
+      timeStamp: DateTime.now(),
+      imageDescription: null,
+    );
+     
+       // Redo the chatcompletion , with the same question again 
+        //remember now the new system message added is not in the knowledge scope of gpt, since the thing we sent to GPT hadn't contained the retricve memory system message yet
+      
+    }else{
+      m = Message(
       role: "assistant",
       text: userResponse,
       base64ImageUrl: null,
       timeStamp: DateTime.now(),
       imageDescription: null,
     );
-
+    }
     await _messageRepository.addMessage(m);
+
+   
 
     return userResponse;
   
+  }
+  Future<String?> _chatCompletion2(Message message) async {
+    try {
+      debugPrint('Starting chat completion');
+      dynamic contentMessage;
+
+      if (message.base64ImageUrl != null) {
+        contentMessage = [
+          {"type": "text", "text": message.text},
+          {"type": "image_url", "image_url": {"url": message.base64ImageUrl}},
+        ];
+      } else {
+        contentMessage = [{"type": "text", "text": message.text}];
+      }
+
+      final currentMessage = [{"role": "user", "content": contentMessage}] ; 
+
+      List<Map<String, dynamic>> previousMessages = windowMessages.map((windowMessage)=>windowMessage.contentMessage).toList();
+      previousMessages.insert(0, {"role": "system", "content": systemPrompt});
+
+      final request = ChatCompleteText(
+        messages: previousMessages + currentMessage,
+        maxToken: 200,
+        model: ChatModelFromValue(model: 'gpt-4o'),
+      );
+
+      final response = await openAI.onChatCompletion(request: request);
+      debugPrint('Chat completion response received');
+      
+      
+      return response?.choices[0].message?.content;
+    } catch (e) {
+      debugPrint('Error in _chatCompletion: $e');
+      return null;
+    }
   }
 }
 
