@@ -9,28 +9,28 @@ class MessageRepository {
   Stream<List<Message>> streamViewMessages() { // all of the message in db with username != null (not system message)
     return _db
         .collection('user')
-  //      .where('userName',isNotEqualTo: '') //filter message with username == null ( system message)
-        .orderBy('servertimeStamp', descending: false)
+  //      .where('role',isNotEqualTo: '') //filter message with username == null ( system message)
+        .orderBy('timeStamp', descending: false)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => Message.fromMap(doc.data(), doc.id))
+          .map((doc) => Message.fromMap(doc.data()))
           .toList();
     });
   } 
   Stream<List<Message>> streamContentMessages() { // all of the message in db 
     return _db
         .collection('user')
-        .orderBy('servertimeStamp', descending: false)
+        .orderBy('timeStamp', descending: false)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => Message.fromMap(doc.data(), doc.id))
+          .map((doc) => Message.fromMap(doc.data()))
           .toList();
     });
   }
   
-  void addMessage(Message m) async {
+  Future<void> addMessage(Message m) async {
     debugPrint('Adding message: ${m.text}');
  
     // currentTokenCount += _calculateTokenCount(m.text) +
@@ -57,21 +57,23 @@ class MessageRepository {
   try {
     debugPrint('Storing message in database: ${message.text}');
     
-    final HttpsCallable callable =  FirebaseFunctions.instance.httpsCallable('storeInDatabase');
+   // final HttpsCallable callable =  FirebaseFunctions.instance.httpsCallable('storeInDatabase');
     
     debugPrint('Callable created, waiting for response from database');
 
-    final response = await callable.call(<String, dynamic>{
-      'role': message.role,
-      'text': message.text,
-      'base64ImageUrl': message.base64ImageUrl,
-      'timeStamp': message.timeStamp.toString(),
-      'imageDescription': message.imageDescription,
-      'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
-     // 'servertimeStamp' : FieldValue.serverTimestamp()
-    });
+    // final response = await callable.call(<String, dynamic>{
+    //   'role': message.role,
+    //   'text': message.text,
+    //   'base64ImageUrl': message.base64ImageUrl,
+    //   'timeStamp': message.timeStamp.toString(),
+    //   'imageDescription': message.imageDescription,
+    //   'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
+    //  // 'servertimeStamp' : FieldValue.serverTimestamp()
+    // });
 
-    debugPrint('Received response from database: ${response.data}');
+    DocumentReference docRef  = await FirebaseFirestore.instance.collection('user').add(message.toMap());
+
+    debugPrint('Received response from database: ${docRef.id}');
   } catch (e) {
     debugPrint('Error storing message in database: $e');
   }
@@ -85,9 +87,9 @@ Future<void> findAndAppendSimilarMessage(String query) async {
        debugPrint("error");
        return ; 
     }
-    String systemHeader = "You just remembered a message send by the user in ${results.text}, with a image uploaded if any : " ; // system header for retrieve memory 
+    String systemHeader = "I send you a message in ${results.timeStamp}, it says : " ; // system header for retrieve memory 
 
-    await _storeInDatabase(Message(text:systemHeader + results.text , userName: null , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl,timeStamp: DateTime.now()));
+    await _storeInDatabase(Message(text:systemHeader + results.text , role: 'system' , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl));
     
     debugPrint('Similar message appended: ${results.text}');
 
@@ -111,9 +113,9 @@ Future<Message?> _vectorSearch(String searchString) async {
         'limit': 1,
         // 'prefilters': [
         // {
-        //     'field': "userName",
+        //     'field': "role",
         //     'operator': "!=",
-        //     'value': ''
+        //     'value': 'system'
         // }
         // ], 
       });
@@ -123,14 +125,8 @@ Future<Message?> _vectorSearch(String searchString) async {
       final docSnapshot = await FirebaseFirestore.instance.collection('user').doc(response.data['ids'][0]).get();
     
       if (docSnapshot.exists) {
-        final data = docSnapshot.data();
-        return Message(
-          userName: data?['userName'] ?? '',
-          text: data?['text'] ?? '',
-          base64ImageUrl: data?['base64ImageUrl'] ?? '',
-          timeStamp: DateTime.parse(data?['timeStamp'] ?? ''),
-          imageDescription: data?['imageDescription'] ?? '',
-        );
+        final data = docSnapshot.data() ;
+        return Message.fromMap(data ?? {}) ;
       }
       else{
         return null  ; 

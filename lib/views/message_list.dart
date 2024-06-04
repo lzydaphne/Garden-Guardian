@@ -47,6 +47,14 @@ class _MessageListState extends State<MessageList> {
     });
   }
 
+  String? meORnotme(String? role){ 
+    if (role == null )return null ; 
+    if (role == "assistant" || role == "system")return "BOT" ; 
+    else {
+      return "ME" ;
+    } 
+  }
+
   @override
   Widget build(BuildContext context) {
     
@@ -59,7 +67,7 @@ class _MessageListState extends State<MessageList> {
       }
     });
 
-    final me = User("user");
+    final me = User("ME");
     final messages = allMessagesViewModel.messages;
 
     if (messages.isEmpty) {
@@ -84,10 +92,10 @@ class _MessageListState extends State<MessageList> {
             index + 1 < messages.length ? messages[index + 1] : null;
         final prevMessage = index - 1 >= 0 ? messages[index - 1] : null;
 
-        final messageUsername = message.userName;
-        final nextMessageUsername = nextMessage?.userName;
+        final messageUsername = meORnotme(message.role);
+        final nextMessageUsername = meORnotme(nextMessage?.role);
         final isNextUserSame = nextMessageUsername == messageUsername;
-        final preMessageUserId = prevMessage?.userName;
+        final preMessageUserId = meORnotme(prevMessage?.role);
         final isPreUserSame = preMessageUserId == messageUsername;
         final base64ImageUrl = message.base64ImageUrl ; 
 
@@ -100,7 +108,7 @@ class _MessageListState extends State<MessageList> {
           );
         } else {
           return MessageBubble.withUser(
-            userName: message.userName,
+            userName: meORnotme(message.role),
             text: message.text,
             isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,

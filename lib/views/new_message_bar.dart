@@ -55,10 +55,9 @@ class _NewMessageBarState extends State<NewMessageBar> {
 
     await allMessagesViewModel.addMessage(
       Message(
+        role: "user",
         text: enteredMessage,
-        userName: "ME",
         base64ImageUrl: await ImageHandler().convertImageToBase64(_pickedImage?.path), // Add the image path to the message
-        timeStamp: DateTime.now()
       )
     );
 

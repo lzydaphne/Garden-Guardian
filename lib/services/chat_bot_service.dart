@@ -102,7 +102,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
   ChatBot({MessageRepository? messageRepository})
       : _messageRepository = messageRepository ?? MessageRepository() {
-    debugPrint('CB initializing');      
+
     // _messagesSubscription = _messageRepository.streamContentMessages().listen(
     //   (messages) {
     //     _isInitializing = false;
@@ -120,13 +120,30 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
     //   currentTokenCount += messageTokenCount;
     //   return true;
-    // }).toList();
+    //   }
+      
+    // ).toList();
     //     notifyListeners();
-    //   },
-    // );
 
-    debugPrint('CB initializing complete');      
-    
+
+    try {
+      debugPrint('CB initializing');      
+      _messagesSubscription = _messageRepository.streamContentMessages().listen(
+        (messages) {
+          _isInitializing = false;
+          windowMessages = messages;
+          notifyListeners();
+        },
+        onError: (error) {
+          debugPrint("Stream error: $error");
+          // Handle stream error appropriately
+        },
+      );
+      debugPrint('CB  initialize complete');
+    } catch (e, stackTrace) {
+      debugPrint("Initialization error: $e");
+      debugPrint("Stack trace: $stackTrace");
+    }
 
     openAI = OpenAI.instance.build(
       token: kToken,
@@ -171,7 +188,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
       final currentMessage = [{"role": "user", "content": contentMessage}] ; 
 
-      List<Map<String, dynamic>> previousMessages = contentMessages;
+      List<Map<String, dynamic>> previousMessages = windowMessages.map((windowMessage)=>windowMessage.contentMessage).toList();
       previousMessages.insert(0, {"role": "system", "content": systemPrompt});
 
       final request = ChatCompleteText(
@@ -184,7 +201,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
       debugPrint('Chat completion response received');
       
       
-      return _handleResponse(message, response?.choices[0].message?.content);
+      return await _handleResponse(message, response?.choices[0].message?.content);
     } catch (e) {
       debugPrint('Error in _chatCompletion: $e');
       return null;
@@ -196,7 +213,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
   }
 
 
-  String _handleResponse(Message message, String? response) {
+  Future<String> _handleResponse(Message message, String? response) async {
     if (response == null) return "Error";
 
     final String imageDescription = response.split('//').length == 1 ? "" : response.split('//')[1];
@@ -204,28 +221,33 @@ Every output should only be in the strict format : " <User Response> // <Image D
     debugPrint('Handling response: $userResponse // $imageDescription');
 
     var m = Message(
-      userName: message.userName,
+      role: message.role,
       text: message.text,
       base64ImageUrl: message.base64ImageUrl,
-      timeStamp: DateTime.now(),
       imageDescription: imageDescription,
     );
 
-    _messageRepository.addMessage(m);
+    await _messageRepository.addMessage(m);
 
-    //TODO : MOdify the timestanp to server timestamp 
-    _messageRepository.findAndAppendSimilarMessage("Brocolli");
+    //TODO : Implement the memory retrieval logic , and produce the query string 
+    await _messageRepository.findAndAppendSimilarMessage("Brocolli");
+
+    // Redo the chatcompletion , with the same question again 
+
+    //remember now the new system message added is not in the knowledge scope of gpt, since the thing we sent to GPT hadn't contained the retricve memory system message yet
+
+    
 
 
     m = Message(
-      userName: "BOT",
+      role: "assistant",
       text: userResponse,
       base64ImageUrl: null,
       timeStamp: DateTime.now(),
       imageDescription: null,
     );
 
-     _messageRepository.addMessage(m);
+    await _messageRepository.addMessage(m);
 
     return userResponse;
   
