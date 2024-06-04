@@ -40,14 +40,15 @@ class MessageRepository {
   void addMessage(Message m) async {
     debugPrint('Adding message: ${m.text}');
  
-    currentTokenCount += _calculateTokenCount(m.text) +
-        _calculateTokenCount(m.base64ImageUrl) +
-        _calculateTokenCount(m.timeStamp.toString()) +
-        _calculateTokenCount(m.imageDescription);
+    // currentTokenCount += _calculateTokenCount(m.text) +
+    //     _calculateTokenCount(m.base64ImageUrl) +
+    //     _calculateTokenCount(m.timeStamp.toString()) +
+    //     _calculateTokenCount(m.imageDescription);
 
-    if (currentTokenCount * 1.3 >= maxInputTokens) { // for debug
-       await _storeInDatabase(m);
-    }
+    // if (currentTokenCount * 1.3 >= maxInputTokens) { // for debug
+    //    await _storeInDatabase(m);
+    // }
+    await _storeInDatabase(m);
   }
 
   int _calculateTokenCount(String? content) {

@@ -100,7 +100,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
     _messagesSubscription = _messageRepository.streamContentMessages().listen(
       (messages) {
         _isInitializing = false;
-        windowMessages = messages;
+        windowMessages = messages ; //TODO implement count token limit medthod
         notifyListeners();
       },
     );
