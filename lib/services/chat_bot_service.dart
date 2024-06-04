@@ -93,17 +93,40 @@ Every output should only be in the strict format : " <User Response> // <Image D
 """;
 
   
+  int _calculateTokenCount(String? content) {
+    if (content == null) return 0;
+    return content.length ~/ 4;
+  }
+  final _maxToken = 100  ;
+
 
   ChatBot({MessageRepository? messageRepository})
       : _messageRepository = messageRepository ?? MessageRepository() {
-          
-    _messagesSubscription = _messageRepository.streamContentMessages().listen(
-      (messages) {
-        _isInitializing = false;
-        windowMessages = messages ; //TODO implement count token limit medthod
-        notifyListeners();
-      },
-    );
+    debugPrint('CB initializing');      
+    // _messagesSubscription = _messageRepository.streamContentMessages().listen(
+    //   (messages) {
+    //     _isInitializing = false;
+    //     int currentTokenCount = 0;
+
+    //   windowMessages = messages.takeWhile((message) {
+    //     int messageTokenCount = _calculateTokenCount(message.text) +
+    //         _calculateTokenCount(message.base64ImageUrl) +
+    //         _calculateTokenCount(message.timeStamp.toString()) +
+    //         _calculateTokenCount(message.imageDescription);
+
+    //     if (currentTokenCount + messageTokenCount > _maxToken) {
+    //       return false;
+    //     }
+
+    //   currentTokenCount += messageTokenCount;
+    //   return true;
+    // }).toList();
+    //     notifyListeners();
+    //   },
+    // );
+
+    debugPrint('CB initializing complete');      
+    
 
     openAI = OpenAI.instance.build(
       token: kToken,

@@ -59,7 +59,7 @@ class _MessageListState extends State<MessageList> {
       }
     });
 
-    final me = User("ME");
+    final me = User("user");
     final messages = allMessagesViewModel.messages;
 
     if (messages.isEmpty) {

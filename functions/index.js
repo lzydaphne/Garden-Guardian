@@ -28,6 +28,7 @@ exports.storeInDatabase = https.onCall(async (req) => {
       timeStamp: timeStamp || new Date().toISOString(),
       imageDescription: imageDescription || '',
       stringtoEmbed: stringtoEmbed || '',
+      servertimeStamp: FieldValue.serverTimestamp() || ''
     });
 
     logger.log('Data stored successfully in Firestore', { role, text });

@@ -9,7 +9,7 @@ class Message {
     {
       return "system" ; 
     }
-    return userName != "Bot" ? "user" : "assistant" ; 
+    return userName != "BOT" ? "user" : "assistant" ; 
 
   }
 
@@ -31,9 +31,9 @@ class Message {
   factory Message.fromMap(Map<String, dynamic> map, String id) {
     return Message(
       text: map['text'],
-      base64ImageUrl: map['base64ImageUrl'],
-      userName: map['userName'],
-      timeStamp: map['timeStamp'],
+      base64ImageUrl: map['base64ImageUrl'] == '' ? null : map['base64ImageUrl'],
+      userName: map['role'],
+      timeStamp: DateTime.parse(map['timeStamp']),
       imageDescription: map['imageDescription'],
     );
   }
@@ -42,8 +42,8 @@ class Message {
     return {
       'text': text,
       'base64ImageUrl': base64ImageUrl,
-      'userName': userName,
-      'timeStamp': timeStamp,
+      'role': role,
+      'timeStamp': timeStamp.toString(),
       'imageDescription': imageDescription,
     };
   }

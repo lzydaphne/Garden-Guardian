@@ -17,17 +17,26 @@ class AllMessagesViewModel with ChangeNotifier {
   bool _isInitializing = true;
   bool get isInitializing => _isInitializing;
 
-  AllMessagesViewModel({required this.chatService , MessageRepository? messageRepository})
+  AllMessagesViewModel({required this.chatService, MessageRepository? messageRepository})
       : _messageRepository = messageRepository ?? MessageRepository() {
-    _messagesSubscription = _messageRepository.streamViewMessages().listen(
-      (messages) {
-        _isInitializing = false;
-        _messages = messages;
-        notifyListeners();
-      },
-    );
-
-    // _messages.add(Message(text: "Hi , how can I help you", userName: "BOT",timeStamp: DateTime.now()));
+    try {
+      debugPrint('AM initializing');
+      _messagesSubscription = _messageRepository.streamViewMessages().listen(
+        (messages) {
+          _isInitializing = false;
+          _messages = messages;
+          notifyListeners();
+        },
+        onError: (error) {
+          debugPrint("Stream error: $error");
+          // Handle stream error appropriately
+        },
+      );
+      debugPrint('AM initialize complete');
+    } catch (e, stackTrace) {
+      debugPrint("Initialization error: $e");
+      debugPrint("Stack trace: $stackTrace");
+    }
   }
 
   @override
@@ -69,10 +78,6 @@ class AllMessagesViewModel with ChangeNotifier {
      _messageRepository.addMessage(m);
 
     return userResponse;
-  }
-
-  List<Map<String, dynamic>> get contentMessages {
-    return messages.map((message) => message.contentMessage).toList();
   }
 
   // Future<void> deleteMessage(String messageId) async {

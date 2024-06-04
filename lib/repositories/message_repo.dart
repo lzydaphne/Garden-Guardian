@@ -9,8 +9,8 @@ class MessageRepository {
   Stream<List<Message>> streamViewMessages() { // all of the message in db with username != null (not system message)
     return _db
         .collection('user')
-        .where('userName',isNotEqualTo: '') //filter message with username == null ( system message)
-        .orderBy('timeStamp', descending: true)
+  //      .where('userName',isNotEqualTo: '') //filter message with username == null ( system message)
+        .orderBy('servertimeStamp', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
@@ -21,7 +21,7 @@ class MessageRepository {
   Stream<List<Message>> streamContentMessages() { // all of the message in db 
     return _db
         .collection('user')
-        .orderBy('timeStamp', descending: true)
+        .orderBy('servertimeStamp', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
@@ -42,11 +42,6 @@ class MessageRepository {
     //    await _storeInDatabase(m);
     // }
     await _storeInDatabase(m);
-  }
-
-  int _calculateTokenCount(String? content) {
-    if (content == null) return 0;
-    return content.length ~/ 4;
   }
 
   // int _calculateTotalTokenCount() {
@@ -73,6 +68,7 @@ class MessageRepository {
       'timeStamp': message.timeStamp.toString(),
       'imageDescription': message.imageDescription,
       'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
+     // 'servertimeStamp' : FieldValue.serverTimestamp()
     });
 
     debugPrint('Received response from database: ${response.data}');
@@ -113,13 +109,13 @@ Future<Message?> _vectorSearch(String searchString) async {
       final response = await callable.call(<String, dynamic>{ //add a prefilter with username != null (don;t consider system message)
         'query': searchString,
         'limit': 1,
-        'prefilters': [
-        {
-            'field': "userName",
-            'operator': "!=",
-            'value': ''
-        }
-        ], 
+        // 'prefilters': [
+        // {
+        //     'field': "userName",
+        //     'operator': "!=",
+        //     'value': ''
+        // }
+        // ], 
       });
       debugPrint('Vector search response: ${response.data}');
 
