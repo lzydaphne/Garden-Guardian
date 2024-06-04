@@ -51,33 +51,7 @@ class AllMessagesViewModel with ChangeNotifier {
   }
 
   String _handleResponse(Message message, String? response) {
-    if (response == null) return "Error";
-
-    final String imageDescription = response.split('//').length == 1 ? "" : response.split('//')[1];
-    final String userResponse = response.split('//')[0];
-    debugPrint('Handling response: $userResponse // $imageDescription');
-
-    var m = Message(
-      userName: message.userName,
-      text: message.text,
-      base64ImageUrl: message.base64ImageUrl,
-      timeStamp: DateTime.now(),
-      imageDescription: imageDescription,
-    );
-
-    _messageRepository.addMessage(m);
-
-    m = Message(
-      userName: "BOT",
-      text: userResponse,
-      base64ImageUrl: null,
-      timeStamp: DateTime.now(),
-      imageDescription: null,
-    );
-
-     _messageRepository.addMessage(m);
-
-    return userResponse;
+    return response ?? ''; 
   }
 
   // Future<void> deleteMessage(String messageId) async {

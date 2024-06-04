@@ -183,9 +183,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
       final response = await openAI.onChatCompletion(request: request);
       debugPrint('Chat completion response received');
       
-      //TODO : Perform memory retrieve logic, then requery response 
-      _messageRepository.findAndAppendSimilarMessage("Brocolli");
-
+      
       return _handleResponse(message, response?.choices[0].message?.content);
     } catch (e) {
       debugPrint('Error in _chatCompletion: $e');
@@ -199,8 +197,38 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
 
   String _handleResponse(Message message, String? response) {
-   
-    return response ?? '';
+    if (response == null) return "Error";
+
+    final String imageDescription = response.split('//').length == 1 ? "" : response.split('//')[1];
+    final String userResponse = response.split('//')[0];
+    debugPrint('Handling response: $userResponse // $imageDescription');
+
+    var m = Message(
+      userName: message.userName,
+      text: message.text,
+      base64ImageUrl: message.base64ImageUrl,
+      timeStamp: DateTime.now(),
+      imageDescription: imageDescription,
+    );
+
+    _messageRepository.addMessage(m);
+
+    //TODO : MOdify the timestanp to server timestamp 
+    _messageRepository.findAndAppendSimilarMessage("Brocolli");
+
+
+    m = Message(
+      userName: "BOT",
+      text: userResponse,
+      base64ImageUrl: null,
+      timeStamp: DateTime.now(),
+      imageDescription: null,
+    );
+
+     _messageRepository.addMessage(m);
+
+    return userResponse;
+  
   }
 }
 

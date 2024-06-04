@@ -10,7 +10,7 @@ class MessageRepository {
     return _db
         .collection('user')
   //      .where('userName',isNotEqualTo: '') //filter message with username == null ( system message)
-        .orderBy('servertimeStamp', descending: true)
+        .orderBy('servertimeStamp', descending: false)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
@@ -21,7 +21,7 @@ class MessageRepository {
   Stream<List<Message>> streamContentMessages() { // all of the message in db 
     return _db
         .collection('user')
-        .orderBy('servertimeStamp', descending: true)
+        .orderBy('servertimeStamp', descending: false)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
