@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
+import 'package:flutter_app/repositories/message_repo.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
@@ -48,6 +50,13 @@ class ImageHandler {
 }
 
 class ChatBot extends ChangeNotifier {
+  final MessageRepository _messageRepository ; 
+  StreamSubscription<List<Message>>? _messagesSubscription;
+  List<Message> windowMessages = [];  
+  bool _isInitializing = true;
+  bool get isInitializing => _isInitializing;
+
+
   late OpenAI openAI;
   final String kToken = 'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh';
   final String systemPrompt = """
@@ -84,11 +93,20 @@ With its advanced features, comprehensive plant database, and user-friendly inte
 
 Every output should only be in the strict format : " <User Response> // <Image Description if a image is uploaded> " . 
 """;
-  late ContextHandler _contextHandler;
- 
+
   
 
-  ChatBot() {
+  ChatBot({MessageRepository? messageRepository})
+      : _messageRepository = messageRepository ?? MessageRepository() {
+          
+    _messagesSubscription = _messageRepository.streamContentMessages().listen(
+      (messages) {
+        _isInitializing = false;
+        windowMessages = messages;
+        notifyListeners();
+      },
+    );
+
     openAI = OpenAI.instance.build(
       token: kToken,
       baseOption: HttpSetup(
@@ -97,7 +115,12 @@ Every output should only be in the strict format : " <User Response> // <Image D
       ),
       enableLog: true,
     );
-    _contextHandler = ContextHandler(maxInputTokens: 1000, openAI: openAI);
+  }
+
+  @override
+  void dispose() {
+    _messagesSubscription?.cancel();
+    super.dispose();
   }
 
   Future<String> doResponse(Message userInp) async {
@@ -127,7 +150,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
       final currentMessage = [{"role": "user", "content": contentMessage}] ; 
 
-      List<Map<String, dynamic>> previousMessages = _contextHandler.contentMessages;
+      List<Map<String, dynamic>> previousMessages = contentMessages;
       previousMessages.insert(0, {"role": "system", "content": systemPrompt});
 
       final request = ChatCompleteText(
@@ -138,8 +161,9 @@ Every output should only be in the strict format : " <User Response> // <Image D
 
       final response = await openAI.onChatCompletion(request: request);
       debugPrint('Chat completion response received');
-
-      //_contextHandler.findAndAppendSimilarMessage("Brocolli"); this works great but just comment
+      
+      //TODO : Perform memory retrieve logic
+      //_messageRepository.findAndAppendSimilarMessage("Brocolli"); this works great but just comment
 
       return _handleResponse(message, response?.choices[0].message?.content);
     } catch (e) {
@@ -148,103 +172,34 @@ Every output should only be in the strict format : " <User Response> // <Image D
     }
   }
 
-  String _handleResponse(Message message, String? response) {
-    if (response == null) return "Error";
-
-    final String imageDescription = response.split('//').length == 1 ? "" : response.split('//')[1];
-    final String userResponse = response.split('//')[0];
-    debugPrint('Handling response: $userResponse // $imageDescription');
-    var m = Message(
-      userName: message.userName,
-      text: message.text,
-      base64ImageUrl: message.base64ImageUrl != null
-          ? base64Encode(Uint8List.fromList(message.base64ImageUrl!.codeUnits))
-          : null,
-      timeStamp: DateTime.now(),
-      imageDescription: imageDescription,
-    );
-    _contextHandler.addMessage(m);
-
-    m = Message(
-      userName: "BOT",
-      text: userResponse,
-      base64ImageUrl: null,
-      timeStamp: DateTime.now(),
-      imageDescription: null,
-    );
-
-    _contextHandler.addMessage(m);
-
-    return userResponse;
-  }
-}
-
-class ContextHandler {
-  List<Message> messages = [];
-  final List<String> fakedb  =  [] ; 
-  final List<List<double>> fakeEmbed = []; 
-  int currentTokenCount = 0;
-  final int maxInputTokens;
-  final OpenAI openAI;
-
-  ContextHandler({required this.maxInputTokens, required this.openAI});
-
   List<Map<String, dynamic>> get contentMessages {
-    return messages.map((message) => message.contentMessage).toList();
-  }
-
-  void addMessage(Message m) async {
-    debugPrint('Adding message: ${m.text}');
-    messages.add(m);
-
-    currentTokenCount += _calculateTokenCount(m.text) +
-        _calculateTokenCount(m.base64ImageUrl) +
-        _calculateTokenCount(m.timeStamp.toString()) +
-        _calculateTokenCount(m.imageDescription);
-
-    if (currentTokenCount * 1.3 > maxInputTokens - maxInputTokens) { // for debug
-       await _storeInDatabase(m);
-    }
-  }
-
-  int _calculateTokenCount(String? content) {
-    if (content == null) return 0;
-    return content.length ~/ 4;
-  }
-
-  int _calculateTotalTokenCount() {
-    return messages.fold(0, (sum, message) =>
-        sum + _calculateTokenCount(message.text) +
-            _calculateTokenCount(message.base64ImageUrl) +
-            _calculateTokenCount(message.timeStamp.toString()) +
-            _calculateTokenCount(message.imageDescription));
+    return windowMessages.map((message) => message.contentMessage).toList();
   }
 
 
-  Future<void> _storeInDatabase(Message message) async {
-  try {
-    debugPrint('Storing message in database: ${message.text}');
-    
-    final HttpsCallable callable =  FirebaseFunctions.instance.httpsCallable('storeInDatabase');
-    
-    debugPrint('Callable created, waiting for response from database');
-
-    final response = await callable.call(<String, dynamic>{
-      'role': message.role,
-      'text': message.text,
-      'base64ImageUrl': message.base64ImageUrl,
-      'timeStamp': message.timeStamp.toString(),
-      'imageDescription': message.imageDescription,
-      'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
-    });
-
-    debugPrint('Received response from database: ${response.data}');
-  } catch (e) {
-    debugPrint('Error storing message in database: $e');
+  String _handleResponse(Message message, String? response) {
+   
+    return response ?? '';
   }
 }
 
-  Future<Message?> _vectorSearch(String searchString) async {
+Future<void> findAndAppendSimilarMessage(String query) async {
+    debugPrint('Finding and appending similar message for query: $query');
+
+    final results = await _vectorSearch(query);
+    if (results == null ){
+       debugPrint("error");
+       return ; 
+    }
+
+    //messages.insert(0, results); TODO add system message info to database
+    
+    debugPrint('Similar message appended: ${results.text}');
+
+    return ; 
+  }
+
+Future<Message?> _vectorSearch(String searchString) async {
     try { 
 
       UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
@@ -256,7 +211,7 @@ class ContextHandler {
           .httpsCallable('ext-firestore-vector-search-queryCallable');
       
 
-      final response = await callable.call(<String, dynamic>{
+      final response = await callable.call(<String, dynamic>{ // TODO : add a prefilter with username != null (don;t consider system message)
         'query': searchString,
         'limit': 1,
       });
@@ -287,18 +242,3 @@ class ContextHandler {
 
   }
 
-  Future<void> findAndAppendSimilarMessage(String query) async {
-    debugPrint('Finding and appending similar message for query: $query');
-
-    final results = await _vectorSearch(query);
-    if (results == null ){
-       debugPrint("error");
-       return ; 
-    }
-
-    messages.insert(0, results);
-    debugPrint('Similar message appended: ${results.text}');
-
-    return ; 
-  }
-}
