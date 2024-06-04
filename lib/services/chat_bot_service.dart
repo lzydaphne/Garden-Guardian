@@ -161,7 +161,7 @@ Every output should only be in the strict format : " <User Response> // <Image D
       debugPrint('Chat completion response received');
       
       //TODO : Perform memory retrieve logic, then requery response 
-      //_messageRepository.findAndAppendSimilarMessage("Brocolli"); this works great but just comment
+      _messageRepository.findAndAppendSimilarMessage("Brocolli");
 
       return _handleResponse(message, response?.choices[0].message?.content);
     } catch (e) {

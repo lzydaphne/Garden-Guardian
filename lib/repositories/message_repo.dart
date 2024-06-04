@@ -9,6 +9,7 @@ class MessageRepository {
   Stream<List<Message>> streamViewMessages() { // all of the message in db with username != null (not system message)
     return _db
         .collection('user')
+        .where('userName',isNotEqualTo: '')
         .orderBy('timeStamp', descending: true)
         .snapshots()
         .map((snapshot) {
@@ -44,7 +45,7 @@ class MessageRepository {
         _calculateTokenCount(m.timeStamp.toString()) +
         _calculateTokenCount(m.imageDescription);
 
-    if (currentTokenCount * 1.3 > maxInputTokens) { // for debug
+    if (currentTokenCount * 1.3 >= maxInputTokens) { // for debug
        await _storeInDatabase(m);
     }
   }
@@ -94,8 +95,9 @@ Future<void> findAndAppendSimilarMessage(String query) async {
        debugPrint("error");
        return ; 
     }
+    String systemHeader = "You just remembered a message send by the user in ${results.text}, with a image uploaded if any : " ; //TODO
 
-    //messages.insert(0, results); TODO add system message info to database
+    await _storeInDatabase(Message(text:systemHeader + results.text , userName: null , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl,timeStamp: DateTime.now()));
     
     debugPrint('Similar message appended: ${results.text}');
 
@@ -117,6 +119,13 @@ Future<Message?> _vectorSearch(String searchString) async {
       final response = await callable.call(<String, dynamic>{ // TODO : add a prefilter with username != null (don;t consider system message)
         'query': searchString,
         'limit': 1,
+        'prefilters': [
+        {
+            'field': "userName",
+            'operator': "!=",
+            'value': ''
+        }
+        ], 
       });
       debugPrint('Vector search response: ${response.data}');
 
