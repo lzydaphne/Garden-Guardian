@@ -8,12 +8,6 @@ import 'package:flutter_app/repositories/plant_repo.dart';
 
 final ValueNotifier<String> _msg = ValueNotifier('');
 
-final wiki_btn = IconButton(
-  icon: const Icon(Icons.info_outline),
-  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-  onPressed: () => _msg.value = 'press wiki button.',
-);
-
 class PlantFamilyPage extends StatefulWidget {
   const PlantFamilyPage({Key? key}) : super(key: key);
 
@@ -113,6 +107,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: const Color.fromARGB(255, 93, 176, 117),
         appBar: _buildAppBar(context),
         body: SizedBox(
           width: double.maxFinite,
@@ -144,9 +139,23 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
       child: Row(
         children: [
           ..._locationRepo.getLocations().map((location) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.only(left: 4, right: 4, top: 8),
                 child: ChoiceChip(
                   label: Text(location.name),
+                  backgroundColor: const Color.fromARGB(255, 93, 176, 117),
+                  selectedColor: Colors.white,
+                  labelStyle: TextStyle(
+                    color: selectedLocation == location.name? const Color.fromARGB(255, 93, 176, 117) : Colors.white,
+                    fontWeight: FontWeight.w600
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(
+                      width: 2,
+                      color:  selectedLocation == location.name? Colors.transparent : Colors.white,
+                      //style: BorderStyle.solid
+                    )
+                  ),
                   selected: selectedLocation == location.name,
                   onSelected: (bool selected) {
                     setState(() {
@@ -158,7 +167,10 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
                 ),
               )),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(
+              Icons.add_circle, 
+              color: Colors.white,
+            ),
             onPressed: _showAddLocationDialog,
           ),
         ],
@@ -206,6 +218,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
               itemCount: 1, // 只顯示一個加號卡片
               itemBuilder: (context, index) {
                 return Card(
+                  color: const Color.fromARGB(255, 216, 243, 224),
                   child: IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: _showAddPlantDialog,
@@ -217,29 +230,33 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
             int startIndex = pageIndex * 4;
             int endIndex = (startIndex + 4).clamp(0, plants.length);
             List<Plant> pagePlants = plants.sublist(startIndex, endIndex);
-            return GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
+            return Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                ),
+                itemCount: pagePlants.length + (pageIndex == pageCount - 1 && !needsExtraPage ? 1 : 0), // 最後一頁多一個加號卡片
+                itemBuilder: (context, index) {
+                  if (pageIndex == pageCount - 1 && index == pagePlants.length && !needsExtraPage) {
+                    // 最後一頁的加號卡片
+                    return Card(
+                      color: const Color.fromARGB(255, 216, 243, 224),
+                      child: IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: _showAddPlantDialog,
+                      ),
+                    );
+                  } else {
+                    return PlantCard(plant: pagePlants[index]);
+                    /*return Card(
+                      child: Center(child: Text(pagePlants[index].name)),
+                    );*/
+                  }
+                },
               ),
-              itemCount: pagePlants.length + (pageIndex == pageCount - 1 && !needsExtraPage ? 1 : 0), // 最後一頁多一個加號卡片
-              itemBuilder: (context, index) {
-                if (pageIndex == pageCount - 1 && index == pagePlants.length && !needsExtraPage) {
-                  // 最後一頁的加號卡片
-                  return Card(
-                    child: IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: _showAddPlantDialog,
-                    ),
-                  );
-                } else {
-                  return PlantCard(plant: pagePlants[index]);
-                  /*return Card(
-                    child: Center(child: Text(pagePlants[index].name)),
-                  );*/
-                }
-              },
             );
           }
         },
@@ -305,7 +322,7 @@ void _addPlant(String plantName) {
         height: 8,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: currentPage == index ? Colors.blue : Colors.grey,
+          color: currentPage == index ? Colors.white : const Color.fromARGB(255, 216, 243, 224),
         ),
       ),
     ),
@@ -315,9 +332,16 @@ void _addPlant(String plantName) {
 //PreferredSizeWidget = AppBar
 PreferredSizeWidget _buildAppBar(BuildContext context) {
   return AppBar(
+    backgroundColor: const Color.fromARGB(255, 93, 176, 117),
     centerTitle: true,
-    title: const Text("我的植物"),
-    actions: [wiki_btn],
+    title: const Text("我的植物", style: TextStyle(color: Colors.white)),
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.info_outline, color: Colors.white),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+        onPressed: () => _msg.value = 'press wiki button.',
+      )
+    ],
   );
 }
 
