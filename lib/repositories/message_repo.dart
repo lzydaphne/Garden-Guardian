@@ -7,9 +7,10 @@ import 'package:cloud_functions/cloud_functions.dart';
 class MessageRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   Stream<List<Message>> streamViewMessages() { // all of the message in db with username != null (not system message)
+    
     return _db
         .collection('user')
-        .where('role',isNotEqualTo: 'system') //filter message with role == system ( system message)
+       // .where('role',isNotEqualTo: 'system') //filter message with role == system ( system message)
         .orderBy('timeStamp', descending: false)
         .snapshots()
         .map((snapshot) {
@@ -22,7 +23,7 @@ class MessageRepository {
     return _db
         .collection('user')
         .orderBy('timeStamp', descending: false)
-        .limitToLast(5)
+        .limitToLast(2)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
@@ -93,7 +94,7 @@ Future<void> findAndAppendSimilarMessage(String query) async {
 
     }else
     { 
-       String systemHeader = "Retrieved memory from database , it may be helpful or not to your response : user send you a message in ${results.timeStamp}, it says : " ; // system header for retrieve memory 
+       String systemHeader = "Retrieved memory from database , it may be helpful or not to your response :there is a prompt of ${results.role} , in ${results.timeStamp}, it says : " ; // system header for retrieve memory 
        await _storeInDatabase(Message(text:systemHeader + results.text , role: 'system' , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl));// can't be assistant or system , both failed 
        debugPrint('Similar message appended: ${results.text}');
     }
@@ -119,10 +120,10 @@ Future<Message?> _vectorSearch(String searchString) async {
         'limit': 1,
         'prefilters': [
         {
-            'field': "role",
-            'operator': "!=",
-            'value': 'system'
-        }
+            'field': 'issystem',
+            'operator': '==', // can't use != , not supported in vector search 
+            'value': "0",
+        },
         ], 
       });
       debugPrint('Vector search response: ${response.data}');

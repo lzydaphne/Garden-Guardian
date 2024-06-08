@@ -1,3 +1,4 @@
+import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Message {
@@ -25,8 +26,9 @@ class Message {
   }
 
   factory Message.fromMap(Map<String, dynamic> map) {
+   // Map<String,String> numtoRole = { "0" : "system" , "1": "assistant",  "2" : "user" } ;
     return Message(
-      role: map['role'],
+      role: map['role'] ,
       text: map['text'],
       base64ImageUrl: map['base64ImageUrl'] == '' ? null : map['base64ImageUrl'],
       imageDescription: map['imageDescription']== '' ? null : map['imageDescription'],
@@ -35,6 +37,7 @@ class Message {
   }
 
   Map<String, dynamic> toMap() {
+    Map<String,String> roletoNum = {"system": "1" , "assistant" : "0", "user" : "0"} ;
     return {
       'role': role,
       'text': text,
@@ -42,6 +45,7 @@ class Message {
       'imageDescription': imageDescription,
       'timeStamp': FieldValue.serverTimestamp(),
       'stringtoEmbed' : text + (imageDescription ?? '') + timeStamp.toString() , 
+      'issystem' : roletoNum[role]
     };
   }
 

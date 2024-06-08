@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_app/models/message.dart';
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'package:flutter_app/repositories/message_repo.dart';
@@ -201,50 +202,55 @@ Every time you recieved an user input, you analyze the input , and choose to use
 
 
   Future<String> _handleResponse(Message message, String? response) async {
-    if (response == null) return "Error";
-   
-    debugPrint(response);
-    final String needRetrieval = response.split('//')[1].contains('@') ? '' : response.split('//')[1];
-    final String imageDescription = response.split('//')[0].contains('@') ? '' : response.split('//')[0];
-    final String userResponse = response.split('//')[2].contains('@') ? '' : response.split('//')[2];
-    debugPrint('Handling response: $userResponse // $imageDescription');
+    try {  if (response == null) return "Error";
+    
+      debugPrint('Response :$response');
+      final String needRetrieval = response.split('//')[1].contains('@') ? '' : response.split('//')[1];
+      final String imageDescription = response.split('//')[0].contains('@') ? '' : response.split('//')[0];
+      final String userResponse = response.split('//')[2].contains('@') ? '' : response.split('//')[2];
+      debugPrint('Handling response: $userResponse // $imageDescription');
+    // debugPrint('needRetrieval : $needRetrieval image d $imageDescription  userresponse $userResponse'); 
 
-    var m = Message(
-      role: message.role,
-      text: message.text,
-      base64ImageUrl: message.base64ImageUrl,
-      imageDescription: imageDescription,
-    );
+      var m = Message(
+        role: message.role,
+        text: message.text,
+        base64ImageUrl: message.base64ImageUrl,
+        imageDescription: imageDescription,
+      );
 
-    await _messageRepository.addMessage(m);
-    debugPrint(response);
-    if(!needRetrieval.contains('@')) {
-      await _messageRepository.findAndAppendSimilarMessage(needRetrieval);
-       m = Message(
-      role: "assistant",
-      text: await _chatCompletion2(m) as String,
-      base64ImageUrl: null,
-      timeStamp: DateTime.now(),
-      imageDescription: null,
-    );
-     
-       // Redo the chatcompletion , with the same question again 
-        //remember now the new system message added is not in the knowledge scope of gpt, since the thing we sent to GPT hadn't contained the retricve memory system message yet
+      await _messageRepository.addMessage(m);
+      debugPrint(response);
+      if(needRetrieval.isNotEmpty) {
+        await _messageRepository.findAndAppendSimilarMessage(needRetrieval);
+        m = Message(
+        role: "assistant",
+        text: await _chatCompletion2(m) as String,
+        base64ImageUrl: null,
+        timeStamp: DateTime.now(),
+        imageDescription: null,
+      );
       
-    }else{
-      m = Message(
-      role: "assistant",
-      text: userResponse,
-      base64ImageUrl: null,
-      timeStamp: DateTime.now(),
-      imageDescription: null,
-    );
-    }
-    await _messageRepository.addMessage(m);
+        // Redo the chatcompletion , with the same question again 
+          //remember now the new system message added is not in the knowledge scope of gpt, since the thing we sent to GPT hadn't contained the retricve memory system message yet
+        
+      }else{
+        m = Message(
+        role: "assistant",
+        text: userResponse,
+        base64ImageUrl: null,
+        timeStamp: DateTime.now(),
+        imageDescription: null,
+      );
+      }
+      await _messageRepository.addMessage(m);
 
-   
+    
 
-    return userResponse;
+      return userResponse;}
+      catch(e){
+        debugPrint('Error in _handleResponse: $e');
+        return "";
+      }
   
   }
   Future<String?> _chatCompletion2(Message message) async {
