@@ -16,7 +16,7 @@ class CoverPage extends StatelessWidget {
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('assets/images/avatar.jpg'),
+                    image: AssetImage('assets/images/cover.jpg'),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -102,7 +102,7 @@ class CoverPage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: const Color.fromARGB(255, 93, 176, 117),
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       textStyle: const TextStyle(fontSize: 20.0, color: Colors.white),
                       minimumSize: Size(screenWidth * 0.6, 48), // 按鈕寬度為螢幕寬度的80%

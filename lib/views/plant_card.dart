@@ -4,7 +4,7 @@ import 'package:flutter_app/models/plant.dart';
 class PlantCard extends StatelessWidget {
   final Plant plant;
 
-  const PlantCard({Key? key, required this.plant}) : super(key: key);
+  const PlantCard({super.key, required this.plant});
 
   @override
   Widget build(BuildContext context) {
@@ -12,6 +12,7 @@ class PlantCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
+      color: const Color.fromARGB(255, 216, 243, 224),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -35,7 +36,7 @@ class PlantCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       plant.name,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -44,7 +45,7 @@ class PlantCard extends StatelessWidget {
                 ),
                 // 小按鈕
                 IconButton(
-                  icon: Icon(Icons.info_outline),
+                  icon: const Icon(Icons.info_outline),
                   onPressed: () {
                     // 按鈕功能待實現
                   },
@@ -59,24 +60,69 @@ class PlantCard extends StatelessWidget {
               children: [
                 // 澆水按鈕
                 ElevatedButton.icon(
-                  icon: Icon(Icons.water_drop),
-                  label: Text("澆水"),
+                  icon: const Icon(
+                    Icons.water_drop,
+                    size: 16,
+                    color: Color.fromARGB(255, 39, 159, 255)
+                  ),
+                  label: const Text(
+                    "澆水", 
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color.fromARGB(255, 39, 159, 255)
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 196, 228, 244), 
+                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                    padding: const EdgeInsets.only(left: 7, right: 7),
+                  ),
                   onPressed: () {
                     // 按鈕功能待實現
                   },
                 ),
                 // 施肥按鈕
                 ElevatedButton.icon(
-                  icon: Icon(Icons.local_florist),
-                  label: Text("施肥"),
+                  icon: const Icon(
+                    Icons.local_florist,
+                    size: 16,
+                    color: Color.fromARGB(255, 97, 178, 121)
+                  ),
+                  label: const Text(
+                    "施肥", 
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color.fromARGB(255, 97, 178, 121)
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 196, 229, 202), 
+                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                    padding: const EdgeInsets.only(left: 7, right: 7),
+                  ),
                   onPressed: () {
                     // 按鈕功能待實現
                   },
                 ),
                 // 修剪按鈕
                 ElevatedButton.icon(
-                  icon: Icon(Icons.content_cut),
-                  label: Text("修剪"),
+                  icon: const Icon(
+                    Icons.content_cut,
+                    size: 16,
+                    color: Color.fromARGB(255, 245, 121, 58)
+                  ),
+                  label: const Text(
+                    "修剪", 
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color.fromARGB(255, 245, 121, 58)
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 255, 223, 173), 
+                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                    padding: const EdgeInsets.only(left: 7, right: 7),
+                  ),
                   onPressed: () {
                     // 按鈕功能待實現
                   },
