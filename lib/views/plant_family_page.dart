@@ -40,23 +40,9 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     _locationRepo.addLocation("客廳");
     _locationRepo.addLocation("臥房陽台");
 
-    _plantRepo.addPlant("植物1", "後陽台");
-    _plantRepo.addPlant("植物2", "後陽台");
-    _plantRepo.addPlant("植物3", "客廳");
-    _plantRepo.addPlant("植物4", "客廳");
-    _plantRepo.addPlant("植物5", "客廳");
-    _plantRepo.addPlant("植物6", "客廳");
-    _plantRepo.addPlant("植物7", "客廳");
-    _plantRepo.addPlant("植物8", "客廳");
-    _plantRepo.addPlant("植物9", "客廳");
-    _plantRepo.addPlant("植物10", "客廳");
-    _plantRepo.addPlant("植物11", "客廳");
-    _plantRepo.addPlant("植物12", "客廳");
-    _plantRepo.addPlant("植物13", "臥房陽台");
-    _plantRepo.addPlant("植物14", "臥房陽台");
-    _plantRepo.addPlant("植物15", "臥房陽台");
-    _plantRepo.addPlant("植物16", "臥房陽台");
-    //_plantRepo.addPlant("植物17", "臥房陽台");
+    _plantRepo.addPlant("小草", "客廳", 'images/Snake_Plant.jpg');
+    _plantRepo.addPlant("小樹", "客廳", 'images/Pothos.png');
+    _plantRepo.addPlant("小葉子", "客廳", 'images/spider_plant.jpg');
   }
 
   void _addLocation(String location) {
@@ -217,11 +203,17 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
               ),
               itemCount: 1, // 只顯示一個加號卡片
               itemBuilder: (context, index) {
-                return Card(
-                  color: const Color.fromARGB(255, 216, 243, 224),
-                  child: IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: _showAddPlantDialog,
+                return Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: GestureDetector(
+                    onTap: _showAddPlantDialog,
+                    child: Card(
+                        color: const Color.fromARGB(255, 216, 243, 224),
+                        child: IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: _showAddPlantDialog,
+                        ),
+                      )
                   ),
                 );
               },
@@ -302,7 +294,7 @@ void _showAddPlantDialog() {
 
 void _addPlant(String plantName) {
   setState(() {
-    _plantRepo.addPlant(plantName, selectedLocation);
+    _plantRepo.addPlant(plantName, selectedLocation, '');
   });
 }
 

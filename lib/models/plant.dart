@@ -2,13 +2,13 @@ class Plant{
   String?
     id;
   final String name;
-  final String? avatarUrl;
+  final String avatarUrl;
   final String locationId;
   //to add more
 
   Plant({
     required this.name,
-    this.avatarUrl,
+    required this.avatarUrl,
     required this.locationId,
   });
 
@@ -16,7 +16,7 @@ class Plant{
   Plant._({
     required this.id,
     required this.name,
-    this.avatarUrl,
+    required this.avatarUrl,
     required this.locationId,
   });
 

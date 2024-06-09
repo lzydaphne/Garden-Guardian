@@ -35,7 +35,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
       height: 40,
       padding: const EdgeInsets.only(left: 20),
       alignment: Alignment.centerLeft,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.white),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.white),
       child: TextField(
         controller: _controller,
         // to get the focus point
