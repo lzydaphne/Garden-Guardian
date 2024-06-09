@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         theme: materialTheme.light(), // Apply the light theme
        // darkTheme: materialTheme.dark(), // Apply the dark theme
-        home: HomePage(),
+        home: PlantFamilyPage(),
       ),
     );
   }

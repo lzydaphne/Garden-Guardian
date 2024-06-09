@@ -16,7 +16,7 @@ class CoverPage extends StatelessWidget {
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('assets/images/cover.jpg'),
+                    image: AssetImage('images/cover.jpg'),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -80,6 +80,7 @@ class CoverPage extends StatelessWidget {
                             fontWeight: FontWeight.w100,
                             decoration: TextDecoration.none
                           ),),
+                          SizedBox(height:20),
                         ]
                       ),
                     ),
