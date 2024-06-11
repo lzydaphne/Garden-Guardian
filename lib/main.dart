@@ -8,8 +8,10 @@ import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/theme.dart';
 
+import 'package:flutter_app/services/chat_bot_service_langchain.dart';
+
 void main() {
-  runApp(const MyApp()); 
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -17,22 +19,28 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const materialTheme = MaterialTheme(TextTheme()); 
+    const materialTheme = MaterialTheme(TextTheme());
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<ChatBot>(
-          create: (_) => ChatBot(),
+        ChangeNotifierProvider<ChatBotServiceLangChain>(
+          create: (_) => ChatBotServiceLangChain(
+              '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'),
         ),
         ChangeNotifierProxyProvider0<AllMessagesViewModel>(
-          create: (BuildContext context) => AllMessagesViewModel(chatService: Provider.of<ChatBot>(context, listen: false)),
-          update: (BuildContext context, A) => AllMessagesViewModel(chatService: Provider.of<ChatBot>(context, listen: false)),
+          create: (BuildContext context) => AllMessagesViewModel(
+              chatService:
+                  Provider.of<ChatBotServiceLangChain>(context, listen: false)),
+          update: (BuildContext context, A) => AllMessagesViewModel(
+              chatService:
+                  Provider.of<ChatBotServiceLangChain>(context, listen: false)),
         ),
       ],
       child: MaterialApp(
         theme: materialTheme.light(), // Apply the light theme
-       // darkTheme: materialTheme.dark(), // Apply the dark theme
-        home: PlantFamilyPage(),
+        // darkTheme: materialTheme.dark(), // Apply the dark theme
+        // home: PlantFamilyPage(),
+        home: ChatPage(),
       ),
     );
   }

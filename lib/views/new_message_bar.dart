@@ -1,9 +1,12 @@
+// lib/widgets/new_message_bar.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter_app/services/chat_bot_service_langchain.dart';
 
 class NewMessageBar extends StatefulWidget {
   const NewMessageBar({super.key});
@@ -46,19 +49,19 @@ class _NewMessageBarState extends State<NewMessageBar> {
     FocusScope.of(context).unfocus();
     _messageController.clear();
 
-    final allMessagesViewModel = Provider.of<AllMessagesViewModel>(context, listen: false);
+    final allMessagesViewModel =
+        Provider.of<AllMessagesViewModel>(context, listen: false);
 
     setState(() {
       _isSending = true; // Disable the send button
     });
 
-    await allMessagesViewModel.addMessage(
-      Message(
-        text: enteredMessage,
-        userName: "ME",
-        imageUrl: _pickedImage?.path, // Add the image path to the message
-      )
-    );
+    await allMessagesViewModel.addMessage(Message(
+      role: "user",
+      text: enteredMessage,
+      base64ImageUrl: await ImageHandler().convertImageToBase64(
+          _pickedImage?.path), // Add the image path to the message
+    ));
 
     setState(() {
       _isSending = false; // Re-enable the send button
@@ -84,7 +87,10 @@ class _NewMessageBarState extends State<NewMessageBar> {
                     prefixIcon: Padding(
                       padding: const EdgeInsets.only(left: 5),
                       child: IconButton(
-                        icon: _pickedImage == null ? const Icon( Icons.add_a_photo) : Icon(Icons.photo_camera_back_rounded, color : Theme.of(context).colorScheme.primary)  ,
+                        icon: _pickedImage == null
+                            ? const Icon(Icons.add_a_photo)
+                            : Icon(Icons.photo_camera_back_rounded,
+                                color: Theme.of(context).colorScheme.primary),
                         onPressed: _pickImage, // Handle image pick
                       ),
                     ),
@@ -105,7 +111,9 @@ class _NewMessageBarState extends State<NewMessageBar> {
               IconButton(
                 color: Theme.of(context).colorScheme.primary,
                 icon: Icon(_isSending ? Icons.send_outlined : Icons.send),
-                onPressed: _isSending ? null : _submitMessage, // Disable the button when sending
+                onPressed: _isSending
+                    ? null
+                    : _submitMessage, // Disable the button when sending
               ),
             ],
           ),

@@ -22,7 +22,8 @@ class _MessageListState extends State<MessageList> {
         if (_scrollController.position.pixels != 0) {
           // At the bottom
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+            _scrollController
+                .jumpTo(_scrollController.position.maxScrollExtent);
           });
         }
       }
@@ -49,8 +50,6 @@ class _MessageListState extends State<MessageList> {
 
   @override
   Widget build(BuildContext context) {
-    
-    
     final allMessagesViewModel = Provider.of<AllMessagesViewModel>(context);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -67,7 +66,7 @@ class _MessageListState extends State<MessageList> {
         child: Text('No messages.'),
       );
     }
-    
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.only(
@@ -84,12 +83,12 @@ class _MessageListState extends State<MessageList> {
             index + 1 < messages.length ? messages[index + 1] : null;
         final prevMessage = index - 1 >= 0 ? messages[index - 1] : null;
 
-        final messageUsername = message.userName;
-        final nextMessageUsername = nextMessage?.userName;
+        final messageUsername = message.role;
+        final nextMessageUsername = nextMessage?.role;
         final isNextUserSame = nextMessageUsername == messageUsername;
-        final preMessageUserId = prevMessage?.userName;
+        final preMessageUserId = prevMessage?.role;
         final isPreUserSame = preMessageUserId == messageUsername;
-        final imageUrl = message.imageUrl ; 
+        final imageUrl = message.base64ImageUrl;
 
         if (isNextUserSame) {
           return MessageBubble(
@@ -100,7 +99,7 @@ class _MessageListState extends State<MessageList> {
           );
         } else {
           return MessageBubble.withUser(
-            userName: message.userName,
+            userName: message.role,
             text: message.text,
             isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,
