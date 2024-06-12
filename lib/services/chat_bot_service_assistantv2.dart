@@ -7,21 +7,14 @@ import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
-
-/**
- * Assistant ID: asst_2KEXqEXcWF9CAn7iL9aDfewC
-* thread ID: thread_lKTJ4mwXgWcKsLtZgCHeXWy1
- */
-
+/** 
+ * 
 class ChatBot extends ChangeNotifier {
   late OpenAI openAI;
-  late ThreadRequest threadRequest;
-  late ThreadResponse threadCreate;
-
-  // late AssistantsV2 assistantsV2;
   final kToken =
-      'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh'; // Enter OpenAI API_KEY
-  final systemPrompt = """
+      'sk-proj-Ts7SQosv2dR9aM1nTNzHT3BlbkFJVZRJRtP0tVMD4n3qyLeE'; // Enter OpenAI API_KEY
+  // final kToken ='sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh'; // Enter OpenAI API_KEY
+  String systemPrompt = 
 You are a personal plant assistant, called PlantPal!
 PlantPal is an advanced AI-powered assistant designed to provide comprehensive information and assistance related to plants. Whether you're a seasoned gardener, a beginner plant parent, or simply curious about the world of flora, PlantPal is here to help. Below are the detailed functionalities and capabilities of PlantPal:
 you output must include with plain text, no markdown and you may extend your response with any additional information:
@@ -42,7 +35,7 @@ Each plant entry in the database includes botanical descriptions, native habitat
 4. Interactive Plant Q&A:
 PlantPal offers a conversational interface where users can ask questions about plants in natural language. Whether it's inquiries about specific plant species, gardening techniques, plant diseases, or troubleshooting plant problems, PlantPal is equipped to provide informative and helpful responses.
 The AI model underlying PlantPal is trained on vast corpora of plant-related texts, including botanical literature, gardening guides, academic papers, and online forums, ensuring a rich and diverse knowledge base.
-""";
+
 
   ChatBot() {
     openAI = OpenAI.instance.build(
@@ -53,31 +46,12 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
       ),
       enableLog: true,
     );
-    threadRequest = ThreadRequest();
-  }
-// get or create an assistant
-  Future<AssistantData> getAssistant() async {
-    List<AssistantData> assistantList = await openAI.assistant.v2.list();
-    for (var assistant in assistantList) {
-      //get gpt-4o model assistant
-      if (assistant.name == "testAssistant") {
-        return assistant;
-      }
-    }
-    Assistant assistant = Assistant(name: 'testAssistant', model: Gpt4OModel());
-    return openAI.assistant.v2.create(assistant: assistant);
-  }
-
-  Future<ThreadResponse> getThread() async {
-    threadCreate = await openAI.threads.v2.createThread(request: threadRequest);
-    print('threadCreate: ${'thread_lKTJ4mwXgWcKsLtZgCHeXWy1'}');
-    return threadCreate;
   }
 
   Future<String> doResponse(Message userInp) async {
     try {
       final responseText = await _chatCompletion(userInp);
-      return responseText ?? 'Error123';
+      return responseText ?? 'Error';
     } catch (e) {
       print('Error in doResponse: $e');
       return 'Error';
@@ -87,11 +61,12 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
   Future<String?> _chatCompletion(Message message) async {
     try {
       dynamic contentMessage;
-      if (message.imageUrl != null) {
-        final base64Image = await _convertImageToBase64(message.imageUrl!);
+      if (message.base64ImageUrl != null) {
+        final base64Image =
+            await _convertImageToBase64(message.base64ImageUrl!);
+
         contentMessage = [
-          // {"type": "text", "text": message.text},
-          {"type": "text", "text": 'placeholder'},
+          {"type": "text", "text": message.text},
           {
             "type": "image_url",
             "image_url": {"url": base64Image}
@@ -110,107 +85,68 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
       //   model: ChatModelFromValue(model: 'gpt-4o'),
       // );
 
-      try {
-        // Debugging: Starting CreateMessage request
-        print('Creating message request...');
-        CreateMessage MSGrequest = CreateMessage(
-          role: 'user',
-          content: contentMessage,
+      CreateMessage MSGrequest = CreateMessage(
+        role: 'user',
+        content: contentMessage,
+      );
+      MessageData MSGresponse = await openAI.threads.messages.createMessage(
+        threadId: 'thread_iJpSkcxUGIKdM7vyYq13dxBL',
+        request: MSGrequest,
+      );
+
+      CreateRun request = CreateRun(
+        assistantId: 'asst_6VOoLqMJaVnx3d18lcTFOgq9',
+        model: 'gpt-4-turbo-preview',
+        // instructions: systemPrompt,
+      );
+      final runResponse = await openAI.threads.runs.createRun(
+          threadId: 'thread_iJpSkcxUGIKdM7vyYq13dxBL', request: request);
+
+      final runid = runResponse.id;
+      CreateRunResponse mRun = await openAI.threads.runs.retrieveRun(
+        threadId: 'thread_iJpSkcxUGIKdM7vyYq13dxBL',
+        runId: runid,
+      );
+      ListRun mRunlist = await openAI.threads.runs
+          .listRuns(threadId: 'thread_iJpSkcxUGIKdM7vyYq13dxBL');
+      ListRun mRunSteps = await openAI.threads.runs.listRunSteps(
+        threadId: 'thread_iJpSkcxUGIKdM7vyYq13dxBL',
+        runId: runid,
+      );
+      print(mRunSteps.data.length);
+      mRunSteps.data.forEach((item) {
+        print('mRunlist: ${item.status}');
+        print('mRunlist: ${item.object}');
+        print('mRunlist: ${item.id}');
+        print('mRunlist: ${item.stepDetails?.messageCreation.messageId}');
+      });
+
+      // Assuming CreateRunResponse has fields like id, status, assistantId, etc.
+      // print('CreateRunResponse:');
+      // print('ID: ${mRun.id}');
+      // print('Status: ${mRun.status}');
+      // print('Assistant ID: ${mRun.assistantId}');
+      // print('Thread ID: ${mRun.threadId}');
+      // print('Model: ${mRun.model}');
+      // print('Started At: ${mRun.startedAt}');
+      // print('stepDetails: ${mRun.stepDetails}');
+
+      MessageData mMessage;
+      String? msgID = mRunSteps.data[0].stepDetails?.messageCreation.messageId;
+      String? messageData;
+
+      // print('msgID1: $msgID');
+      if (msgID != null) {
+        print('msgID: $msgID');
+        mMessage = await openAI.threads.messages.retrieveMessage(
+          threadId: 'thread_iJpSkcxUGIKdM7vyYq13dxBL',
+          messageId: msgID,
         );
-
-        print('CreateMessage request created: $MSGrequest');
-
-        // //retrieve thread
-
-        CreateMessageV2Response MSGresponse =
-            await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
-          request: MSGrequest,
-        );
-
-        // Debugging: Received response for CreateMessage
-        print('Received CreateMessage response: $MSGresponse');
-
-        // Debugging: Starting CreateRun request
-        print('Creating run request...');
-        // AssistantData assistantInfo = await getAssistant();
-        // print('Assistant ID: ${assistantInfo.id}');
-        CreateRun request = CreateRun(
-          assistantId: 'asst_2KEXqEXcWF9CAn7iL9aDfewC',
-          model: 'gpt-4o',
-          instructions: "test prompt",
-          // instructions: systemPrompt,
-        );
-        // Debugging: CreateRun request created
-        print('CreateRun request created: $request');
-
-        // Debugging: Sending CreateRun request to API
-        final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
-          request: request,
-        );
-        // Debugging: Received response for CreateRun
-        print('Received CreateRun response: $runResponse');
-
-        final runid = runResponse.id;
-        final msg = runResponse.stepDetails?.messageCreation.messageId;
-        // Debugging: Run ID retrieved
-        print('Run ID: $runid');
-
-        CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
-          runId: runid,
-        );
-
-        while (mRun.status != 'completed') {
-          await Future.delayed(Duration(seconds: 3));
-          mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
-            runId: runid,
-          );
-        }
-        print('Retrieved run details: ${mRun.status}');
-
-        // ListRun mRunlist = await openAI.threads.v2.runs.listRuns(
-        //   threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
-        // );
-        // print('List of runs: $mRunlist');
-
-        ListRun mRunSteps = await openAI.threads.v2.runs.listRunSteps(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
-          runId: runid,
-        );
-        // print('List of run steps: $mRunSteps');
-        // print(mRunSteps.data.length);
-        // mRunSteps.data.forEach((item) {
-        //   print('mRunlist: ${item.status}');
-        //   print('mRunlist: ${item.object}');
-        //   print('mRunlist: ${item.id}');
-        //   print('mRunlist: ${item.stepDetails?.messageCreation.messageId}');
-        // });
-
-        CreateMessageV2Response mMessage;
-        String? msgID =
-            mRunSteps.data[0].stepDetails?.messageCreation.messageId;
-        String? messageData;
-
-        if (msgID != null) {
-          print('msgID: $msgID');
-          mMessage = await openAI.threads.v2.messages.retrieveMessage(
-            threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
-            messageId: msgID,
-          );
-
-          print('mMessage: $mMessage');
-          print(mMessage.content.length);
-          messageData = mMessage.content[0].text.value;
-        }
-        return messageData;
-      } catch (e) {
-        print('An error occurred: $e');
+        print('mMessage: $mMessage');
+        messageData = mMessage.content[0].text?.value;
       }
-      // throw exception
-      return null;
+
+      return messageData;
 
       // final response = await openAI.onChatCompletion(request: request);
       // return response?.choices[0].message?.content;
@@ -252,3 +188,4 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
     }
   }
 }
+*/

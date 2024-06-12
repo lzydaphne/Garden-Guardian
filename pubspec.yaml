@@ -45,12 +45,9 @@ dependencies:
   flutter_native_splash: ^2.3.10
   image_picker: ^1.1.1
   flutter_svg: ^2.0.10+1
-  chat_gpt_sdk: 3.0.8
+  chat_gpt_sdk: 3.0.9
   mime: ^1.0.5
   http: ^1.2.1
-  
-
-
 
 dev_dependencies:
   flutter_test:
