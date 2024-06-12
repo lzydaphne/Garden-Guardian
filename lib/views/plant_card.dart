@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/plant.dart';
+import 'package:flutter_app/views/plant_card_dialog.dart';
 
 class PlantCard extends StatelessWidget {
   final Plant plant;
@@ -10,7 +11,8 @@ class PlantCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
+        return PlantCardDialog(plant: plant,);
+        /*Dialog(
           //title: Text(plant.name),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -34,7 +36,7 @@ class PlantCard extends StatelessWidget {
           /*actions: [
             
           ],*/
-        );
+        );*/
       },
     );
   }

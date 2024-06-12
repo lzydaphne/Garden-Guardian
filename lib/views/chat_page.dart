@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/views/message_list.dart';
 import 'package:flutter_app/views/new_message_bar.dart';
 import 'package:flutter_app/views/user_info.dart';
+import 'package:flutter_app/views/navigation_bar.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
@@ -29,6 +30,7 @@ class ChatPage extends StatelessWidget {
           ),
           // LeftIcons
           NewMessageBar(),
+          NavigationBottomBar(),
         ],
       ),
     );

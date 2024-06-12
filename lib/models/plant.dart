@@ -4,12 +4,22 @@ class Plant{
   final String name;
   final String avatarUrl;
   final String locationId;
+  String? type;
+  String? moveInDate;
+  String? lastWateredDate;
+  String? lastFertilizedDate;
+  String? lastPrunedDate;
   //to add more
 
   Plant({
     required this.name,
     required this.avatarUrl,
     required this.locationId,
+    type,
+    moveInDate,
+    lastWateredDate,
+    lastFertilizedDate,
+    lastPrunedDate
   });
 
 

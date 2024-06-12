@@ -5,6 +5,7 @@ import 'package:flutter_app/views/plant_card.dart';
 import 'package:flutter_app/models/plant.dart';
 import 'package:flutter_app/repositories/location_repo.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
+import 'package:flutter_app/views/navigation_bar.dart';
 
 final ValueNotifier<String> _msg = ValueNotifier('');
 
@@ -40,9 +41,9 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     _locationRepo.addLocation("客廳");
     _locationRepo.addLocation("臥房陽台");
 
-    _plantRepo.addPlant("小草", "客廳", 'images/Snake_Plant.jpg');
-    _plantRepo.addPlant("小樹", "客廳", 'images/Pothos.png');
-    _plantRepo.addPlant("小葉子", "客廳", 'images/spider_plant.jpg');
+    _plantRepo.addPlant("小草", "客廳", 'images/Snake_Plant.jpg', 'Snake_Plant');
+    _plantRepo.addPlant("小樹", "客廳", 'images/Pothos.png', 'Pothos');
+    _plantRepo.addPlant("小葉子", "客廳", 'images/spider_plant.jpg', 'spider_plant');
   }
 
   void _addLocation(String location) {
@@ -112,6 +113,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
               _buildLocationTabs(),
               _buildPlantGrid(),
               _buildPageIndicator(),
+              const NavigationBottomBar(),
             ],
           ),
         ),
@@ -280,7 +282,7 @@ void _showAddPlantDialog() {
           TextButton(
             onPressed: () {
               if (newPlantName.isNotEmpty) {
-                _addPlant(newPlantName);
+                _addPlant(newPlantName, '');
               }
               Navigator.of(context).pop();
             },
@@ -292,9 +294,9 @@ void _showAddPlantDialog() {
   );
 }
 
-void _addPlant(String plantName) {
+void _addPlant(String plantName, String? plantType) {
   setState(() {
-    _plantRepo.addPlant(plantName, selectedLocation, '');
+    _plantRepo.addPlant(plantName, selectedLocation, '', plantType);
   });
 }
 
@@ -328,11 +330,23 @@ PreferredSizeWidget _buildAppBar(BuildContext context) {
     centerTitle: true,
     title: const Text("我的植物", style: TextStyle(color: Colors.white)),
     actions: [
-      IconButton(
+      InkWell(
+        child: const Padding(
+          padding: EdgeInsets.only(right: 16.0, top: 8.0),
+          child: Column(
+            children: [
+                Icon(Icons.info_outline, color: Colors.white),
+                Text('wiki', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        ),
+        onTap: () {}
+      ),
+      /*IconButton(
         icon: const Icon(Icons.info_outline, color: Colors.white),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         onPressed: () => _msg.value = 'press wiki button.',
-      )
+      )*/
     ],
   );
 }
