@@ -8,6 +8,9 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 
+import 'package:intl/intl.dart'; // For date formatting
+import 'package:flutter_app/services/tool.dart';
+
 /**
  * Assistant ID: asst_2KEXqEXcWF9CAn7iL9aDfewC
 * thread ID: thread_lKTJ4mwXgWcKsLtZgCHeXWy1
@@ -87,8 +90,10 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
   Future<String?> _chatCompletion(Message message) async {
     try {
       dynamic contentMessage;
+      bool isImage = false;
       if (message.imageUrl != null) {
         final base64Image = await _convertImageToBase64(message.imageUrl!);
+        isImage = true;
         contentMessage = [
           // {"type": "text", "text": message.text},
           {"type": "text", "text": 'placeholder'},
@@ -101,16 +106,181 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
         contentMessage = message.text;
       }
 
-      // final request = ChatCompleteText(
-      //   messages: [
-      //     {"role": "system", "content": systemPrompt},
-      //     {"role": "user", "content": contentMessage},
-      //   ],
-      //   maxToken: 200,
-      //   model: ChatModelFromValue(model: 'gpt-4o'),
-      // );
+      if (isImage) {
+        final iptMsg = [
+          {"role": "system", "content": systemPrompt},
+          {"role": "user", "content": contentMessage},
+        ];
+        final tools = [
+          {
+            "type": "function",
+            "function": {
+              "name": "add_new_plant",
+              "description":
+                  "Use this function to add a new plant and get related information.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "species": {
+                    "type": "string",
+                    "description": "The specific species of the plant."
+                  },
+                  "wateringCycle": {
+                    "type": "integer",
+                    "description": "The watering cycle of the plant in days."
+                  },
+                  "fertilizationCycle": {
+                    "type": "integer",
+                    "description":
+                        "The fertilization cycle of the plant in days."
+                  },
+                  "pruningCycle": {
+                    "type": "integer",
+                    "description": "The pruning cycle of the plant in days."
+                  }
+                },
+                "required": [
+                  "species",
+                  "wateringCycle",
+                  "fertilizationCycle",
+                  "pruningCycle"
+                ],
+              },
+            }
+          }
+        ];
+        final CCrequest = ChatCompleteText(
+          messages: iptMsg,
+          maxToken: 200,
+          model: ChatModelFromValue(model: 'gpt-4o'),
+          tools: tools,
+          toolChoice:
+              'auto', //! we can force it to execute the function by function name
+        );
 
-      try {
+        final response = await openAI.onChatCompletion(request: CCrequest);
+
+        String? chatContent = response?.choices[0].message?.content;
+        //! check if the function works!
+        print('toolCalls: ${response?.choices[0].message?.toolCalls}');
+        // return chatContent;
+
+        final responseMsg = response?.choices[0].message;
+
+        // Append the toolCalls to iptMsg if toolCalls is not null
+        if (responseMsg != null) {
+          iptMsg.add({"role": "assistant", "content": responseMsg});
+        }
+
+        // Step 3: Check if the response includes a tool call
+        String finalContent = 'placeholder';
+        final toolCalls = responseMsg?.toolCalls;
+        if (toolCalls != null && toolCalls.isNotEmpty) {
+          final toolCall = toolCalls[0];
+          final toolFunctionName = toolCall['function']['name'];
+          final toolArguments = toolCall['function']['arguments'];
+          // Step 4: Call the function and retrieve results
+          if (toolFunctionName == 'add_new_plant') {
+            print('add_new_plant called with arguments: $toolArguments');
+            final species = toolArguments['species'].toString();
+            final wateringCycle = toolArguments['wateringCycle'] is String
+                ? int.tryParse(toolArguments['wateringCycle'])
+                : toolArguments['wateringCycle'];
+            final fertilizationCycle =
+                toolArguments['fertilizationCycle'] is String
+                    ? int.tryParse(toolArguments['fertilizationCycle'])
+                    : toolArguments['fertilizationCycle'];
+            final pruningCycle = toolArguments['pruningCycle'] is String
+                ? int.tryParse(toolArguments['pruningCycle'])
+                : toolArguments['pruningCycle'];
+
+            if (wateringCycle == null ||
+                fertilizationCycle == null ||
+                pruningCycle == null) {
+              print('Error: One of the cycle values is not a valid integer.');
+              return null;
+            }
+            // print argument values
+            print('species: $species');
+            print('wateringCycle: $wateringCycle');
+            print('fertilizationCycle: $fertilizationCycle');
+            print('pruningCycle: $pruningCycle');
+
+            final results = await addNewPlant(
+                species, wateringCycle, fertilizationCycle, pruningCycle);
+
+            // Append the results to the messages list
+            iptMsg.add({
+              "role": "tool",
+              "tool_call_id": toolCall["id"],
+              "name": toolFunctionName,
+              "content": results
+            });
+
+            // Step 5: Invoke the chat completions API with the function response appended to the messages list
+            final CCrequestWithFunctionResponse = ChatCompleteText(
+              messages: iptMsg,
+              maxToken: 200,
+              model: ChatModelFromValue(model: 'gpt-4o'),
+              tools: tools,
+              toolChoice: 'auto',
+            );
+
+            final finalResponse = await openAI.onChatCompletion(
+                request: CCrequestWithFunctionResponse);
+            print(finalResponse?.choices[0].message?.content);
+            finalContent = finalResponse?.choices[0].message?.content ?? '';
+          } else {
+            print("Error: function $toolFunctionName does not exist");
+          }
+        } else {
+          // Model did not identify a function to call, result can be returned to the user
+          print("toolCalls is null or empty: ${responseMsg?.content}");
+        }
+        return finalContent;
+        //=================================================================
+        CreateMessage MSGrequest = CreateMessage(
+          role: 'assistant',
+          content: chatContent ??
+              '', // Provide a default empty string if chatContent is null.
+        );
+
+        CreateMessageV2Response MSGresponse =
+            await openAI.threads.v2.messages.createMessage(
+          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          request: MSGrequest,
+        );
+
+        CreateRun request = CreateRun(
+          assistantId: 'asst_2KEXqEXcWF9CAn7iL9aDfewC',
+          model: 'gpt-4o',
+          instructions: "test prompt",
+          // instructions: systemPrompt,
+        );
+
+        final runResponse = await openAI.threads.v2.runs.createRun(
+          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          request: request,
+        );
+
+        final runid = runResponse.id;
+
+        CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
+          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          runId: runid,
+        );
+
+        while (mRun.status != 'completed') {
+          await Future.delayed(Duration(seconds: 3));
+          mRun = await openAI.threads.v2.runs.retrieveRun(
+            threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+            runId: runid,
+          );
+        }
+        print('Retrieved run details: ${mRun.status}');
+
+        return chatContent;
+      } else {
         // Debugging: Starting CreateMessage request
         print('Creating message request...');
         CreateMessage MSGrequest = CreateMessage(
@@ -119,8 +289,6 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
         );
 
         print('CreateMessage request created: $MSGrequest');
-
-        // //retrieve thread
 
         CreateMessageV2Response MSGresponse =
             await openAI.threads.v2.messages.createMessage(
@@ -153,7 +321,7 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
         print('Received CreateRun response: $runResponse');
 
         final runid = runResponse.id;
-        final msg = runResponse.stepDetails?.messageCreation.messageId;
+        // final msg = runResponse.stepDetails?.messageCreation.messageId;
         // Debugging: Run ID retrieved
         print('Run ID: $runid');
 
@@ -206,14 +374,7 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
           messageData = mMessage.content[0].text.value;
         }
         return messageData;
-      } catch (e) {
-        print('An error occurred: $e');
       }
-      // throw exception
-      return null;
-
-      // final response = await openAI.onChatCompletion(request: request);
-      // return response?.choices[0].message?.content;
     } catch (e) {
       print('Error in _chatCompletion: $e');
       return null;
