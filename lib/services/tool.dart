@@ -43,13 +43,14 @@ class Plant {
 // }
 
 // Function to calculate the next care dates
-Map<String, DateTime> calculateNextCareDates(DateTime plantingDate,
+Map<String, DateTime?> calculateNextCareDates(DateTime plantingDate,
     int wateringCycle, int fertilizationCycle, int pruningCycle) {
   DateTime today = DateTime.now();
   DateTime nextWateringDate = plantingDate.add(Duration(days: wateringCycle));
   DateTime nextFertilizationDate =
       plantingDate.add(Duration(days: fertilizationCycle));
-  DateTime nextPruningDate = plantingDate.add(Duration(days: pruningCycle));
+  DateTime? nextPruningDate =
+      pruningCycle > 0 ? plantingDate.add(Duration(days: pruningCycle)) : null;
 
   return {
     "nextWateringDate": nextWateringDate,
@@ -61,19 +62,11 @@ Map<String, DateTime> calculateNextCareDates(DateTime plantingDate,
 // Function to add a new plant
 Future<String> addNewPlant(String species, int wateringCycle,
     int fertilizationCycle, int pruningCycle) async {
-  //! species can be returned from chat completion model
-  // String species = await identifyPlantSpecies(imagePath);
-
   DateTime plantingDate = DateTime.now();
-  // int wateringCycle = 7; // Example value, should be specific to the species
-  // int fertilizationCycle =
-  //     30; // Example value, should be specific to the species
-  // int pruningCycle = 90; // Example value, should be specific to the species
-
   Plant newPlant = Plant(
       species, plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
 
-  Map<String, DateTime> careDates = calculateNextCareDates(
+  Map<String, DateTime?> careDates = calculateNextCareDates(
       plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
 
   // Formatting the date for a nice output
@@ -82,24 +75,10 @@ Future<String> addNewPlant(String species, int wateringCycle,
       'Planting Date: ${DateFormat('yyyy-MM-dd').format(newPlant.plantingDate)}\n'
       'Watering Cycle: ${newPlant.wateringCycle} days\n'
       'Fertilization Cycle: ${newPlant.fertilizationCycle} days\n'
-      'Pruning Cycle: ${newPlant.pruningCycle} days\n'
+      'Pruning Cycle: ${newPlant.pruningCycle > 0 ? newPlant.pruningCycle.toString() + " days" : "No need to prune!"}\n'
       'Next Watering Date: ${DateFormat('yyyy-MM-dd').format(careDates["nextWateringDate"]!)}\n'
       'Next Fertilization Date: ${DateFormat('yyyy-MM-dd').format(careDates["nextFertilizationDate"]!)}\n'
-      'Next Pruning Date: ${DateFormat('yyyy-MM-dd').format(careDates["nextPruningDate"]!)}';
+      'Next Pruning Date: ${careDates["nextPruningDate"] != null ? DateFormat('yyyy-MM-dd').format(careDates["nextPruningDate"]!) : "No need to prune!"}';
 
   return formattedString;
-
-  // return {
-  //   "species": newPlant.species,
-  //   "plantingDate": DateFormat('yyyy-MM-dd').format(newPlant.plantingDate),
-  //   "wateringCycle": newPlant.wateringCycle,
-  //   "fertilizationCycle": newPlant.fertilizationCycle,
-  //   "pruningCycle": newPlant.pruningCycle,
-  //   "nextWateringDate":
-  //       DateFormat('yyyy-MM-dd').format(careDates["nextWateringDate"]!),
-  //   "nextFertilizationDate":
-  //       DateFormat('yyyy-MM-dd').format(careDates["nextFertilizationDate"]!),
-  //   "nextPruningDate":
-  //       DateFormat('yyyy-MM-dd').format(careDates["nextPruningDate"]!),
-  // };
 }

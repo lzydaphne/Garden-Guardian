@@ -229,13 +229,10 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
         // Model did not identify a function to call, result can be returned to the user
         print("toolCalls is null or empty: ${responseMsg?.content}");
       }
-      return finalContent;
+      // return finalContent;
       //=================================================================
-      CreateMessage MSGrequest = CreateMessage(
-        role: 'assistant',
-        content: chatContent ??
-            '', // Provide a default empty string if chatContent is null.
-      );
+      CreateMessage MSGrequest =
+          CreateMessage(role: 'assistant', content: finalContent);
 
       CreateMessageV2Response MSGresponse =
           await openAI.threads.v2.messages.createMessage(
@@ -246,8 +243,8 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
       CreateRun request = CreateRun(
         assistantId: 'asst_2KEXqEXcWF9CAn7iL9aDfewC',
         model: 'gpt-4o',
-        instructions: "test prompt",
-        // instructions: systemPrompt,
+        // instructions: "",
+        instructions: "remember the related information for the plant",
       );
 
       final runResponse = await openAI.threads.v2.runs.createRun(
@@ -261,7 +258,7 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
         threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
         runId: runid,
       );
-
+// what is my latest added plant?
       while (mRun.status != 'completed') {
         await Future.delayed(Duration(seconds: 3));
         mRun = await openAI.threads.v2.runs.retrieveRun(
@@ -271,7 +268,7 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
       }
       print('Retrieved run details: ${mRun.status}');
 
-      return chatContent;
+      return finalContent;
     } else {
       // Debugging: Starting CreateMessage request
       print('Creating message request...');
