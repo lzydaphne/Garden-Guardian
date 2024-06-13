@@ -10,10 +10,15 @@ import 'package:mime/mime.dart';
 
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:flutter_app/services/tool.dart';
+import 'package:flutter_app/view_models/all_messages_vm.dart';
 
 /**
+ * deeelin's: sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh
  * Assistant ID: asst_2KEXqEXcWF9CAn7iL9aDfewC
 * thread ID: thread_lKTJ4mwXgWcKsLtZgCHeXWy1
+* lzy's: sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh
+asst_K9Irkl24BOJpXnDjvjbfX2aq
+thread_mFdlqvLre1XzGNE2AVHdRtes
  */
 
 class ChatBot extends ChangeNotifier {
@@ -22,30 +27,40 @@ class ChatBot extends ChangeNotifier {
   late ThreadResponse threadCreate;
 
   // late AssistantsV2 assistantsV2;
-  final kToken =
-      'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh'; // Enter OpenAI API_KEY
-  final systemPrompt = """
-You are a personal plant assistant, called PlantPal!
-PlantPal is an advanced AI-powered assistant designed to provide comprehensive information and assistance related to plants. Whether you're a seasoned gardener, a beginner plant parent, or simply curious about the world of flora, PlantPal is here to help. Below are the detailed functionalities and capabilities of PlantPal:
-you output must include with plain text, no markdown and you may extend your response with any additional information:
+  // final kToken =
+  //     'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh'; // Enter OpenAI API_KEY
+  String kToken =
+      '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'; // Enter OpenAI API_KEY
+  String systemPrompt = """
+You are a personal plant assistant, called Garden Gurdian!
+Garden Gurdian is an advanced AI-powered assistant designed to provide comprehensive information and assistance related to plants. Whether you're a seasoned gardener, a beginner plant parent, or simply curious about the world of flora, Garden Gurdian is here to help. Below are the detailed functionalities and capabilities of Garden Gurdian:
+you output must include:
 - specific species of the plant 
 - planting date (today)
-- watering cycle, fertilization cycle, pruning cycle of this plant, express it in number of days, if no, then say "not typically required"
-you have the following features
-1. Plant Identification:
-PlantPal utilizes state-of-the-art image recognition technology to accurately identify plants from uploaded photos. Users can upload images of plants they encounter in their surroundings, whether in their garden, on a hike, or at a friend's house.
-Upon receiving an image, PlantPal will analyze it using deep learning algorithms trained on vast datasets of plant images. The system will then compare features such as leaf shape, flower morphology, and overall structure to a vast database of plant species.
-PlantPal will provide users with the most likely identification of the plant in the image, including its common name, scientific name (genus and species), and relevant information such as preferred growing conditions, care tips, and potential uses (e.g., ornamental, culinary, medicinal).
-2. Plant Care Guidance:
-Users can ask PlantPal for personalized care guidance for specific plants they own or are interested in acquiring. This includes information on watering frequency, sunlight requirements, soil type, temperature preferences, pruning techniques, and pest control measures.
-PlantPal takes into account the geographic location of the user to provide tailored recommendations based on local climate conditions, ensuring optimal plant care advice.
-3. Plant Information Database:
-PlantPal maintains an extensive database of plant species, including both common and rare varieties from around the world. Users can search this database by plant name, characteristics, or growing conditions to access detailed information on a wide range of plants.
-Each plant entry in the database includes botanical descriptions, native habitats, cultivation history, interesting facts, and any cultural or symbolic significance associated with the plant.
-4. Interactive Plant Q&A:
-PlantPal offers a conversational interface where users can ask questions about plants in natural language. Whether it's inquiries about specific plant species, gardening techniques, plant diseases, or troubleshooting plant problems, PlantPal is equipped to provide informative and helpful responses.
-The AI model underlying PlantPal is trained on vast corpora of plant-related texts, including botanical literature, gardening guides, academic papers, and online forums, ensuring a rich and diverse knowledge base.
+- watering cycle, fertilization cycle, pruning cycle of this plant
 """;
+//   final systemPrompt = """
+// You are a personal plant assistant, called PlantPal!
+// PlantPal is an advanced AI-powered assistant designed to provide comprehensive information and assistance related to plants. Whether you're a seasoned gardener, a beginner plant parent, or simply curious about the world of flora, PlantPal is here to help. Below are the detailed functionalities and capabilities of PlantPal:
+// you output must include with plain text, no markdown and you may extend your response with any additional information:
+// - specific species of the plant
+// - planting date (today)
+// - watering cycle, fertilization cycle, pruning cycle of this plant, express it in number of days, if no, then say "not typically required"
+// you have the following features
+// 1. Plant Identification:
+// PlantPal utilizes state-of-the-art image recognition technology to accurately identify plants from uploaded photos. Users can upload images of plants they encounter in their surroundings, whether in their garden, on a hike, or at a friend's house.
+// Upon receiving an image, PlantPal will analyze it using deep learning algorithms trained on vast datasets of plant images. The system will then compare features such as leaf shape, flower morphology, and overall structure to a vast database of plant species.
+// PlantPal will provide users with the most likely identification of the plant in the image, including its common name, scientific name (genus and species), and relevant information such as preferred growing conditions, care tips, and potential uses (e.g., ornamental, culinary, medicinal).
+// 2. Plant Care Guidance:
+// Users can ask PlantPal for personalized care guidance for specific plants they own or are interested in acquiring. This includes information on watering frequency, sunlight requirements, soil type, temperature preferences, pruning techniques, and pest control measures.
+// PlantPal takes into account the geographic location of the user to provide tailored recommendations based on local climate conditions, ensuring optimal plant care advice.
+// 3. Plant Information Database:
+// PlantPal maintains an extensive database of plant species, including both common and rare varieties from around the world. Users can search this database by plant name, characteristics, or growing conditions to access detailed information on a wide range of plants.
+// Each plant entry in the database includes botanical descriptions, native habitats, cultivation history, interesting facts, and any cultural or symbolic significance associated with the plant.
+// 4. Interactive Plant Q&A:
+// PlantPal offers a conversational interface where users can ask questions about plants in natural language. Whether it's inquiries about specific plant species, gardening techniques, plant diseases, or troubleshooting plant problems, PlantPal is equipped to provide informative and helpful responses.
+// The AI model underlying PlantPal is trained on vast corpora of plant-related texts, including botanical literature, gardening guides, academic papers, and online forums, ensuring a rich and diverse knowledge base.
+// """;
 
   ChatBot() {
     openAI = OpenAI.instance.build(
@@ -73,13 +88,58 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
 
   Future<ThreadResponse> getThread() async {
     threadCreate = await openAI.threads.v2.createThread(request: threadRequest);
-    print('threadCreate: ${'thread_lKTJ4mwXgWcKsLtZgCHeXWy1'}');
+    print('threadCreate: ${threadCreate.id}');
     return threadCreate;
   }
 
-  Future<String> doResponse(Message userInp) async {
+  // void handleStreamError(Object error, StackTrace stackTrace, EventSink sink) {
+  //   if (error is OpenAIRateLimitError) {
+  //     print('OpenAIRateLimitError error -> ${error.data?.message}');
+  //   } else {
+  //     sink.addError(error, stackTrace);
+  //   }
+  // }
+  Future<void> displayContentWithStreamingEffect(
+      String fullContent, AllMessagesViewModel viewModel) async {
+    String displayedContent = "";
+    const int chunkSize = 10; // Adjust the chunk size as needed
+    const int delayDuration = 100; // Delay duration in milliseconds
+
+    // Split the full content into chunks and display it incrementally
+    for (int i = 0; i < fullContent.length; i += chunkSize) {
+      // Extract a chunk of the content
+      String chunk = fullContent.substring(
+          i,
+          i + chunkSize > fullContent.length
+              ? fullContent.length
+              : i + chunkSize);
+
+      // Concatenate the chunk to the displayed content
+      displayedContent += chunk;
+
+      // Update the last message in the message list with the current displayed content
+      updateMessageList(displayedContent, viewModel);
+
+      // Introduce a delay to create the streaming effect
+      await Future.delayed(Duration(milliseconds: delayDuration));
+    }
+  }
+
+  void updateMessageList(
+      String displayedContent, AllMessagesViewModel viewModel) {
+    // Update the last message in the message list with the current displayed content
+    List<Message> msgList = viewModel.getMessages();
+    msgList[msgList.length - 1] =
+        Message(text: displayedContent, userName: "BOT");
+
+    // Notify listeners to update the UI
+    viewModel.notifyListeners();
+  }
+
+  Future<String> doResponse(
+      Message userInp, AllMessagesViewModel viewModel) async {
     try {
-      final responseText = await _chatCompletion(userInp);
+      final responseText = await _chatCompletion(userInp, viewModel);
       return responseText ?? 'Error123';
     } catch (e) {
       print('Error in doResponse: $e');
@@ -87,7 +147,8 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
     }
   }
 
-  Future<String?> _chatCompletion(Message message) async {
+  Future<String?> _chatCompletion(
+      Message message, AllMessagesViewModel viewModel) async {
     try {
       dynamic contentMessage;
       bool isImage = false;
@@ -214,11 +275,48 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
               maxToken: 200,
             );
 
-            //try and error
+            String? message;
+            List<Message> msgList = viewModel.getMessages();
+            msgList.add(Message(text: message ?? '', userName: "BOT"));
+            notifyListeners();
+            //*+++++++++ streaming use onChatCompletionSSE, it works but too fast to see the streaming effect, so using brute force way to see the streaming effect
+            /*
+            openAI
+                .onChatCompletionSSE(request: CCrequestWithFunctionResponse)
+                .transform(StreamTransformer.fromHandlers(
+                    handleError: handleStreamError))
+                .listen((it) {
+              // print('streamResponse.id: ${it.id}');
+              // print('streamResponse.object: ${it.object}');
+              // print('streamResponse.content: ${it.choices[0].message.content}');
+              // Message? msg;
+              // List<Message> msgList = viewModel.getMessages();
+              // msgList.removeWhere((element) {
+              //   if (element.id == '${it.id}') {
+              //     msg = element;
+              //     print('element: $element');
+              //     return true;
+              //   }
+              //   return false;
+              // });
+
+              ///+= message
+              message =
+                  '${message ?? ""}${it.choices[0].message?.content ?? ""}';
+              print("stream msg: $message");
+              msgList[msgList.length - 1] =
+                  Message(text: message ?? '', userName: "BOT");
+              viewModel.notifyListeners();
+              // Update the message list in the viewModel
+              // viewModel.setMessages(msgList);
+            });*/
+
             try {
               final finalResponse = await openAI.onChatCompletion(
                   request: CCrequestWithFunctionResponse);
-              print(finalResponse?.choices[0].message?.content);
+              String fullContent =
+                  finalResponse?.choices[0].message?.content ?? '';
+              await displayContentWithStreamingEffect(fullContent, viewModel);
               finalContent = finalResponse?.choices[0].message?.content ?? '';
             } catch (e) {
               print('Error in finalResponse: $e');
@@ -238,12 +336,12 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
 
         CreateMessageV2Response MSGresponse =
             await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
           request: MSGrequest,
         );
 
         CreateRun request = CreateRun(
-          assistantId: 'asst_2KEXqEXcWF9CAn7iL9aDfewC',
+          assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
           model: 'gpt-4o',
           // instructions: "",
           instructions:
@@ -251,21 +349,21 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
         );
 
         final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
           request: request,
         );
 
         final runid = runResponse.id;
 
         CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
           runId: runid,
         );
 
         while (mRun.status != 'completed') {
           await Future.delayed(Duration(seconds: 3));
           mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+            threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
             runId: runid,
           );
         }
@@ -279,22 +377,27 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
           role: 'user',
           content: contentMessage,
         );
-
         print('CreateMessage request created: $MSGrequest');
+        //build new assistant and thread
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // AssistantData assistantInfo = await getAssistant();
+        // print('Assistant ID: ${assistantInfo.id}');
+        // await getThread();
+
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         CreateMessageV2Response MSGresponse =
             await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
           request: MSGrequest,
         );
 
         print('Received CreateMessage response: $MSGresponse');
 
         print('Creating run request...');
-        // AssistantData assistantInfo = await getAssistant();
-        // print('Assistant ID: ${assistantInfo.id}');
+
         CreateRun request = CreateRun(
-          assistantId: 'asst_2KEXqEXcWF9CAn7iL9aDfewC',
+          assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
           model: 'gpt-4o',
           instructions: "test prompt",
           // instructions: systemPrompt,
@@ -304,7 +407,7 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
 
         // Debugging: Sending CreateRun request to API
         final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
           request: request,
         );
         // Debugging: Received response for CreateRun
@@ -316,26 +419,26 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
         print('Run ID: $runid');
 
         CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
           runId: runid,
         );
 
         while (mRun.status != 'completed') {
           await Future.delayed(Duration(seconds: 3));
           mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+            threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
             runId: runid,
           );
         }
         print('Retrieved run details: ${mRun.status}');
 
         // ListRun mRunlist = await openAI.threads.v2.runs.listRuns(
-        //   threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+        //   threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
         // );
         // print('List of runs: $mRunlist');
 
         ListRun mRunSteps = await openAI.threads.v2.runs.listRunSteps(
-          threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
           runId: runid,
         );
         // print('List of run steps: $mRunSteps');
@@ -355,7 +458,7 @@ The AI model underlying PlantPal is trained on vast corpora of plant-related tex
         if (msgID != null) {
           print('msgID: $msgID');
           mMessage = await openAI.threads.v2.messages.retrieveMessage(
-            threadId: 'thread_lKTJ4mwXgWcKsLtZgCHeXWy1',
+            threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
             messageId: msgID,
           );
 

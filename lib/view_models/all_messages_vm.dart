@@ -21,9 +21,28 @@ class AllMessagesViewModel with ChangeNotifier {
       _messages.add(newMessage);
       notifyListeners();
     }
-    final response = await chatService.doResponse(newMessage);
-    _messages.add(Message(text: response, userName: "BOT"));
-    notifyListeners();
+    await chatService.doResponse(newMessage, this);
+    // final response = await chatService.doResponse(newMessage, this);
+    // _messages.add(Message(text: response, userName: "BOT"));
+    // notifyListeners();
     return;
+  }
+
+  // Method to access _messages within chatService
+  List<Message> getMessages() {
+    return _messages;
+  }
+
+  // Method to set the messages list directly
+  void setMessages(List<Message> newMessages) {
+    _messages.clear();
+    _messages.addAll(newMessages);
+    notifyListeners();
+  }
+
+  // Method to add a message from chatService
+  void addBotMessage(String text) {
+    _messages.add(Message(text: text, userName: "BOT"));
+    notifyListeners();
   }
 }

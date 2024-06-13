@@ -4,6 +4,7 @@ import 'package:flutter_app/models/user.dart';
 // import 'package:flutter_app/view_models/me_vm.dart';
 import 'package:flutter_app/views/message_bubble.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_app/models/message.dart';
 
 class MessageList extends StatefulWidget {
   const MessageList({super.key});
@@ -22,7 +23,8 @@ class _MessageListState extends State<MessageList> {
         if (_scrollController.position.pixels != 0) {
           // At the bottom
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+            _scrollController
+                .jumpTo(_scrollController.position.maxScrollExtent);
           });
         }
       }
@@ -47,10 +49,16 @@ class _MessageListState extends State<MessageList> {
     });
   }
 
+  // void addMessage(String message) {
+  //   final allMessagesViewModel = Provider.of<AllMessagesViewModel>(context);
+  //   setState(() {
+  //     allMessagesViewModel.addBotMessage(message);
+  //     // msgList.add(Message(text: message, userName: "BOT"));
+  //   });
+  // }
+
   @override
   Widget build(BuildContext context) {
-    
-    
     final allMessagesViewModel = Provider.of<AllMessagesViewModel>(context);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -67,7 +75,7 @@ class _MessageListState extends State<MessageList> {
         child: Text('No messages.'),
       );
     }
-    
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.only(
@@ -89,7 +97,7 @@ class _MessageListState extends State<MessageList> {
         final isNextUserSame = nextMessageUsername == messageUsername;
         final preMessageUserId = prevMessage?.userName;
         final isPreUserSame = preMessageUserId == messageUsername;
-        final imageUrl = message.imageUrl ; 
+        final imageUrl = message.imageUrl;
 
         if (isNextUserSame) {
           return MessageBubble(

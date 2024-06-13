@@ -5,7 +5,8 @@ import 'package:flutter_app/views/user_info.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
-  @override Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.background,
@@ -21,7 +22,7 @@ class ChatPage extends StatelessWidget {
           ),
         ],
       ),
-      body:  Column(
+      body: Column(
         children: [
           UserInfo(),
           Expanded(
