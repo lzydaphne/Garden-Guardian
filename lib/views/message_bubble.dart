@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class MessageBubble extends StatelessWidget {
   // Create a message bubble which is meant to be the first in the sequence.
@@ -20,7 +21,7 @@ class MessageBubble extends StatelessWidget {
     this.imageUrl,
   }) : userName = null;
 
-  // Whether this message bubble is the last in a sequence of messages from the same user. Modifies the message bubble slightly for these different cases - only shows user image for the first message from the same user, and changes the shape of the bubble for messages thereafter.
+  // Whether this message bubble is the last in a sequence of messages from the same user.
   final bool isLast;
 
   // Username of the user. Not required if the message is not the first in a sequence.
@@ -46,10 +47,8 @@ class MessageBubble extends StatelessWidget {
             ),
           ),
         Container(
-          // Add some margin to the edges of the messages, to allow space for the user's image.
           margin: EdgeInsets.symmetric(horizontal: isMine ? 0 : 24),
           child: Row(
-            // The side of the chat screen the message should show at.
             mainAxisAlignment:
                 isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
@@ -57,7 +56,6 @@ class MessageBubble extends StatelessWidget {
                 crossAxisAlignment:
                     isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
-                  // First messages in the sequence provide a visual buffer at the top.
                   if (!isMine && userName != null) const SizedBox(height: 18),
                   if (!isMine && userName != null)
                     Padding(
@@ -75,14 +73,12 @@ class MessageBubble extends StatelessWidget {
                       ),
                     ),
                   Column(
-                    // The "speech" box surrounding the message.
                     children: [
                       Container(
                         decoration: BoxDecoration(
                           color: isMine
                               ? theme.colorScheme.primary
                               : theme.colorScheme.primaryContainer,
-                          // Only show the message bubble's "speaking edge" if first in the chain. Whether the "speaking edge" is on the left or right depends on whether or not the message bubble is the current user.
                           borderRadius: BorderRadius.only(
                             topLeft: !isMine
                                 ? Radius.zero
@@ -98,13 +94,11 @@ class MessageBubble extends StatelessWidget {
                                 : Radius.zero,
                           ),
                         ),
-                        // Set some reasonable constraints on the width of the message bubble so it can adjust to the amount of text it should show.
                         constraints: const BoxConstraints(maxWidth: 200),
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 16,
                         ),
-                        // Margin around the bubble.
                         margin: const EdgeInsets.symmetric(
                           vertical: 2,
                           horizontal: 8,
@@ -120,31 +114,17 @@ class MessageBubble extends StatelessWidget {
                                   fit: BoxFit.cover,
                                 ),
                               ),
-                            if (imageUrl != null)
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                text,
-                                style: TextStyle(
-                                  // Add a little line spacing to make the text look nicer when multilined.
+                            MarkdownBody(
+                              data: text,
+                              styleSheet: MarkdownStyleSheet(
+                                p: TextStyle(
                                   height: 1.3,
                                   color: isMine
                                       ? theme.colorScheme.onPrimary
                                       : theme.colorScheme.onPrimaryContainer,
                                 ),
-                                softWrap: true,
                               ),
-                            ) else Text(
-                                text,
-                                style: TextStyle(
-                                  // Add a little line spacing to make the text look nicer when multilined.
-                                  height: 1.3,
-                                  color: isMine
-                                      ? theme.colorScheme.onPrimary
-                                      : theme.colorScheme.onPrimaryContainer,
-                                ),
-                                softWrap: true,
-                              ) ,
+                            ),
                           ],
                         ),
                       ),

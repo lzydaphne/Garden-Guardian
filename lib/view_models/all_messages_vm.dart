@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
 import 'package:flutter_app/services/chat_bot_service.dart';
-import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 // import 'package:flutter_app/repositories/message_repo.dart';
 
 class AllMessagesViewModel with ChangeNotifier {
