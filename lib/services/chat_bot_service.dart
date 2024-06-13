@@ -275,10 +275,6 @@ you output must include:
               maxToken: 200,
             );
 
-            String? message;
-            List<Message> msgList = viewModel.getMessages();
-            msgList.add(Message(text: message ?? '', userName: "BOT"));
-            notifyListeners();
             //*+++++++++ streaming use onChatCompletionSSE, it works but too fast to see the streaming effect, so using brute force way to see the streaming effect
             /*
             openAI
@@ -312,6 +308,12 @@ you output must include:
             });*/
 
             try {
+              //preparetion for streaming response
+              String? message;
+              List<Message> msgList = viewModel.getMessages();
+              msgList.add(Message(text: message ?? '', userName: "BOT"));
+              notifyListeners();
+              //
               final finalResponse = await openAI.onChatCompletion(
                   request: CCrequestWithFunctionResponse);
               String fullContent =
@@ -466,6 +468,16 @@ you output must include:
           print(mMessage.content.length);
           messageData = mMessage.content[0].text.value;
         }
+
+        //! streaming for text response for text input
+        //preparetion for streaming response
+        String? message;
+        List<Message> msgList = viewModel.getMessages();
+        msgList.add(Message(text: message ?? '', userName: "BOT"));
+        notifyListeners();
+        String fullContent = messageData ?? '';
+        await displayContentWithStreamingEffect(fullContent, viewModel);
+
         return messageData;
       }
     } catch (e) {
