@@ -5,6 +5,8 @@ import 'package:flutter_app/views/cover_page.dart';
 import 'package:flutter_app/views/home_page.dart';
 import 'package:flutter_app/views/plant_family_page.dart';
 import 'package:flutter_app/views/add_note_page.dart';
+import 'package:flutter_app/views/profile_page.dart';
+import 'package:flutter_app/views/wiki_list_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/theme.dart';

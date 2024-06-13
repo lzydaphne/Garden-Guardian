@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                 left: 15,
                 child: CircleAvatar(
                   backgroundImage:
-                      NetworkImage('https://via.placeholder.com/150'), // 替換為實際圖片鏈接
+                      AssetImage('images/user.png'), 
                   radius: 30,
                 ),
               ),
