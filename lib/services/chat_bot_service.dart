@@ -20,7 +20,9 @@ import 'package:flutter_app/view_models/all_messages_vm.dart';
 asst_K9Irkl24BOJpXnDjvjbfX2aq
 thread_pOcpRGwGJG5HQoABOXhjDy7H
 -> thread:thread_pOcpRGwGJG5HQoABOXhjDy7H
--> cur: thread_vJkbsSE6WszlnRdSKtHnds25
+->  thread_vJkbsSE6WszlnRdSKtHnds25
+-> cur: thread_aIsUP7CiBXnjvszg4Ks3opsd
+thread_jfsm4Y9BERuGZXcSySsLSEbV
  */
 
 class ChatBot extends ChangeNotifier {
@@ -54,11 +56,16 @@ You are Garden Gurdian, an advanced AI-powered assistant designed to provide con
 2. When the user updates that they have watered, fertilized, or pruned a specific plant:
     - Calculate and provide the next watering, fertilization, or pruning date and response.
       - Your response should contain at least one of the following: Next Watering Date, Next Fertilization Date, Next Pruning Date. Depend on the user's input.
+      - Your response need not contain other information (species, nickname, watering cycle, fertilization cycle, pruning cycle) unless explicitly asked.
     - Store the last care date that user mentioned in the format 'yyyy-MM-dd'.
       - Your response should contain "last care date" that user mentioned.
     - Do not provide additional information unless explicitly asked.
-
-3. For any other user inputs:
+3. When the user inputs their feelings or thoughts about the plant:
+    - Provide a positive and encouraging response to the user's feelings.
+    - Include a concise SINGLE bullet point of a fun fact or interesting tidbit about the plant to engage the user.
+    - Encourage the user to continue caring for the plant and offer additional tips or advice if needed.
+    - Be concise and to the point. Do not provide additional information unless explicitly asked.
+4. For any other user inputs:
     - Provide short, clear, and direct answers.
     - Avoid giving additional information unless explicitly asked.
 
@@ -451,7 +458,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
 
         CreateMessageV2Response MSGresponse =
             await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           request: MSGrequest,
         );
 
@@ -464,21 +471,21 @@ Remember to keep responses brief and focused on the user's query, and a little b
         );
 
         final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           request: request,
         );
 
         final runid = runResponse.id;
 
         CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           runId: runid,
         );
 
         while (mRun.status != 'completed') {
           await Future.delayed(Duration(seconds: 3));
           mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
             runId: runid,
           );
         }
@@ -504,7 +511,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
 
         CreateMessageV2Response MSGresponse =
             await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           request: MSGrequest,
         );
 
@@ -523,7 +530,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
 
         // Debugging: Sending CreateRun request to API
         final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           request: request,
         );
         // Debugging: Received response for CreateRun
@@ -535,26 +542,26 @@ Remember to keep responses brief and focused on the user's query, and a little b
         print('Run ID: $runid');
 
         CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           runId: runid,
         );
 
         while (mRun.status != 'completed') {
           await Future.delayed(Duration(seconds: 3));
           mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
             runId: runid,
           );
         }
         print('Retrieved run details: ${mRun.status}');
 
         // ListRun mRunlist = await openAI.threads.v2.runs.listRuns(
-        //   threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+        //   threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
         // );
         // print('List of runs: $mRunlist');
 
         ListRun mRunSteps = await openAI.threads.v2.runs.listRunSteps(
-          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           runId: runid,
         );
         // print('List of run steps: $mRunSteps');
@@ -574,7 +581,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
         if (msgID != null) {
           print('msgID: $msgID');
           mMessage = await openAI.threads.v2.messages.retrieveMessage(
-            threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
+            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
             messageId: msgID,
           );
 
