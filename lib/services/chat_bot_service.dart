@@ -18,7 +18,9 @@ import 'package:flutter_app/view_models/all_messages_vm.dart';
 * thread ID: thread_lKTJ4mwXgWcKsLtZgCHeXWy1
 * lzy's: sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh
 asst_K9Irkl24BOJpXnDjvjbfX2aq
-thread_mFdlqvLre1XzGNE2AVHdRtes
+thread_pOcpRGwGJG5HQoABOXhjDy7H
+-> thread:thread_pOcpRGwGJG5HQoABOXhjDy7H
+-> cur: thread_vJkbsSE6WszlnRdSKtHnds25
  */
 
 class ChatBot extends ChangeNotifier {
@@ -31,14 +33,38 @@ class ChatBot extends ChangeNotifier {
   //     'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh'; // Enter OpenAI API_KEY
   String kToken =
       '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'; // Enter OpenAI API_KEY
+
   String systemPrompt = """
-You are a personal plant assistant, called Garden Gurdian!
-Garden Gurdian is an advanced AI-powered assistant designed to provide comprehensive information and assistance related to plants. Whether you're a seasoned gardener, a beginner plant parent, or simply curious about the world of flora, Garden Gurdian is here to help. Below are the detailed functionalities and capabilities of Garden Gurdian:
-you output must include:
-- specific species of the plant 
-- planting date (today)
-- watering cycle, fertilization cycle, pruning cycle of this plant
+You are Garden Gurdian, an advanced AI-powered assistant designed to provide concise and comprehensive information and assistance related to plants. It is specifically tailored for total beginners. Below are the 3 functionalities and capabilities of Garden Gurdian, you should analyze the user input and provide the appropriate response with EXACTLY one of the following functionalities:
+
+1. When the user inputs a new plant image that is not in the database, identify the plant species and provide care guidance:
+    - Include species identification, planting date (today), watering cycle, fertilization cycle, and pruning cycle.
+    - In the beginning, you should respond some necessary information about the plant
+      - species, 
+      - planting date, 
+      - watering cycle, 
+      - fertilization cycle, 
+      - pruning cycle.
+      - Next Watering Date
+      - Next Fertilization Date
+      - Next Pruning Date
+    - Then Ask the user for a nickname for the plant and store all related information without asking again.
+    - Call the "add_new_plant" function with the gathered information.
+
+2. When the user updates that they have watered, fertilized, or pruned a specific plant:
+    - Calculate and provide the next watering, fertilization, or pruning date and response.
+      - Your response should contain at least one of the following: Next Watering Date, Next Fertilization Date, Next Pruning Date. Depend on the user's input.
+    - Store the last care date that user mentioned in the format 'yyyy-MM-dd'.
+      - Your response should contain "last care date" that user mentioned.
+    - Do not provide additional information unless explicitly asked.
+
+3. For any other user inputs:
+    - Provide short, clear, and direct answers.
+    - Avoid giving additional information unless explicitly asked.
+
+Remember to keep responses brief and focused on the user's query, and a little blend of fun and humor.
 """;
+
 //   final systemPrompt = """
 // You are a personal plant assistant, called PlantPal!
 // PlantPal is an advanced AI-powered assistant designed to provide comprehensive information and assistance related to plants. Whether you're a seasoned gardener, a beginner plant parent, or simply curious about the world of flora, PlantPal is here to help. Below are the detailed functionalities and capabilities of PlantPal:
@@ -155,9 +181,10 @@ you output must include:
       if (message.imageUrl != null) {
         final base64Image = await _convertImageToBase64(message.imageUrl!);
         isImage = true;
+        print('nessage text: ${message.text}');
         contentMessage = [
-          // {"type": "text", "text": message.text},
-          {"type": "text", "text": 'placeholder for image message'},
+          {"type": "text", "text": message.text},
+          // {"type": "text", "text": 'placeholder'},
           {
             "type": "image_url",
             "image_url": {"url": base64Image}
@@ -208,6 +235,43 @@ you output must include:
                 ],
               },
             }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "calculateNextCareDates",
+              "description":
+                  "Calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "lastActionDate": {
+                    "type": "string",
+                    "description":
+                        "The lastAction(water/fertilize/prune) Date of the plant in the format of 'yyyy-MM-dd'."
+                  },
+                  "wateringCycle": {
+                    "type": "integer",
+                    "description": "The watering cycle of the plant in days."
+                  },
+                  "fertilizationCycle": {
+                    "type": "integer",
+                    "description":
+                        "The fertilization cycle of the plant in days."
+                  },
+                  "pruningCycle": {
+                    "type": "integer",
+                    "description": "The pruning cycle of the plant in days."
+                  }
+                },
+                "required": [
+                  "lastActionDate",
+                  "wateringCycle",
+                  "fertilizationCycle",
+                  "pruningCycle"
+                ],
+              },
+            }
           }
         ];
         final CCrequest = ChatCompleteText(
@@ -216,7 +280,11 @@ you output must include:
           model: ChatModelFromValue(model: 'gpt-4o'),
           tools: tools,
           toolChoice:
-              'auto', //! we can force it to execute the function by function name
+              'required', //! we can force it to execute the function by function name
+          // toolChoice: {
+          //   "type": "function",
+          //   "function": {"name": "add_new_plant"}
+          // },
         );
 
         final response = await openAI.onChatCompletion(request: CCrequest);
@@ -245,6 +313,7 @@ you output must include:
           print('toolFunctionName: $toolFunctionName');
           Map<String, dynamic> toolArguments =
               jsonDecode(toolCalls[0]['function']['arguments']);
+
           if (toolFunctionName == 'add_new_plant') {
             print('add_new_plant called with arguments: $toolArguments');
             try {
@@ -323,6 +392,50 @@ you output must include:
             } catch (e) {
               print('Error in finalResponse: $e');
             }
+            //! calculateNextCareDatesTool
+          } else if (toolFunctionName == 'calculateNextCareDates') {
+            print(
+                'calculateNextCareDates called with arguments: $toolArguments');
+            try {
+              String lastActionDate = toolArguments['lastActionDate'];
+              int wateringCycle = toolArguments['wateringCycle'];
+              int fertilizationCycle = toolArguments['fertilizationCycle'];
+              int pruningCycle = toolArguments['pruningCycle'];
+              final results = calculateNextCareDatesTool(lastActionDate,
+                  wateringCycle, fertilizationCycle, pruningCycle);
+              print('results: $results');
+              // Append the results to the messages list
+              iptMsg.add({
+                "role": "tool",
+                "tool_call_id": toolCall_id,
+                "name": toolFunctionName,
+                "content": results
+              });
+            } catch (e) {
+              print('Error in calculateNextCareDates: $e');
+            }
+
+            final CCrequestWithFunctionResponse = ChatCompleteText(
+              messages: iptMsg,
+              model: ChatModelFromValue(model: 'gpt-4o'),
+              maxToken: 200,
+            );
+            try {
+              //preparetion for streaming response
+              String? message;
+              List<Message> msgList = viewModel.getMessages();
+              msgList.add(Message(text: message ?? '', userName: "BOT"));
+              notifyListeners();
+              //
+              final finalResponse = await openAI.onChatCompletion(
+                  request: CCrequestWithFunctionResponse);
+              String fullContent =
+                  finalResponse?.choices[0].message?.content ?? '';
+              await displayContentWithStreamingEffect(fullContent, viewModel);
+              finalContent = finalResponse?.choices[0].message?.content ?? '';
+            } catch (e) {
+              print('Error in finalResponse: $e');
+            }
           } else {
             print("Error: function $toolFunctionName does not exist");
           }
@@ -338,7 +451,7 @@ you output must include:
 
         CreateMessageV2Response MSGresponse =
             await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
           request: MSGrequest,
         );
 
@@ -351,21 +464,21 @@ you output must include:
         );
 
         final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
           request: request,
         );
 
         final runid = runResponse.id;
 
         CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
           runId: runid,
         );
 
         while (mRun.status != 'completed') {
           await Future.delayed(Duration(seconds: 3));
           mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+            threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
             runId: runid,
           );
         }
@@ -385,12 +498,13 @@ you output must include:
         // AssistantData assistantInfo = await getAssistant();
         // print('Assistant ID: ${assistantInfo.id}');
         // await getThread();
+        // return 'Error';
 
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         CreateMessageV2Response MSGresponse =
             await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
           request: MSGrequest,
         );
 
@@ -409,7 +523,7 @@ you output must include:
 
         // Debugging: Sending CreateRun request to API
         final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
           request: request,
         );
         // Debugging: Received response for CreateRun
@@ -421,26 +535,26 @@ you output must include:
         print('Run ID: $runid');
 
         CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
           runId: runid,
         );
 
         while (mRun.status != 'completed') {
           await Future.delayed(Duration(seconds: 3));
           mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+            threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
             runId: runid,
           );
         }
         print('Retrieved run details: ${mRun.status}');
 
         // ListRun mRunlist = await openAI.threads.v2.runs.listRuns(
-        //   threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+        //   threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
         // );
         // print('List of runs: $mRunlist');
 
         ListRun mRunSteps = await openAI.threads.v2.runs.listRunSteps(
-          threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+          threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
           runId: runid,
         );
         // print('List of run steps: $mRunSteps');
@@ -460,7 +574,7 @@ you output must include:
         if (msgID != null) {
           print('msgID: $msgID');
           mMessage = await openAI.threads.v2.messages.retrieveMessage(
-            threadId: 'thread_mFdlqvLre1XzGNE2AVHdRtes',
+            threadId: 'thread_vJkbsSE6WszlnRdSKtHnds25',
             messageId: msgID,
           );
 

@@ -42,10 +42,33 @@ class Plant {
 //   return "Ficus lyrata"; // Placeholder species name
 // }
 
+//* deliberately use "plantingDate" in case user reports "i watered the plant yesterday" or "i fertilized the plant last week"
 // Function to calculate the next care dates
+String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
+    int fertilizationCycle, int pruningCycle) {
+  // DateTime today = DateTime.now();
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  DateTime parsedLastActionDate = formatter.parse(lastActionDate);
+
+  DateTime nextWateringDate =
+      parsedLastActionDate.add(Duration(days: wateringCycle));
+  DateTime nextFertilizationDate =
+      parsedLastActionDate.add(Duration(days: fertilizationCycle));
+  DateTime? nextPruningDate = pruningCycle > 0
+      ? parsedLastActionDate.add(Duration(days: pruningCycle))
+      : null;
+
+  // Formatting the date for a nice output
+  String formattedString = 'Next Care Dates:\n'
+      'Next Watering Date: ${DateFormat('yyyy-MM-dd').format(nextWateringDate)}\n'
+      'Next Fertilization Date: ${DateFormat('yyyy-MM-dd').format(nextFertilizationDate)}\n'
+      'Next Pruning Date: ${nextPruningDate != null ? DateFormat('yyyy-MM-dd').format(nextPruningDate) : "No need to prune!"}';
+  return formattedString;
+}
+
 Map<String, DateTime?> calculateNextCareDates(DateTime plantingDate,
     int wateringCycle, int fertilizationCycle, int pruningCycle) {
-  DateTime today = DateTime.now();
+  // DateTime today = DateTime.now();
   DateTime nextWateringDate = plantingDate.add(Duration(days: wateringCycle));
   DateTime nextFertilizationDate =
       plantingDate.add(Duration(days: fertilizationCycle));
