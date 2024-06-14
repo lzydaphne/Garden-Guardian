@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/chat_bot_service.dart';
-import 'package:flutter_app/views/chat_page.dart';
-import 'package:flutter_app/views/cover_page.dart';
-import 'package:flutter_app/views/home_page.dart';
-import 'package:flutter_app/views/plant_family_page.dart';
+import 'package:flutter_app/services/navigation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/theme.dart';
@@ -21,6 +18,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
+        Provider<NavigationService>(create: (_) => NavigationService()),
         ChangeNotifierProvider<ChatBot>(
           create: (_) => ChatBot(),
         ),
@@ -29,10 +27,11 @@ class MyApp extends StatelessWidget {
           update: (BuildContext context, A) => AllMessagesViewModel(chatService: Provider.of<ChatBot>(context, listen: false)),
         ),
       ],
-      child: MaterialApp(
-        theme: materialTheme.light(), // Apply the light theme
-       // darkTheme: materialTheme.dark(), // Apply the dark theme
-        home: PlantFamilyPage(),
+      child: MaterialApp.router(
+        theme: materialTheme.light(), //Apply the light theme
+        // darkTheme: materialTheme.dark(), //Apply the dark theme
+        routerConfig: routerConfig,
+        restorationScopeId: 'app',
       ),
     );
   }

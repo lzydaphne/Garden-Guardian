@@ -15,9 +15,6 @@ class GoalsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Achievement'),
-      ),
       body: ListView(
         children: [
           for(final goal in dummyGoals.values)

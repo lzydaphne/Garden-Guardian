@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_app/services/navigation.dart';
+import 'package:flutter_app/views/nav_bar.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -135,5 +138,6 @@ class _AuthPageState extends State<AuthPage> {
     final isValid = _form.currentState!.validate();
 
     if(!isValid) return;
+    Provider.of<NavigationService>(context, listen: false).goHome(tab: HomeTab.home);
   }
 }
