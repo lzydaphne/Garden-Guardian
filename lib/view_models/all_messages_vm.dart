@@ -46,7 +46,7 @@ class AllMessagesViewModel with ChangeNotifier {
   }
 
   Future<String> addMessage(Message newMessage) async {
-    final response = await chatService.doResponse(newMessage, this);
+    final response = await chatService.doResponse(newMessage);
     return _handleResponse(newMessage, response);
   }
 
