@@ -219,7 +219,8 @@ Remember to keep responses brief and focused on the user's query, and a little b
       String displayedContent, AllMessagesViewModel viewModel) {
     // Update the last message in the message list with the current displayed content
     List<Message> msgList = viewModel.messages;
-    msgList[msgList.length - 1] = Message(text: displayedContent, role: "BOT");
+    msgList[msgList.length - 1] =
+        Message(text: displayedContent, role: "assistant");
 
     // Notify listeners to update the UI
     viewModel.notifyListeners();
@@ -445,7 +446,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
               //preparetion for streaming response
               String? message;
               List<Message> msgList = viewModel.messages;
-              msgList.add(Message(text: message ?? '', role: "BOT"));
+              msgList.add(Message(text: message ?? '', role: "assistant"));
               notifyListeners();
               //
               final finalResponse = await openAI.onChatCompletion(
@@ -489,7 +490,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
               //preparetion for streaming response
               String? message;
               List<Message> msgList = viewModel.messages;
-              msgList.add(Message(text: message ?? '', role: "BOT"));
+              msgList.add(Message(text: message ?? '', role: "assistant"));
               notifyListeners();
               //
               final finalResponse = await openAI.onChatCompletion(
@@ -652,7 +653,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
         //preparetion for streaming response
         String? message;
         List<Message> msgList = viewModel.messages;
-        msgList.add(Message(text: message ?? '', role: "BOT"));
+        msgList.add(Message(text: message ?? '', role: "assistant"));
         notifyListeners();
         String fullContent = messageData ?? '';
         await displayContentWithStreamingEffect(fullContent, viewModel);

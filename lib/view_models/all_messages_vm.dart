@@ -46,6 +46,11 @@ class AllMessagesViewModel with ChangeNotifier {
   }
 
   Future<String> addMessage(Message newMessage) async {
+    if (_messages.isNotEmpty) {
+      // _messsage empty then welcome user
+      _messages.add(newMessage);
+      notifyListeners();
+    }
     final response = await chatService.doResponse(newMessage, this);
     return _handleResponse(newMessage, response);
   }
