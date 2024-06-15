@@ -9,6 +9,9 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 
+import 'package:intl/intl.dart'; // For date formatting
+import 'package:flutter_app/services/tool.dart';
+import 'package:flutter_app/view_models/all_messages_vm.dart';
 
 class ImageHandler {
   Future<String?> convertImageToBase64(String? imagePath) async {
@@ -49,48 +52,66 @@ class ImageHandler {
 }
 
 class ChatBot extends ChangeNotifier {
-  final MessageRepository _messageRepository ; 
+  final MessageRepository _messageRepository;
+  final ImageHandler imageHandler = ImageHandler();
   StreamSubscription<List<Message>>? _messagesSubscription;
-  List<Message> windowMessages = [];  
+  List<Message> windowMessages = [];
   bool _isInitializing = true;
   bool get isInitializing => _isInitializing;
 
-
   late OpenAI openAI;
-  final String kToken = 'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh';
-  final String systemPrompt = """
-You are a personal plant assistant, called PlantPal!
+  late ThreadRequest threadRequest;
+  late ThreadResponse threadCreate;
 
+  String kToken =
+      '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'; // use lzy's token
+  // final String kToken =
+  //     'sk-proj-bofrvC0NKYWbFXzBvFdJT3BlbkFJc95fuqr5951O8qR3ZZYh';
+  String systemPrompt = """
+You are Garden Gurdian, an advanced AI-powered assistant designed to provide concise and comprehensive information and assistance related to plants. It is specifically tailored for total beginners. Below are the 3 functionalities and capabilities of Garden Gurdian, you should analyze the user input and provide the appropriate response with EXACTLY one of the following functionalities:
 
-And you support the follwing three features :
+1. When the user inputs a new plant image that is not in the database, identify the plant species and provide care guidance:
+    - Include species identification, planting date (today), watering cycle, fertilization cycle, and pruning cycle.
+    - In the beginning, you should respond some necessary information about the plant
+      - species, 
+      - planting date, 
+      - watering cycle, 
+      - fertilization cycle, 
+      - pruning cycle.
+      - Next Watering Date
+      - Next Fertilization Date
+      - Next Pruning Date
+    - Then Ask the user for a nickname for the plant and store all related information without asking again.
+    - Call the "add_new_plant" function with the gathered information.
 
-Feature 1 : If users uploaded an image about plants , you can accurately identify plants from uploaded photos by compare features such as leaf shape, flower morphology, and overall structure by your knowledge or supported deep learning model.
-THe reponse format of Feature 1 : If Feature 1 is used , then you should generate a detailed description and keywords for future embedding to find this picture.
+2. When the user updates that they have watered, fertilized, or pruned a specific plant:
+    - Calculate and provide the next watering, fertilization, or pruning date and response.
+      - Your response should contain at least one of the following: Next Watering Date, Next Fertilization Date, Next Pruning Date. Depend on the user's input.
+      - Your response need not contain other information (species, nickname, watering cycle, fertilization cycle, pruning cycle) unless explicitly asked.
+    - Store the last care date that user mentioned in the format 'yyyy-MM-dd'.
+      - Your response should contain "last care date" that user mentioned.
+    - Do not provide additional information unless explicitly asked.
+3. When the user inputs their feelings or thoughts about the plant:
+    - Provide a positive and encouraging response to the user's feelings.
+    - Include a concise SINGLE bullet point of a fun fact or interesting tidbit about the plant to engage the user.
+    - Encourage the user to continue caring for the plant and offer additional tips or advice if needed.
+    - Be concise and to the point. Do not provide additional information unless explicitly asked.
+4. For any other user inputs:
+    - Provide short, clear, and direct answers.
+    - Avoid giving additional information unless explicitly asked.
 
-Feature 2. You have a database that stores pass conversations between you and the user. If you encounter questions by user that requires pass conversation informations between you and user after checking the past user prompts and provided system prompts of retrieved memory from database, you can generate a query to search for required pass conversation contents in the database.
-The reponse format of Feature 2 : If Feature 2 is used , then you should generate a query contains keywords or descriptions for later embedding search in the pass conversation database. 
-Reminder for Feature 2 : You shouldn't do a query if you found suitable information from the retrieved memory system prompts from the database or from the past user prompts or the system! Also if the message before the current user prompt is the retrieved memory system prompts or the system prompt message that says "The database is empty , can't retrieved information of pass conversation." from the database , it means you already done query correspond to the current user prompt already , so you can't generate a query again , you only can reference informations in your context window and figure out the response when using Feature 3, if you really couldn't figure out what the user is mentioning, ask if the user can provide more informations for you to search your memory database again . 
-
-Feature 3. You can answer the question asked by user in a detailed way.
-THe reponse format of Feature 3 : If Feature 3 is used , then you should genrate a detailed response to the user's question, you can use the information of other features mentioned above to support your response. 
-
-Every time you recieved an user input, you analyze the input , and choose to use at least one of the features above to respond the input(you should choose as many features that is suitable to solve the problem),  every time generate the response in the strict format of feature responses seperated by "//":
-
-"<Response of Feature 1 if feature 1 is used else output '@' here>  // <Response of Feature 2 if feature 2 is used else output '@' here> // <Response of Feature 3 if Feature 3 is used else output '@' here>"
-
+Remember to keep responses brief and focused on the user's query, and a little blend of fun and humor.
 """;
 
-  
   int _calculateTokenCount(String? content) {
     if (content == null) return 0;
     return content.length ~/ 4;
   }
-  final _maxToken = 100  ;
 
+  final _maxToken = 100;
 
   ChatBot({MessageRepository? messageRepository})
       : _messageRepository = messageRepository ?? MessageRepository() {
-
     // _messagesSubscription = _messageRepository.streamContentMessages().listen(
     //   (messages) {
     //     _isInitializing = false;
@@ -109,13 +130,12 @@ Every time you recieved an user input, you analyze the input , and choose to use
     //   currentTokenCount += messageTokenCount;
     //   return true;
     //   }
-      
+
     // ).toList();
     //     notifyListeners();
 
-
     try {
-      debugPrint('CB initializing');      
+      debugPrint('CB initializing');
       _messagesSubscription = _messageRepository.streamContentMessages().listen(
         (messages) {
           _isInitializing = false;
@@ -141,6 +161,7 @@ Every time you recieved an user input, you analyze the input , and choose to use
       ),
       enableLog: true,
     );
+    threadRequest = ThreadRequest();
   }
 
   @override
@@ -149,10 +170,66 @@ Every time you recieved an user input, you analyze the input , and choose to use
     super.dispose();
   }
 
-  Future<String> doResponse(Message userInp) async {
+  // get or create an assistant
+  Future<AssistantData> getAssistant() async {
+    List<AssistantData> assistantList = await openAI.assistant.v2.list();
+    for (var assistant in assistantList) {
+      //get gpt-4o model assistant
+      if (assistant.name == "testAssistant") {
+        return assistant;
+      }
+    }
+    Assistant assistant = Assistant(name: 'testAssistant', model: Gpt4OModel());
+    return openAI.assistant.v2.create(assistant: assistant);
+  }
+
+  Future<ThreadResponse> getThread() async {
+    threadCreate = await openAI.threads.v2.createThread(request: threadRequest);
+    print('threadCreate: ${threadCreate.id}');
+    return threadCreate;
+  }
+
+  Future<void> displayContentWithStreamingEffect(
+      String fullContent, AllMessagesViewModel viewModel) async {
+    String displayedContent = "";
+    const int chunkSize = 10; // Adjust the chunk size as needed
+    const int delayDuration = 100; // Delay duration in milliseconds
+
+    // Split the full content into chunks and display it incrementally
+    for (int i = 0; i < fullContent.length; i += chunkSize) {
+      // Extract a chunk of the content
+      String chunk = fullContent.substring(
+          i,
+          i + chunkSize > fullContent.length
+              ? fullContent.length
+              : i + chunkSize);
+
+      // Concatenate the chunk to the displayed content
+      displayedContent += chunk;
+
+      // Update the last message in the message list with the current displayed content
+      updateMessageList(displayedContent, viewModel);
+
+      // Introduce a delay to create the streaming effect
+      await Future.delayed(Duration(milliseconds: delayDuration));
+    }
+  }
+
+  void updateMessageList(
+      String displayedContent, AllMessagesViewModel viewModel) {
+    // Update the last message in the message list with the current displayed content
+    List<Message> msgList = viewModel.messages;
+    msgList[msgList.length - 1] = Message(text: displayedContent, role: "BOT");
+
+    // Notify listeners to update the UI
+    viewModel.notifyListeners();
+  }
+
+  Future<String> doResponse(
+      Message userInp, AllMessagesViewModel view_model) async {
     try {
       debugPrint('Generating response for user input');
-      final responseText = await _chatCompletion(userInp);
+      final responseText = await _chatCompletion(userInp, view_model);
       return responseText ?? 'Error';
     } catch (e) {
       debugPrint('Error in doResponse: $e');
@@ -160,134 +237,431 @@ Every time you recieved an user input, you analyze the input , and choose to use
     }
   }
 
-  Future<String?> _chatCompletion(Message message) async {
+  Future<String?> _chatCompletion(
+      Message message, AllMessagesViewModel viewModel) async {
     try {
-      debugPrint('Starting chat completion');
       dynamic contentMessage;
-
+      bool isImage = false;
       if (message.base64ImageUrl != null) {
+        final base64Image =
+            await imageHandler.convertImageToBase64(message.base64ImageUrl!);
+        isImage = true;
+        print('nessage text: ${message.text}');
         contentMessage = [
           {"type": "text", "text": message.text},
-          {"type": "image_url", "image_url": {"url": message.base64ImageUrl}},
+          // {"type": "text", "text": 'placeholder'},
+          {
+            "type": "image_url",
+            "image_url": {"url": base64Image}
+          },
         ];
       } else {
-        contentMessage = [{"type": "text", "text": message.text}];
+        contentMessage = message.text;
       }
-
-      final currentMessage = [{"role": "user", "content": contentMessage}] ; 
-
-      List<Map<String, dynamic>> previousMessages = windowMessages.map((windowMessage)=>windowMessage.contentMessage).toList();
-      previousMessages.insert(0, {"role": "system", "content": systemPrompt});
-      
-      final request = ChatCompleteText(
-        messages: previousMessages + currentMessage,
-        maxToken: 200,
-        model: ChatModelFromValue(model: 'gpt-4o'),
-      );
-
-      final response = await openAI.onChatCompletion(request: request);
-      debugPrint('Chat completion response received');
-      
-      
-      return await _handleResponse(message, response?.choices[0].message?.content);
-    } catch (e) {
-      debugPrint('Error in _chatCompletion: $e');
-      return null;
-    }
-  }
-
-  List<Map<String, dynamic>> get contentMessages {
-    return windowMessages.map((message) => message.contentMessage).toList();
-  }
-
-
-  Future<String> _handleResponse(Message message, String? response) async {
-    try {  if (response == null) return "Error";
-    
-      debugPrint('Response :$response');
-      final String needRetrieval = response.split('//')[1].contains('@') ? '' : response.split('//')[1];
-      final String imageDescription = response.split('//')[0].contains('@') ? '' : response.split('//')[0];
-      final String userResponse = response.split('//')[2].contains('@') ? '' : response.split('//')[2];
-      debugPrint('Handling response: $userResponse // $imageDescription');
-    // debugPrint('needRetrieval : $needRetrieval image d $imageDescription  userresponse $userResponse'); 
-
-      var m = Message(
-        role: message.role,
-        text: message.text,
-        base64ImageUrl: message.base64ImageUrl,
-        imageDescription: imageDescription,
-      );
-
-      await _messageRepository.addMessage(m);
-      debugPrint(response);
-      if(needRetrieval.isNotEmpty) {
-        await _messageRepository.findAndAppendSimilarMessage(needRetrieval);
-        m = Message(
-        role: "assistant",
-        text: await _chatCompletion2(m) as String,
-        base64ImageUrl: null,
-        timeStamp: DateTime.now(),
-        imageDescription: null,
-      );
-      
-        // Redo the chatcompletion , with the same question again 
-          //remember now the new system message added is not in the knowledge scope of gpt, since the thing we sent to GPT hadn't contained the retricve memory system message yet
-        
-      }else{
-        m = Message(
-        role: "assistant",
-        text: userResponse,
-        base64ImageUrl: null,
-        timeStamp: DateTime.now(),
-        imageDescription: null,
-      );
-      }
-      await _messageRepository.addMessage(m);
-
-    
-
-      return userResponse;}
-      catch(e){
-        debugPrint('Error in _handleResponse: $e');
-        return "";
-      }
-  
-  }
-  Future<String?> _chatCompletion2(Message message) async {
-    try {
-      debugPrint('Starting chat completion');
-      dynamic contentMessage;
-
-      if (message.base64ImageUrl != null) {
-        contentMessage = [
-          {"type": "text", "text": message.text},
-          {"type": "image_url", "image_url": {"url": message.base64ImageUrl}},
+      // function implement reference:https://cookbook.openai.com/examples/how_to_call_functions_with_chat_models
+      if (isImage) {
+        final iptMsg = [
+          {"role": "system", "content": systemPrompt},
+          {"role": "user", "content": contentMessage},
         ];
+        final tools = [
+          {
+            "type": "function",
+            "function": {
+              "name": "add_new_plant",
+              "description":
+                  "Use this function to add a new plant and get related information.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "species": {
+                    "type": "string",
+                    "description": "The specific species of the plant."
+                  },
+                  "wateringCycle": {
+                    "type": "integer",
+                    "description": "The watering cycle of the plant in days."
+                  },
+                  "fertilizationCycle": {
+                    "type": "integer",
+                    "description":
+                        "The fertilization cycle of the plant in days."
+                  },
+                  "pruningCycle": {
+                    "type": "integer",
+                    "description": "The pruning cycle of the plant in days."
+                  }
+                },
+                "required": [
+                  "species",
+                  "wateringCycle",
+                  "fertilizationCycle",
+                  "pruningCycle"
+                ],
+              },
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "calculateNextCareDates",
+              "description":
+                  "Calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "lastActionDate": {
+                    "type": "string",
+                    "description":
+                        "The lastAction(water/fertilize/prune) Date of the plant in the format of 'yyyy-MM-dd'."
+                  },
+                  "wateringCycle": {
+                    "type": "integer",
+                    "description": "The watering cycle of the plant in days."
+                  },
+                  "fertilizationCycle": {
+                    "type": "integer",
+                    "description":
+                        "The fertilization cycle of the plant in days."
+                  },
+                  "pruningCycle": {
+                    "type": "integer",
+                    "description": "The pruning cycle of the plant in days."
+                  }
+                },
+                "required": [
+                  "lastActionDate",
+                  "wateringCycle",
+                  "fertilizationCycle",
+                  "pruningCycle"
+                ],
+              },
+            }
+          }
+        ];
+        final CCrequest = ChatCompleteText(
+          messages: iptMsg,
+          maxToken: 200,
+          model: ChatModelFromValue(model: 'gpt-4o'),
+          tools: tools,
+          toolChoice:
+              'required', //! we can force it to execute the function by function name
+          // toolChoice: {
+          //   "type": "function",
+          //   "function": {"name": "add_new_plant"}
+          // },
+        );
+
+        final response = await openAI.onChatCompletion(request: CCrequest);
+        String? chatContent = response?.choices[0].message?.content;
+        //! check if the function works!
+        // print('toolCalls_1: ${response?.choices[0].message}');
+        // return chatContent;
+
+        final responseMsg = response?.choices[0].message;
+
+        // Append the toolCalls to iptMsg if toolCalls is not null
+        if (responseMsg != null) {
+          print('responseMsg: ${responseMsg.toJson()}');
+          iptMsg.add(responseMsg.toJson());
+        }
+
+        // Step 3: Check if the response includes a tool call
+        String finalContent = 'placeholder';
+        final toolCalls = responseMsg?.toolCalls;
+        print('toolCalls_2: $toolCalls');
+        if (toolCalls != null && toolCalls.isNotEmpty) {
+          // final toolCall = toolCalls[0];
+          String toolCall_id = toolCalls[0]['id'];
+          print('toolCall_id: $toolCall_id');
+          String toolFunctionName = toolCalls[0]['function']['name'];
+          print('toolFunctionName: $toolFunctionName');
+          Map<String, dynamic> toolArguments =
+              jsonDecode(toolCalls[0]['function']['arguments']);
+
+          if (toolFunctionName == 'add_new_plant') {
+            print('add_new_plant called with arguments: $toolArguments');
+            try {
+              //*example
+              // final results = addNewPlant("Ficus lyrata", 7, 14, 30);
+              String species = toolArguments['species'];
+              int wateringCycle = toolArguments['wateringCycle'];
+              int fertilizationCycle = toolArguments['fertilizationCycle'];
+              int pruningCycle = toolArguments['pruningCycle'];
+              final results = await addNewPlant(
+                  species, wateringCycle, fertilizationCycle, pruningCycle);
+              print('results: $results');
+              // Append the results to the messages list
+              iptMsg.add({
+                "role": "tool",
+                "tool_call_id": toolCall_id,
+                "name": toolFunctionName,
+                "content": results
+              });
+            } catch (e) {
+              print('Error in addNewPlant: $e');
+            }
+
+            // Step 5: Invoke the chat completions API with the function response appended to the messages list
+            final CCrequestWithFunctionResponse = ChatCompleteText(
+              messages: iptMsg,
+              model: ChatModelFromValue(model: 'gpt-4o'),
+              maxToken: 200,
+            );
+
+            //*+++++++++ streaming use onChatCompletionSSE, it works but too fast to see the streaming effect, so using brute force way to see the streaming effect
+            /*
+            openAI
+                .onChatCompletionSSE(request: CCrequestWithFunctionResponse)
+                .transform(StreamTransformer.fromHandlers(
+                    handleError: handleStreamError))
+                .listen((it) {
+              // print('streamResponse.id: ${it.id}');
+              // print('streamResponse.object: ${it.object}');
+              // print('streamResponse.content: ${it.choices[0].message.content}');
+              // Message? msg;
+              // List<Message> msgList = viewModel.getMessages();
+              // msgList.removeWhere((element) {
+              //   if (element.id == '${it.id}') {
+              //     msg = element;
+              //     print('element: $element');
+              //     return true;
+              //   }
+              //   return false;
+              // });
+
+              ///+= message
+              message =
+                  '${message ?? ""}${it.choices[0].message?.content ?? ""}';
+              print("stream msg: $message");
+              msgList[msgList.length - 1] =
+                  Message(text: message ?? '', userName: "BOT");
+              viewModel.notifyListeners();
+              // Update the message list in the viewModel
+              // viewModel.setMessages(msgList);
+            });*/
+
+            try {
+              //preparetion for streaming response
+              String? message;
+              List<Message> msgList = viewModel.messages;
+              msgList.add(Message(text: message ?? '', role: "BOT"));
+              notifyListeners();
+              //
+              final finalResponse = await openAI.onChatCompletion(
+                  request: CCrequestWithFunctionResponse);
+              String fullContent =
+                  finalResponse?.choices[0].message?.content ?? '';
+              await displayContentWithStreamingEffect(fullContent, viewModel);
+              finalContent = finalResponse?.choices[0].message?.content ?? '';
+            } catch (e) {
+              print('Error in finalResponse: $e');
+            }
+            //! calculateNextCareDatesTool
+          } else if (toolFunctionName == 'calculateNextCareDates') {
+            print(
+                'calculateNextCareDates called with arguments: $toolArguments');
+            try {
+              String lastActionDate = toolArguments['lastActionDate'];
+              int wateringCycle = toolArguments['wateringCycle'];
+              int fertilizationCycle = toolArguments['fertilizationCycle'];
+              int pruningCycle = toolArguments['pruningCycle'];
+              final results = calculateNextCareDatesTool(lastActionDate,
+                  wateringCycle, fertilizationCycle, pruningCycle);
+              print('results: $results');
+              // Append the results to the messages list
+              iptMsg.add({
+                "role": "tool",
+                "tool_call_id": toolCall_id,
+                "name": toolFunctionName,
+                "content": results
+              });
+            } catch (e) {
+              print('Error in calculateNextCareDates: $e');
+            }
+
+            final CCrequestWithFunctionResponse = ChatCompleteText(
+              messages: iptMsg,
+              model: ChatModelFromValue(model: 'gpt-4o'),
+              maxToken: 200,
+            );
+            try {
+              //preparetion for streaming response
+              String? message;
+              List<Message> msgList = viewModel.messages;
+              msgList.add(Message(text: message ?? '', role: "BOT"));
+              notifyListeners();
+              //
+              final finalResponse = await openAI.onChatCompletion(
+                  request: CCrequestWithFunctionResponse);
+              String fullContent =
+                  finalResponse?.choices[0].message?.content ?? '';
+              await displayContentWithStreamingEffect(fullContent, viewModel);
+              finalContent = finalResponse?.choices[0].message?.content ?? '';
+            } catch (e) {
+              print('Error in finalResponse: $e');
+            }
+          } else {
+            print("Error: function $toolFunctionName does not exist");
+          }
+        } else {
+          // Model did not identify a function to call, result can be returned to the user
+          print("toolCalls is null or empty: ${responseMsg?.content}");
+        }
+        // return finalContent;
+        //=================================================================
+        //test: what is my latest added plant?
+        CreateMessage MSGrequest =
+            CreateMessage(role: 'user', content: finalContent);
+
+        CreateMessageV2Response MSGresponse =
+            await openAI.threads.v2.messages.createMessage(
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+          request: MSGrequest,
+        );
+
+        CreateRun request = CreateRun(
+          assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
+          model: 'gpt-4o',
+          // instructions: "",
+          instructions:
+              "remember the related information for the plant, you do not have to respond upon receive this message",
+        );
+
+        final runResponse = await openAI.threads.v2.runs.createRun(
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+          request: request,
+        );
+
+        final runid = runResponse.id;
+
+        CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+          runId: runid,
+        );
+
+        while (mRun.status != 'completed') {
+          await Future.delayed(Duration(seconds: 3));
+          mRun = await openAI.threads.v2.runs.retrieveRun(
+            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+            runId: runid,
+          );
+        }
+        print('Retrieved run details: ${mRun.status}');
+
+        return finalContent;
       } else {
-        contentMessage = [{"type": "text", "text": message.text}];
+        // Debugging: Starting CreateMessage request
+        print('Creating message request...');
+        CreateMessage MSGrequest = CreateMessage(
+          role: 'user',
+          content: contentMessage,
+        );
+        print('CreateMessage request created: $MSGrequest');
+        //build new assistant and thread
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // AssistantData assistantInfo = await getAssistant();
+        // print('Assistant ID: ${assistantInfo.id}');
+        // await getThread();
+        // return 'Error';
+
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        CreateMessageV2Response MSGresponse =
+            await openAI.threads.v2.messages.createMessage(
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+          request: MSGrequest,
+        );
+
+        print('Received CreateMessage response: $MSGresponse');
+
+        print('Creating run request...');
+
+        CreateRun request = CreateRun(
+          assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
+          model: 'gpt-4o',
+          instructions: "test prompt",
+          // instructions: systemPrompt,
+        );
+        // Debugging: CreateRun request created
+        print('CreateRun request created: $request');
+
+        // Debugging: Sending CreateRun request to API
+        final runResponse = await openAI.threads.v2.runs.createRun(
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+          request: request,
+        );
+        // Debugging: Received response for CreateRun
+        print('Received CreateRun response: $runResponse');
+
+        final runid = runResponse.id;
+        // final msg = runResponse.stepDetails?.messageCreation.messageId;
+        // Debugging: Run ID retrieved
+        print('Run ID: $runid');
+
+        CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+          runId: runid,
+        );
+
+        while (mRun.status != 'completed') {
+          await Future.delayed(Duration(seconds: 3));
+          mRun = await openAI.threads.v2.runs.retrieveRun(
+            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+            runId: runid,
+          );
+        }
+        print('Retrieved run details: ${mRun.status}');
+
+        // ListRun mRunlist = await openAI.threads.v2.runs.listRuns(
+        //   threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+        // );
+        // print('List of runs: $mRunlist');
+
+        ListRun mRunSteps = await openAI.threads.v2.runs.listRunSteps(
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+          runId: runid,
+        );
+        // print('List of run steps: $mRunSteps');
+        // print(mRunSteps.data.length);
+        // mRunSteps.data.forEach((item) {
+        //   print('mRunlist: ${item.status}');
+        //   print('mRunlist: ${item.object}');
+        //   print('mRunlist: ${item.id}');
+        //   print('mRunlist: ${item.stepDetails?.messageCreation.messageId}');
+        // });
+
+        CreateMessageV2Response mMessage;
+        String? msgID =
+            mRunSteps.data[0].stepDetails?.messageCreation.messageId;
+        String? messageData;
+
+        if (msgID != null) {
+          print('msgID: $msgID');
+          mMessage = await openAI.threads.v2.messages.retrieveMessage(
+            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+            messageId: msgID,
+          );
+
+          print('mMessage: $mMessage');
+          print(mMessage.content.length);
+          messageData = mMessage.content[0].text.value;
+        }
+
+        //! streaming for text response for text input
+        //preparetion for streaming response
+        String? message;
+        List<Message> msgList = viewModel.messages;
+        msgList.add(Message(text: message ?? '', role: "BOT"));
+        notifyListeners();
+        String fullContent = messageData ?? '';
+        await displayContentWithStreamingEffect(fullContent, viewModel);
+
+        return messageData;
       }
-
-      final currentMessage = [{"role": "user", "content": contentMessage}] ; 
-
-      List<Map<String, dynamic>> previousMessages = windowMessages.map((windowMessage)=>windowMessage.contentMessage).toList();
-      previousMessages.insert(0, {"role": "system", "content": systemPrompt});
-
-      final request = ChatCompleteText(
-        messages: previousMessages + currentMessage,
-        maxToken: 200,
-        model: ChatModelFromValue(model: 'gpt-4o'),
-      );
-
-      final response = await openAI.onChatCompletion(request: request);
-      debugPrint('Chat completion response received');
-      
-      
-      return response?.choices[0].message?.content.split('//')[2];
     } catch (e) {
-      debugPrint('Error in _chatCompletion: $e');
+      print('Error in _chatCompletion: $e');
       return null;
     }
   }
 }
-
-
