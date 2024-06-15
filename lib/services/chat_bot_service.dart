@@ -571,7 +571,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
         //error , need to fix 
         CreateMessage MSGrequest = CreateMessage(
           role: 'user',
-          content: contentMessage,
+          content: contentMessage[0]["text"],
         );
         debugPrint('CreateMessage request created: $MSGrequest');
         //build new assistant and thread
