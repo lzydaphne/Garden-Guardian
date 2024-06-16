@@ -104,26 +104,25 @@ Future<String> addNewPlant(String species, int wateringCycle,
   return formattedString;
 }
 
-Future<void> findAndAppendSimilarMessage(String query) async {
+Future<Message> findSimilarMessage(String query) async {
     debugPrint('Finding and appending similar message for query: $query');
 
     final results = await _vectorSearch(query);
+    
    
     if (results == null ){
        debugPrint("Memory database is empty");
 
        String systemHeader = "The database is empty , can't retrieved information of pass conversation." ; // system header for retrieve memory 
-     //  await _storeInDatabase(Message(text:systemHeader, role: 'system' , imageDescription: null , base64ImageUrl:null));// can't be assistant or system , both failed 
+      return Message(text:systemHeader, role: 'system' , imageDescription: null , base64ImageUrl:null);// can't be assistant or system , both failed 
 
     }else
     { 
-       String systemHeader = "Retrieved memory from database , it may be helpful or not to your response :there is a prompt of ${results.role} , in ${results.timeStamp}, it says : " ; // system header for retrieve memory 
-   //    await _storeInDatabase(Message(text:systemHeader + results.text , role: 'system' , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl));// can't be assistant or system , both failed 
-       debugPrint('Similar message appended: ${results.text}');
-    }
-    
 
-    return ; 
+       String systemHeader = "Retrieved memory from database , it may be helpful or not to your response :there is a prompt of ${results.role} , in ${results.timeStamp}, it says : " ; // system header for retrieve memory 
+       return Message(text:systemHeader + results.text , role: 'system' , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl);// can't be assistant or system , both failed 
+      
+    }
   }
 
 Future<Message?> _vectorSearch(String searchString) async {

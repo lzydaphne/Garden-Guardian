@@ -48,7 +48,6 @@ class ImageHandler {
     }
   }
 }
-
 class ChatBot extends ChangeNotifier {
   final MessageRepository _messageRepository;
   final ImageHandler imageHandler = ImageHandler();
@@ -94,7 +93,10 @@ You are Garden Gurdian, an advanced AI-powered assistant designed to provide con
     - Be concise and to the point. Do not provide additional information unless explicitly asked.
 
 4. When the assistant can't remember the context or previous interactions:
-    - Call the "find_and_append_similar_message" function to search the database for past conversation contents and add them to the current thread.
+    - Generate a query string for several kinds of possible keywords included in the pass messages.
+    - Call the "find_similar_message" function with the query string to search for message that matches the keywords.
+    - The "find_similar_message" function returns the message text of the pass conversation with user.
+    - You can use the return pass conversation of the "find_similar_message" function to support your respond to the user's question.
 
 5. For any other user inputs:
     - Provide short, clear, and direct answers.
@@ -141,7 +143,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
     {
       "type": "function",
       "function": {
-        "name": "find_and_append_similar_message",
+        "name": "find_similar_message",
         "description": "Searches the database for past conversation contents related to the current query and appends them to the current thread.",
         "parameters": {
           "type": "object",
@@ -363,6 +365,35 @@ Remember to keep responses brief and focused on the user's query, and a little b
               finalContent = finalResponse?.choices[0].message?.content ?? '';
             } catch (e) {
               debugPrint('Error in finalResponse: $e');
+            }
+          } else if (toolFunctionName == 'find_similar_message') {
+            debugPrint('find_and_append_similar_message called with arguments: $toolArguments');
+
+            try {
+              String query = toolArguments['query'];
+              final results = await findSimilarMessage(query);
+
+              debugPrint('results: $results');
+
+              iptMsg.add({
+                "role": "tool",
+                "tool_call_id": toolCall_id,
+                "name": toolFunctionName,
+                "content": results.text
+              });
+
+              final CCrequestWithFunctionResponse = ChatCompleteText(
+                messages: iptMsg,
+                model: ChatModelFromValue(model: 'gpt-4o'),
+                maxToken: 200,
+              );
+
+              final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+              finalContent = finalResponse?.choices[0].message?.content ?? '';
+              _messageRepository.addMessage(results) ; 
+
+            } catch (e) {
+              debugPrint('Error in find_and_append_similar_message: $e');
             }
           } else {
             debugPrint("Error: function $toolFunctionName does not exist");
