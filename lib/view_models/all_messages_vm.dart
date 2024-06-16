@@ -51,7 +51,7 @@ class AllMessagesViewModel with ChangeNotifier {
       _messages.add(newMessage);
       notifyListeners();
     }
-    final response = await chatService.doResponse(newMessage, this);
+    final response = await chatService.doResponse(newMessage);
     return _handleResponse(newMessage, response);
   }
 
