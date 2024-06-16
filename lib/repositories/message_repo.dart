@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
-import 'package:cloud_functions/cloud_functions.dart';
+
 
 class MessageRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -81,71 +81,7 @@ class MessageRepository {
   }
 }
 
-Future<void> findAndAppendSimilarMessage(String query) async {
-    debugPrint('Finding and appending similar message for query: $query');
 
-    final results = await _vectorSearch(query);
-   
-    if (results == null ){
-       debugPrint("Memory database is empty");
-
-       String systemHeader = "The database is empty , can't retrieved information of pass conversation." ; // system header for retrieve memory 
-       await _storeInDatabase(Message(text:systemHeader, role: 'system' , imageDescription: null , base64ImageUrl:null));// can't be assistant or system , both failed 
-
-    }else
-    { 
-       String systemHeader = "Retrieved memory from database , it may be helpful or not to your response :there is a prompt of ${results.role} , in ${results.timeStamp}, it says : " ; // system header for retrieve memory 
-       await _storeInDatabase(Message(text:systemHeader + results.text , role: 'system' , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl));// can't be assistant or system , both failed 
-       debugPrint('Similar message appended: ${results.text}');
-    }
-    
-
-    return ; 
-  }
-
-Future<Message?> _vectorSearch(String searchString) async {
-    try { 
-
-      UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
-      debugPrint('Signed in anonymously as: ${userCredential.user?.uid}');
-
-      debugPrint('Performing vector search');
-
-      final HttpsCallable callable = FirebaseFunctions.instance
-          .httpsCallable('ext-firestore-vector-search-queryCallable');
-      
-
-      final response = await callable.call(<String, dynamic>{ //add a prefilter with username != null (don;t consider system message)
-        'query': searchString,
-        'limit': 1,
-        'prefilters': [
-        {
-            'field': 'issystem',
-            'operator': '==', // can't use != , not supported in vector search 
-            'value': "0",
-        },
-        ], 
-      });
-      debugPrint('Vector search response: ${response.data}');
-
-      debugPrint('Fetching message from Firestore with ID: ${response.data['ids'][0]}');
-      final docSnapshot = await FirebaseFirestore.instance.collection('user').doc(response.data['ids'][0]).get();
-    
-      if (docSnapshot.exists) {
-        final data = docSnapshot.data() ;
-        return Message.fromMap(data ?? {}) ;
-      }
-      else{
-        return null  ; 
-      }
-    }catch (e)
-    {
-      debugPrint('Error in vector search: $e');
-    }
-    return null;
-    
-
-  }
 
 
 
