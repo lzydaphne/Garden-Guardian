@@ -200,28 +200,6 @@ Remember to keep responses brief and focused on the user's query, and a little b
     super.dispose();
   }
 
-  Future<AssistantData> getAssistant() async {
-    List<AssistantData> assistantList = await openAI.assistant.v2.list();
-    for (var assistant in assistantList) {
-      if (assistant.name == "testAssistant") {
-        return assistant;
-      }
-    }
-    Assistant assistant = Assistant(name: 'testAssistant', model: Gpt4OModel());
-    return openAI.assistant.v2.create(assistant: assistant);
-  }
-
-  Future<ThreadResponse> getThread() async {
-    threadCreate = await openAI.threads.v2.createThread(request: threadRequest);
-    debugPrint('threadCreate: ${threadCreate.id}');
-    return threadCreate;
-  }
-
-  void updateMessageList(String displayedContent, AllMessagesViewModel viewModel) {
-    List<Message> msgList = windowMessages;
-    msgList[msgList.length - 1] = Message(text: displayedContent, role: "assistant");
-  }
-
   Future<String> doResponse(Message userInp) async {
     try {
       debugPrint('Generating response for user input');
@@ -251,64 +229,136 @@ Remember to keep responses brief and focused on the user's query, and a little b
         contentMessage = [{"type": "text", "text": message.text}];
       }
 
-      if (isImage) {
-        final iptMsg = [
-          {"role": "system", "content": systemPrompt},
-          {"role": "user", "content": contentMessage}
-        ];
 
-        final CCrequest = ChatCompleteText(
-          messages: iptMsg,
-          maxToken: 200,
-          model: ChatModelFromValue(model: 'gpt-4o'),
-          tools: tools,
-          toolChoice: 'required'
-        );
+      final iptMsg = [
+        {"role": "system", "content": systemPrompt},
+        {"role": "user", "content": contentMessage}
+      ];
 
-        final response = await openAI.onChatCompletion(request: CCrequest);
+      final CCrequest = ChatCompleteText(
+        messages: iptMsg,
+        maxToken: 200,
+        model: ChatModelFromValue(model: 'gpt-4o'),
+        tools: tools,
+        toolChoice: 'required'
+      );
 
-        final responseMsg = response?.choices[0].message;
+      final response = await openAI.onChatCompletion(request: CCrequest);
 
-        if (responseMsg != null) {
-          debugPrint('responseMsg: ${responseMsg.toJson()}');
-          iptMsg.add(responseMsg.toJson());
-        }
+      final responseMsg = response?.choices[0].message;
 
-        String finalContent = 'placeholder';
-        final toolCalls = responseMsg?.toolCalls;
-        debugPrint('toolCalls_2: $toolCalls');
+      if (responseMsg != null) {
+        debugPrint('responseMsg: ${responseMsg.toJson()}');
+        iptMsg.add(responseMsg.toJson());
+      }
 
-        if (toolCalls != null && toolCalls.isNotEmpty) {
-          String toolCall_id = toolCalls[0]['id'];
-          debugPrint('toolCall_id: $toolCall_id');
+      String finalContent = 'placeholder';
+      final toolCalls = responseMsg?.toolCalls;
+      debugPrint('toolCalls_2: $toolCalls');
 
-          String toolFunctionName = toolCalls[0]['function']['name'];
-          debugPrint('toolFunctionName: $toolFunctionName');
+      if (toolCalls != null && toolCalls.isNotEmpty) {
+        String toolCall_id = toolCalls[0]['id'];
+        debugPrint('toolCall_id: $toolCall_id');
 
-          Map<String, dynamic> toolArguments = jsonDecode(toolCalls[0]['function']['arguments']);
+        String toolFunctionName = toolCalls[0]['function']['name'];
+        debugPrint('toolFunctionName: $toolFunctionName');
 
-          if (toolFunctionName == 'add_new_plant') {
-            debugPrint('add_new_plant called with arguments: $toolArguments');
+        Map<String, dynamic> toolArguments = jsonDecode(toolCalls[0]['function']['arguments']);
 
-            try {
-              String species = toolArguments['species'];
-              int wateringCycle = toolArguments['wateringCycle'];
-              int fertilizationCycle = toolArguments['fertilizationCycle'];
-              int pruningCycle = toolArguments['pruningCycle'];
+        if (toolFunctionName == 'add_new_plant') {
+          debugPrint('add_new_plant called with arguments: $toolArguments');
 
-              final results = await addNewPlant(species, wateringCycle, fertilizationCycle, pruningCycle);
+          try {
+            String species = toolArguments['species'];
+            int wateringCycle = toolArguments['wateringCycle'];
+            int fertilizationCycle = toolArguments['fertilizationCycle'];
+            int pruningCycle = toolArguments['pruningCycle'];
 
-              debugPrint('results: $results');
+            final results = await addNewPlant(species, wateringCycle, fertilizationCycle, pruningCycle);
 
-              iptMsg.add({
-                "role": "tool",
-                "tool_call_id": toolCall_id,
-                "name": toolFunctionName,
-                "content": results
-              });
-            } catch (e) {
-              debugPrint('Error in addNewPlant: $e');
-            }
+            debugPrint('results: $results');
+
+            iptMsg.add({
+              "role": "tool",
+              "tool_call_id": toolCall_id,
+              "name": toolFunctionName,
+              "content": results
+            });
+          } catch (e) {
+            debugPrint('Error in addNewPlant: $e');
+          }
+
+          final CCrequestWithFunctionResponse = ChatCompleteText(
+            messages: iptMsg,
+            model: ChatModelFromValue(model: 'gpt-4o'),
+            maxToken: 200,
+          );
+
+          try {
+            String? message;
+            List<Message> msgList = windowMessages;
+            msgList.add(Message(text: message ?? '', role: "assistant"));
+            notifyListeners();
+
+            final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+            finalContent = finalResponse?.choices[0].message?.content ?? '';
+          } catch (e) {
+            debugPrint('Error in finalResponse: $e');
+          }
+        } else if (toolFunctionName == 'calculateNextCareDates') {
+          debugPrint('calculateNextCareDates called with arguments: $toolArguments');
+
+          try {
+            String lastActionDate = toolArguments['lastActionDate'];
+            int wateringCycle = toolArguments['wateringCycle'];
+            int fertilizationCycle = toolArguments['fertilizationCycle'];
+            int pruningCycle = toolArguments['pruningCycle'];
+
+            final results = calculateNextCareDatesTool(lastActionDate, wateringCycle, fertilizationCycle, pruningCycle);
+            debugPrint('results: $results');
+
+            iptMsg.add({
+              "role": "tool",
+              "tool_call_id": toolCall_id,
+              "name": toolFunctionName,
+              "content": results
+            });
+          } catch (e) {
+            debugPrint('Error in calculateNextCareDates: $e');
+          }
+
+          final CCrequestWithFunctionResponse = ChatCompleteText(
+            messages: iptMsg,
+            model: ChatModelFromValue(model: 'gpt-4o'),
+            maxToken: 200,
+          );
+
+          try {
+            String? message;
+            List<Message> msgList = windowMessages;
+            msgList.add(Message(text: message ?? '', role: "assistant"));
+            notifyListeners();
+
+            final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+            finalContent = finalResponse?.choices[0].message?.content ?? '';
+          } catch (e) {
+            debugPrint('Error in finalResponse: $e');
+          }
+        } else if (toolFunctionName == 'find_similar_message') {
+          debugPrint('find_and_append_similar_message called with arguments: $toolArguments');
+
+          try {
+            String query = toolArguments['query'];
+            final results = await findSimilarMessage(query);
+
+            debugPrint('results: $results');
+
+            iptMsg.add({
+              "role": "tool",
+              "tool_call_id": toolCall_id,
+              "name": toolFunctionName,
+              "content": results.text
+            });
 
             final CCrequestWithFunctionResponse = ChatCompleteText(
               messages: iptMsg,
@@ -316,201 +366,56 @@ Remember to keep responses brief and focused on the user's query, and a little b
               maxToken: 200,
             );
 
-            try {
-              String? message;
-              List<Message> msgList = windowMessages;
-              msgList.add(Message(text: message ?? '', role: "assistant"));
-              notifyListeners();
+            final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+            finalContent = finalResponse?.choices[0].message?.content ?? '';
+            _messageRepository.addMessage(results) ; 
 
-              final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
-              finalContent = finalResponse?.choices[0].message?.content ?? '';
-            } catch (e) {
-              debugPrint('Error in finalResponse: $e');
-            }
-          } else if (toolFunctionName == 'calculateNextCareDates') {
-            debugPrint('calculateNextCareDates called with arguments: $toolArguments');
-
-            try {
-              String lastActionDate = toolArguments['lastActionDate'];
-              int wateringCycle = toolArguments['wateringCycle'];
-              int fertilizationCycle = toolArguments['fertilizationCycle'];
-              int pruningCycle = toolArguments['pruningCycle'];
-
-              final results = calculateNextCareDatesTool(lastActionDate, wateringCycle, fertilizationCycle, pruningCycle);
-              debugPrint('results: $results');
-
-              iptMsg.add({
-                "role": "tool",
-                "tool_call_id": toolCall_id,
-                "name": toolFunctionName,
-                "content": results
-              });
-            } catch (e) {
-              debugPrint('Error in calculateNextCareDates: $e');
-            }
-
-            final CCrequestWithFunctionResponse = ChatCompleteText(
-              messages: iptMsg,
-              model: ChatModelFromValue(model: 'gpt-4o'),
-              maxToken: 200,
-            );
-
-            try {
-              String? message;
-              List<Message> msgList = windowMessages;
-              msgList.add(Message(text: message ?? '', role: "assistant"));
-              notifyListeners();
-
-              final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
-              finalContent = finalResponse?.choices[0].message?.content ?? '';
-            } catch (e) {
-              debugPrint('Error in finalResponse: $e');
-            }
-          } else if (toolFunctionName == 'find_similar_message') {
-            debugPrint('find_and_append_similar_message called with arguments: $toolArguments');
-
-            try {
-              String query = toolArguments['query'];
-              final results = await findSimilarMessage(query);
-
-              debugPrint('results: $results');
-
-              iptMsg.add({
-                "role": "tool",
-                "tool_call_id": toolCall_id,
-                "name": toolFunctionName,
-                "content": results.text
-              });
-
-              final CCrequestWithFunctionResponse = ChatCompleteText(
-                messages: iptMsg,
-                model: ChatModelFromValue(model: 'gpt-4o'),
-                maxToken: 200,
-              );
-
-              final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
-              finalContent = finalResponse?.choices[0].message?.content ?? '';
-              _messageRepository.addMessage(results) ; 
-
-            } catch (e) {
-              debugPrint('Error in find_and_append_similar_message: $e');
-            }
-          } else {
-            debugPrint("Error: function $toolFunctionName does not exist");
+          } catch (e) {
+            debugPrint('Error in find_and_append_similar_message: $e');
           }
         } else {
-          debugPrint("toolCalls is null or empty: ${responseMsg?.content}");
+          debugPrint("Error: function $toolFunctionName does not exist");
         }
-
-        CreateMessage MSGrequest = CreateMessage(role: 'user', content: finalContent);
-
-        CreateMessageV2Response MSGresponse = await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-          request: MSGrequest,
-        );
-
-        CreateRun request = CreateRun(
-          assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
-          model: 'gpt-4o',
-          instructions: "remember the related information for the plant, you do not have to respond upon receive this message",
-        );
-
-        final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-          request: request,
-        );
-
-        final runid = runResponse.id;
-
-        CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-          runId: runid,
-        );
-
-        while (mRun.status != 'completed') {
-          await Future.delayed(Duration(seconds: 3));
-          mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-            runId: runid,
-          );
-        }
-        debugPrint('Retrieved run details: ${mRun.status}');
-        _messageRepository.addMessage(Message(text: finalContent, role: "assistant"));
-        return finalContent;
       } else {
-        debugPrint('Creating message request...');
-        debugPrint('$contentMessage ${contentMessage.runtimeType}');
-        
-        CreateMessage MSGrequest = CreateMessage(role: 'user', content: contentMessage[0]["text"]);
-        debugPrint('CreateMessage request created: $MSGrequest');
-
-        CreateMessageV2Response MSGresponse = await openAI.threads.v2.messages.createMessage(
-          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-          request: MSGrequest,
-        );
-
-        debugPrint('Received CreateMessage response: $MSGresponse');
-
-        CreateRun request = CreateRun(
-          assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
-          model: 'gpt-4o',
-          instructions: "test prompt",
-        );
-
-        debugPrint('CreateRun request created: $request');
-
-        final runResponse = await openAI.threads.v2.runs.createRun(
-          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-          request: request,
-        );
-        debugPrint('Received CreateRun response: $runResponse');
-
-        final runid = runResponse.id;
-        debugPrint('Run ID: $runid');
-
-        CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-          runId: runid,
-        );
-
-        while (mRun.status != 'completed') {
-          await Future.delayed(Duration(seconds: 3));
-          mRun = await openAI.threads.v2.runs.retrieveRun(
-            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-            runId: runid,
-          );
-        }
-        debugPrint('Retrieved run details: ${mRun.status}');
-
-        ListRun mRunSteps = await openAI.threads.v2.runs.listRunSteps(
-          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-          runId: runid,
-        );
-
-        CreateMessageV2Response mMessage;
-        String? msgID = mRunSteps.data[0].stepDetails?.messageCreation.messageId;
-        String? messageData;
-
-        if (msgID != null) {
-          debugPrint('msgID: $msgID');
-          mMessage = await openAI.threads.v2.messages.retrieveMessage(
-            threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-            messageId: msgID,
-          );
-
-          debugPrint('mMessage: $mMessage');
-          messageData = mMessage.content[0].text.value;
-        }
-
-        String? message;
-        List<Message> msgList = windowMessages;
-        msgList.add(Message(text: message ?? '', role: "assistant"));
-        notifyListeners();
-        String fullContent = messageData ?? '';
-        //await displayContentWithStreamingEffect(fullContent, viewModel);
-        _messageRepository.addMessage(Message(text: fullContent, role: "assistant"));
-        return messageData;
+        debugPrint("toolCalls is null or empty: ${responseMsg?.content}");
       }
+
+      CreateMessage MSGrequest = CreateMessage(role: 'user', content: finalContent);
+
+      CreateMessageV2Response MSGresponse = await openAI.threads.v2.messages.createMessage(
+        threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+        request: MSGrequest,
+      );
+
+      CreateRun request = CreateRun(
+        assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
+        model: 'gpt-4o',
+        instructions: "remember the related information for the plant, you do not have to respond upon receive this message",
+      );
+
+      final runResponse = await openAI.threads.v2.runs.createRun(
+        threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+        request: request,
+      );
+
+      final runid = runResponse.id;
+
+      CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
+        threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+        runId: runid,
+      );
+
+      while (mRun.status != 'completed') {
+        await Future.delayed(Duration(seconds: 3));
+        mRun = await openAI.threads.v2.runs.retrieveRun(
+          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
+          runId: runid,
+        );
+      }
+      debugPrint('Retrieved run details: ${mRun.status}');
+      _messageRepository.addMessage(Message(text: finalContent, role: "assistant"));
+      return finalContent;
+    
     } catch (e) {
       debugPrint('Error in _chatCompletion: $e');
       return null;
