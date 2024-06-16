@@ -229,18 +229,21 @@ Remember to keep responses brief and focused on the user's query, and a little b
         contentMessage = [{"type": "text", "text": message.text}];
       }
 
+      final currentMessage = [{"role": "user", "content": contentMessage}] ; 
 
-      final iptMsg = [
-        {"role": "system", "content": systemPrompt},
-        {"role": "user", "content": contentMessage}
-      ];
+      List<Map<String, dynamic>> previousMessages = windowMessages.map((windowMessage)=>windowMessage.contentMessage).toList();
+      previousMessages.insert(0, {"role": "system", "content": systemPrompt});
+    
+      final iptMsg = previousMessages + currentMessage ; 
+
+      debugPrint('Message: $iptMsg');
 
       final CCrequest = ChatCompleteText(
         messages: iptMsg,
         maxToken: 200,
         model: ChatModelFromValue(model: 'gpt-4o'),
         tools: tools,
-        toolChoice: 'required'
+        toolChoice: "auto"
       );
 
       final response = await openAI.onChatCompletion(request: CCrequest);
@@ -349,9 +352,11 @@ Remember to keep responses brief and focused on the user's query, and a little b
 
           try {
             String query = toolArguments['query'];
+
+            debugPrint('query: $query');
             final results = await findSimilarMessage(query);
 
-            debugPrint('results: $results');
+            debugPrint('results: ${results.text}');
 
             iptMsg.add({
               "role": "tool",
@@ -368,7 +373,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
 
             final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
             finalContent = finalResponse?.choices[0].message?.content ?? '';
-            _messageRepository.addMessage(results) ; 
+         //   _messageRepository.addMessage(results) ; 
 
           } catch (e) {
             debugPrint('Error in find_and_append_similar_message: $e');
@@ -378,41 +383,9 @@ Remember to keep responses brief and focused on the user's query, and a little b
         }
       } else {
         debugPrint("toolCalls is null or empty: ${responseMsg?.content}");
+        finalContent = responseMsg?.content as String; 
       }
 
-      CreateMessage MSGrequest = CreateMessage(role: 'user', content: finalContent);
-
-      CreateMessageV2Response MSGresponse = await openAI.threads.v2.messages.createMessage(
-        threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-        request: MSGrequest,
-      );
-
-      CreateRun request = CreateRun(
-        assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
-        model: 'gpt-4o',
-        instructions: "remember the related information for the plant, you do not have to respond upon receive this message",
-      );
-
-      final runResponse = await openAI.threads.v2.runs.createRun(
-        threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-        request: request,
-      );
-
-      final runid = runResponse.id;
-
-      CreateRunResponse mRun = await openAI.threads.v2.runs.retrieveRun(
-        threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-        runId: runid,
-      );
-
-      while (mRun.status != 'completed') {
-        await Future.delayed(Duration(seconds: 3));
-        mRun = await openAI.threads.v2.runs.retrieveRun(
-          threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
-          runId: runid,
-        );
-      }
-      debugPrint('Retrieved run details: ${mRun.status}');
       _messageRepository.addMessage(Message(text: finalContent, role: "assistant"));
       return finalContent;
     

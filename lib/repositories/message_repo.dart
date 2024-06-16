@@ -23,7 +23,7 @@ class MessageRepository {
     return _db
         .collection('user')
         .orderBy('timeStamp', descending: false)
-        .limitToLast(2)
+      //  .limitToLast(2)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
