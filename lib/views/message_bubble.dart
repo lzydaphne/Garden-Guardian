@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 
 class MessageBubble extends StatelessWidget {
   // Create a message bubble which is meant to be the first in the sequence.
@@ -117,39 +116,34 @@ class MessageBubble extends StatelessWidget {
                           children: [
                             if (base64ImageUrl != null)
                               Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Image.memory(
-                                      base64Decode(base64ImageUrl as String))),
-                            if (base64ImageUrl != null)
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: MarkdownBody(
-                                  data: text,
-                                  styleSheet: MarkdownStyleSheet(
-                                    p: TextStyle(
-                                      height: 1.3,
-                                      color: isMine
-                                          ? theme.colorScheme.onPrimary
-                                          : theme
-                                              .colorScheme.onPrimaryContainer,
-                                    ),
-                                  ),
-                                  softLineBreak: true,
-                                ),
-                              )
-                            else
-                              MarkdownBody(
-                                data: text,
-                                styleSheet: MarkdownStyleSheet(
-                                  p: TextStyle(
-                                    height: 1.3,
-                                    color: isMine
-                                        ? theme.colorScheme.onPrimary
-                                        : theme.colorScheme.onPrimaryContainer,
-                                  ),
-                                ),
-                                softLineBreak: true,
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child:  Image.memory(base64Decode(base64ImageUrl as String))
                               ),
+                            if (base64ImageUrl != null)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                text,
+                                style: TextStyle(
+                                  // Add a little line spacing to make the text look nicer when multilined.
+                                  height: 1.3,
+                                  color: isMine
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onPrimaryContainer,
+                                ),
+                                softWrap: true,
+                              ),
+                            ) else Text(
+                                text,
+                                style: TextStyle(
+                                  // Add a little line spacing to make the text look nicer when multilined.
+                                  height: 1.3,
+                                  color: isMine
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onPrimaryContainer,
+                                ),
+                                softWrap: true,
+                              ) ,
                           ],
                         ),
                       ),
