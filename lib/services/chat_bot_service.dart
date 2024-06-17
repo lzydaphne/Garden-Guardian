@@ -212,7 +212,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
   }
 
   Future<String?> _chatCompletion(Message message) async {
-    _messageRepository.addMessage(message);
+    
     try {
       dynamic contentMessage;
       bool isImage = false;
@@ -225,6 +225,8 @@ Remember to keep responses brief and focused on the user's query, and a little b
           {"type": "text", "text": message.text},
           {"type": "image_url", "image_url": {"url": base64Image}}
         ];
+
+        // handle the another model of image description
       } else {
         contentMessage = [{"type": "text", "text": message.text}];
       }
@@ -386,6 +388,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
         finalContent = responseMsg?.content as String; 
       }
 
+      await _messageRepository.addMessage(message);
       _messageRepository.addMessage(Message(text: finalContent, role: "assistant"));
       return finalContent;
     
