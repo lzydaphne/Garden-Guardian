@@ -8,22 +8,24 @@ import 'package:flutter_app/models/message.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:cloud_functions/cloud_functions.dart';
 
-import 'package:flutter_app/repositories/message_repo.dart';
+// import 'package:flutter_app/repositories/message_repo.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_app/repositories/plant_repo.dart';
+import 'package:flutter_app/models/plant.dart';
 
 // Define a Plant class to hold plant details
-class Plant {
-  String species;
-  DateTime plantingDate;
-  int wateringCycle; // in days
-  int fertilizationCycle; // in days
-  int pruningCycle; // in days
+// class Plant {
+//   String species;
+//   DateTime plantingDate;
+//   int wateringCycle; // in days
+//   int fertilizationCycle; // in days
+//   int pruningCycle; // in days
 
-  Plant(this.species, this.plantingDate, this.wateringCycle,
-      this.fertilizationCycle, this.pruningCycle);
-}
+//   Plant(this.species, this.plantingDate, this.wateringCycle,
+//       this.fertilizationCycle, this.pruningCycle);
+// }
 
 // Function to process the image and identify the plant species
 // Future<String> identifyPlantSpecies(String imagePath) async {
@@ -81,19 +83,38 @@ Map<String, DateTime?> calculateNextCareDates(DateTime plantingDate,
 }
 
 // Function to add a new plant
-Future<String> addNewPlant(String species, int wateringCycle,
-    int fertilizationCycle, int pruningCycle) async {
+Future<String> addNewPlant(
+    String species,
+    String imageUrl,
+    int wateringCycle,
+    int fertilizationCycle,
+    int pruningCycle,
+    PlantRepository _plantRepository) async {
   DateTime plantingDate = DateTime.now();
-  Plant newPlant = Plant(
-      species, plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
 
   Map<String, DateTime?> careDates = calculateNextCareDates(
       plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
 
+  Plant newPlant = Plant(
+    species: species,
+    imageUrl: imageUrl,
+    plantingDate: plantingDate,
+    wateringCycle: wateringCycle,
+    fertilizationCycle: fertilizationCycle,
+    pruningCycle: pruningCycle,
+    nextWateringDate: careDates["nextWateringDate"],
+    nextFertilizationDate: careDates["nextFertilizationDate"],
+    nextPruningDate: careDates["nextPruningDate"],
+  );
+
+  //! add to database
+  await _plantRepository.addPlant(newPlant);
+  debugPrint("Plant added to DB successfully");
+
   // Formatting the date for a nice output
   String formattedString = 'Plant Details:\n'
       'Species: ${newPlant.species}\n'
-      'Planting Date: ${DateFormat('yyyy-MM-dd').format(newPlant.plantingDate)}\n'
+      'Planting Date: ${DateFormat('yyyy-MM-dd').format(newPlant.plantingDate ?? DateTime.now())}\n'
       'Watering Cycle: ${newPlant.wateringCycle} days\n'
       'Fertilization Cycle: ${newPlant.fertilizationCycle} days\n'
       'Pruning Cycle: ${newPlant.pruningCycle > 0 ? newPlant.pruningCycle.toString() + " days" : "No need to prune!"}\n'
@@ -105,66 +126,72 @@ Future<String> addNewPlant(String species, int wateringCycle,
 }
 
 Future<Message> findSimilarMessage(String query) async {
-    debugPrint('Finding and appending similar message for query: $query');
+  debugPrint('Finding and appending similar message for query: $query');
 
-    final results = await _vectorSearch(query);
-    
-   
-    if (results == null ){
-       debugPrint("Memory database is empty");
+  final results = await _vectorSearch(query);
 
-       String systemHeader = "The database is empty , can't retrieved information of pass conversation." ; // system header for retrieve memory 
-      return Message(text:systemHeader, role: 'system' , imageDescription: null , base64ImageUrl:null);// can't be assistant or system , both failed 
+  if (results == null) {
+    debugPrint("Memory database is empty");
 
-    }else
-    { 
-
-       String systemHeader = "Retrieved memory from database , it may be helpful or not to your response :there is a prompt of ${results.role} , in ${results.timeStamp}, it says : " ; // system header for retrieve memory 
-       return Message(text:systemHeader + results.text , role: 'system' , imageDescription: results.imageDescription , base64ImageUrl: results.base64ImageUrl);// can't be assistant or system , both failed 
-      
-    }
+    String systemHeader =
+        "The database is empty , can't retrieved information of pass conversation."; // system header for retrieve memory
+    return Message(
+        text: systemHeader,
+        role: 'system',
+        imageDescription: null,
+        base64ImageUrl: null); // can't be assistant or system , both failed
+  } else {
+    String systemHeader =
+        "Retrieved memory from database , it may be helpful or not to your response :there is a prompt of ${results.role} , in ${results.timeStamp}, it says : "; // system header for retrieve memory
+    return Message(
+        text: systemHeader + results.text,
+        role: 'system',
+        imageDescription: results.imageDescription,
+        base64ImageUrl: results
+            .base64ImageUrl); // can't be assistant or system , both failed
   }
+}
 
 Future<Message?> _vectorSearch(String searchString) async {
-    try { 
+  try {
+    UserCredential userCredential =
+        await FirebaseAuth.instance.signInAnonymously();
+    debugPrint('Signed in anonymously as: ${userCredential.user?.uid}');
 
-      UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
-      debugPrint('Signed in anonymously as: ${userCredential.user?.uid}');
+    debugPrint('Performing vector search');
 
-      debugPrint('Performing vector search');
+    final HttpsCallable callable = FirebaseFunctions.instance
+        .httpsCallable('ext-firestore-vector-search-queryCallable');
 
-      final HttpsCallable callable = FirebaseFunctions.instance
-          .httpsCallable('ext-firestore-vector-search-queryCallable');
-      
-
-      final response = await callable.call(<String, dynamic>{ //add a prefilter with username != null (don;t consider system message)
-        'query': searchString,
-        'limit': 1,
-        'prefilters': [
+    final response = await callable.call(<String, dynamic>{
+      //add a prefilter with username != null (don;t consider system message)
+      'query': searchString,
+      'limit': 1,
+      'prefilters': [
         {
-            'field': 'issystem',
-            'operator': '==', // can't use != , not supported in vector search 
-            'value': "0",
+          'field': 'issystem',
+          'operator': '==', // can't use != , not supported in vector search
+          'value': "0",
         },
-        ], 
-      });
-      debugPrint('Vector search response: ${response.data}');
+      ],
+    });
+    debugPrint('Vector search response: ${response.data}');
 
-      debugPrint('Fetching message from Firestore with ID: ${response.data['ids'][0]}');
-      final docSnapshot = await FirebaseFirestore.instance.collection('user').doc(response.data['ids'][0]).get();
-    
-      if (docSnapshot.exists) {
-        final data = docSnapshot.data() ;
-        return Message.fromMap(data ?? {}) ;
-      }
-      else{
-        return null  ; 
-      }
-    }catch (e)
-    {
-      debugPrint('Error in vector search: $e');
+    debugPrint(
+        'Fetching message from Firestore with ID: ${response.data['ids'][0]}');
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .doc(response.data['ids'][0])
+        .get();
+
+    if (docSnapshot.exists) {
+      final data = docSnapshot.data();
+      return Message.fromMap(data ?? {});
+    } else {
+      return null;
     }
-    return null;
-    
-
+  } catch (e) {
+    debugPrint('Error in vector search: $e');
   }
+  return null;
+}

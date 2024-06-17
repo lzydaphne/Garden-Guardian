@@ -12,6 +12,8 @@ import 'package:mime/mime.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:flutter_app/services/tool.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
+import 'package:flutter_app/repositories/plant_repo.dart';
+import 'package:flutter_app/models/plant.dart';
 
 class ImageHandler {
   Future<String?> convertImageToBase64(String? imagePath) async {
@@ -48,8 +50,10 @@ class ImageHandler {
     }
   }
 }
+
 class ChatBot extends ChangeNotifier {
   final MessageRepository _messageRepository;
+  final PlantRepository _plantRepository = PlantRepository();
   final ImageHandler imageHandler = ImageHandler();
   StreamSubscription<List<Message>>? _messagesSubscription;
   List<Message> windowMessages = [];
@@ -61,7 +65,7 @@ class ChatBot extends ChangeNotifier {
   late ThreadResponse threadCreate;
 
   String kToken = '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';
-  
+
   String systemPrompt = """
 You are Garden Gurdian, an advanced AI-powered assistant designed to provide concise and comprehensive information and assistance related to plants. It is specifically tailored for total beginners. Below are the 3 functionalities and capabilities of Garden Gurdian, you should analyze the user input and provide the appropriate response with EXACTLY one of the following functionalities:
 
@@ -110,16 +114,34 @@ Remember to keep responses brief and focused on the user's query, and a little b
       "type": "function",
       "function": {
         "name": "add_new_plant",
-        "description": "Use this function to add a new plant and get related information.",
+        "description":
+            "Use this function to add a new plant and get related information.",
         "parameters": {
           "type": "object",
           "properties": {
-            "species": {"type": "string", "description": "The specific species of the plant."},
-            "wateringCycle": {"type": "integer", "description": "The watering cycle of the plant in days."},
-            "fertilizationCycle": {"type": "integer", "description": "The fertilization cycle of the plant in days."},
-            "pruningCycle": {"type": "integer", "description": "The pruning cycle of the plant in days."}
+            "species": {
+              "type": "string",
+              "description": "The specific species of the plant."
+            },
+            "wateringCycle": {
+              "type": "integer",
+              "description": "The watering cycle of the plant in days."
+            },
+            "fertilizationCycle": {
+              "type": "integer",
+              "description": "The fertilization cycle of the plant in days."
+            },
+            "pruningCycle": {
+              "type": "integer",
+              "description": "The pruning cycle of the plant in days."
+            }
           },
-          "required": ["species", "wateringCycle", "fertilizationCycle", "pruningCycle"]
+          "required": [
+            "species",
+            "wateringCycle",
+            "fertilizationCycle",
+            "pruningCycle"
+          ]
         }
       }
     },
@@ -127,16 +149,35 @@ Remember to keep responses brief and focused on the user's query, and a little b
       "type": "function",
       "function": {
         "name": "calculateNextCareDates",
-        "description": "Calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
+        "description":
+            "Calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
         "parameters": {
           "type": "object",
           "properties": {
-            "lastActionDate": {"type": "string", "description": "The lastAction(water/fertilize/prune) Date of the plant in the format of 'yyyy-MM-dd'."},
-            "wateringCycle": {"type": "integer", "description": "The watering cycle of the plant in days."},
-            "fertilizationCycle": {"type": "integer", "description": "The fertilization cycle of the plant in days."},
-            "pruningCycle": {"type": "integer", "description": "The pruning cycle of the plant in days."}
+            "lastActionDate": {
+              "type": "string",
+              "description":
+                  "The lastAction(water/fertilize/prune) Date of the plant in the format of 'yyyy-MM-dd'."
+            },
+            "wateringCycle": {
+              "type": "integer",
+              "description": "The watering cycle of the plant in days."
+            },
+            "fertilizationCycle": {
+              "type": "integer",
+              "description": "The fertilization cycle of the plant in days."
+            },
+            "pruningCycle": {
+              "type": "integer",
+              "description": "The pruning cycle of the plant in days."
+            }
           },
-          "required": ["lastActionDate", "wateringCycle", "fertilizationCycle", "pruningCycle"]
+          "required": [
+            "lastActionDate",
+            "wateringCycle",
+            "fertilizationCycle",
+            "pruningCycle"
+          ]
         }
       }
     },
@@ -144,11 +185,16 @@ Remember to keep responses brief and focused on the user's query, and a little b
       "type": "function",
       "function": {
         "name": "find_similar_message",
-        "description": "Searches the database for past conversation contents related to the current query and appends them to the current thread.",
+        "description":
+            "Searches the database for past conversation contents related to the current query and appends them to the current thread.",
         "parameters": {
           "type": "object",
           "properties": {
-            "query": {"type": "string", "description": "The current query or context the assistant needs help with."}
+            "query": {
+              "type": "string",
+              "description":
+                  "The current query or context the assistant needs help with."
+            }
           },
           "required": ["query"]
         }
@@ -217,9 +263,11 @@ Remember to keep responses brief and focused on the user's query, and a little b
     return threadCreate;
   }
 
-  void updateMessageList(String displayedContent, AllMessagesViewModel viewModel) {
+  void updateMessageList(
+      String displayedContent, AllMessagesViewModel viewModel) {
     List<Message> msgList = windowMessages;
-    msgList[msgList.length - 1] = Message(text: displayedContent, role: "assistant");
+    msgList[msgList.length - 1] =
+        Message(text: displayedContent, role: "assistant");
   }
 
   Future<String> doResponse(Message userInp) async {
@@ -238,17 +286,24 @@ Remember to keep responses brief and focused on the user's query, and a little b
     try {
       dynamic contentMessage;
       bool isImage = false;
+      String? base64Image;
 
       if (message.base64ImageUrl != null) {
-        final base64Image = await imageHandler.convertImageToBase64(message.base64ImageUrl!);
+        base64Image =
+            await imageHandler.convertImageToBase64(message.base64ImageUrl!);
         isImage = true;
 
         contentMessage = [
           {"type": "text", "text": message.text},
-          {"type": "image_url", "image_url": {"url": base64Image}}
+          {
+            "type": "image_url",
+            "image_url": {"url": base64Image}
+          }
         ];
       } else {
-        contentMessage = [{"type": "text", "text": message.text}];
+        contentMessage = [
+          {"type": "text", "text": message.text}
+        ];
       }
 
       if (isImage) {
@@ -258,12 +313,11 @@ Remember to keep responses brief and focused on the user's query, and a little b
         ];
 
         final CCrequest = ChatCompleteText(
-          messages: iptMsg,
-          maxToken: 200,
-          model: ChatModelFromValue(model: 'gpt-4o'),
-          tools: tools,
-          toolChoice: 'required'
-        );
+            messages: iptMsg,
+            maxToken: 200,
+            model: ChatModelFromValue(model: 'gpt-4o'),
+            tools: tools,
+            toolChoice: 'required');
 
         final response = await openAI.onChatCompletion(request: CCrequest);
 
@@ -285,7 +339,8 @@ Remember to keep responses brief and focused on the user's query, and a little b
           String toolFunctionName = toolCalls[0]['function']['name'];
           debugPrint('toolFunctionName: $toolFunctionName');
 
-          Map<String, dynamic> toolArguments = jsonDecode(toolCalls[0]['function']['arguments']);
+          Map<String, dynamic> toolArguments =
+              jsonDecode(toolCalls[0]['function']['arguments']);
 
           if (toolFunctionName == 'add_new_plant') {
             debugPrint('add_new_plant called with arguments: $toolArguments');
@@ -296,7 +351,13 @@ Remember to keep responses brief and focused on the user's query, and a little b
               int fertilizationCycle = toolArguments['fertilizationCycle'];
               int pruningCycle = toolArguments['pruningCycle'];
 
-              final results = await addNewPlant(species, wateringCycle, fertilizationCycle, pruningCycle);
+              final results = await addNewPlant(
+                  species,
+                  base64Image ?? '',
+                  wateringCycle,
+                  fertilizationCycle,
+                  pruningCycle,
+                  _plantRepository);
 
               debugPrint('results: $results');
 
@@ -322,13 +383,15 @@ Remember to keep responses brief and focused on the user's query, and a little b
               msgList.add(Message(text: message ?? '', role: "assistant"));
               notifyListeners();
 
-              final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+              final finalResponse = await openAI.onChatCompletion(
+                  request: CCrequestWithFunctionResponse);
               finalContent = finalResponse?.choices[0].message?.content ?? '';
             } catch (e) {
               debugPrint('Error in finalResponse: $e');
             }
           } else if (toolFunctionName == 'calculateNextCareDates') {
-            debugPrint('calculateNextCareDates called with arguments: $toolArguments');
+            debugPrint(
+                'calculateNextCareDates called with arguments: $toolArguments');
 
             try {
               String lastActionDate = toolArguments['lastActionDate'];
@@ -336,7 +399,8 @@ Remember to keep responses brief and focused on the user's query, and a little b
               int fertilizationCycle = toolArguments['fertilizationCycle'];
               int pruningCycle = toolArguments['pruningCycle'];
 
-              final results = calculateNextCareDatesTool(lastActionDate, wateringCycle, fertilizationCycle, pruningCycle);
+              final results = calculateNextCareDatesTool(lastActionDate,
+                  wateringCycle, fertilizationCycle, pruningCycle);
               debugPrint('results: $results');
 
               iptMsg.add({
@@ -361,13 +425,15 @@ Remember to keep responses brief and focused on the user's query, and a little b
               msgList.add(Message(text: message ?? '', role: "assistant"));
               notifyListeners();
 
-              final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+              final finalResponse = await openAI.onChatCompletion(
+                  request: CCrequestWithFunctionResponse);
               finalContent = finalResponse?.choices[0].message?.content ?? '';
             } catch (e) {
               debugPrint('Error in finalResponse: $e');
             }
           } else if (toolFunctionName == 'find_similar_message') {
-            debugPrint('find_and_append_similar_message called with arguments: $toolArguments');
+            debugPrint(
+                'find_and_append_similar_message called with arguments: $toolArguments');
 
             try {
               String query = toolArguments['query'];
@@ -388,10 +454,10 @@ Remember to keep responses brief and focused on the user's query, and a little b
                 maxToken: 200,
               );
 
-              final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+              final finalResponse = await openAI.onChatCompletion(
+                  request: CCrequestWithFunctionResponse);
               finalContent = finalResponse?.choices[0].message?.content ?? '';
-              _messageRepository.addMessage(results) ; 
-
+              _messageRepository.addMessage(results);
             } catch (e) {
               debugPrint('Error in find_and_append_similar_message: $e');
             }
@@ -402,9 +468,11 @@ Remember to keep responses brief and focused on the user's query, and a little b
           debugPrint("toolCalls is null or empty: ${responseMsg?.content}");
         }
 
-        CreateMessage MSGrequest = CreateMessage(role: 'user', content: finalContent);
+        CreateMessage MSGrequest =
+            CreateMessage(role: 'user', content: finalContent);
 
-        CreateMessageV2Response MSGresponse = await openAI.threads.v2.messages.createMessage(
+        CreateMessageV2Response MSGresponse =
+            await openAI.threads.v2.messages.createMessage(
           threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           request: MSGrequest,
         );
@@ -412,7 +480,8 @@ Remember to keep responses brief and focused on the user's query, and a little b
         CreateRun request = CreateRun(
           assistantId: 'asst_K9Irkl24BOJpXnDjvjbfX2aq',
           model: 'gpt-4o',
-          instructions: "remember the related information for the plant, you do not have to respond upon receive this message",
+          instructions:
+              "remember the related information for the plant, you do not have to respond upon receive this message",
         );
 
         final runResponse = await openAI.threads.v2.runs.createRun(
@@ -435,16 +504,19 @@ Remember to keep responses brief and focused on the user's query, and a little b
           );
         }
         debugPrint('Retrieved run details: ${mRun.status}');
-        _messageRepository.addMessage(Message(text: finalContent, role: "assistant"));
+        _messageRepository
+            .addMessage(Message(text: finalContent, role: "assistant"));
         return finalContent;
       } else {
         debugPrint('Creating message request...');
         debugPrint('$contentMessage ${contentMessage.runtimeType}');
-        
-        CreateMessage MSGrequest = CreateMessage(role: 'user', content: contentMessage[0]["text"]);
+
+        CreateMessage MSGrequest =
+            CreateMessage(role: 'user', content: contentMessage[0]["text"]);
         debugPrint('CreateMessage request created: $MSGrequest');
 
-        CreateMessageV2Response MSGresponse = await openAI.threads.v2.messages.createMessage(
+        CreateMessageV2Response MSGresponse =
+            await openAI.threads.v2.messages.createMessage(
           threadId: 'thread_jfsm4Y9BERuGZXcSySsLSEbV',
           request: MSGrequest,
         );
@@ -488,7 +560,8 @@ Remember to keep responses brief and focused on the user's query, and a little b
         );
 
         CreateMessageV2Response mMessage;
-        String? msgID = mRunSteps.data[0].stepDetails?.messageCreation.messageId;
+        String? msgID =
+            mRunSteps.data[0].stepDetails?.messageCreation.messageId;
         String? messageData;
 
         if (msgID != null) {
@@ -508,7 +581,8 @@ Remember to keep responses brief and focused on the user's query, and a little b
         notifyListeners();
         String fullContent = messageData ?? '';
         //await displayContentWithStreamingEffect(fullContent, viewModel);
-        _messageRepository.addMessage(Message(text: fullContent, role: "assistant"));
+        _messageRepository
+            .addMessage(Message(text: fullContent, role: "assistant"));
         return messageData;
       }
     } catch (e) {
