@@ -5,27 +5,15 @@ import 'dart:async';
 // import 'package:image_picker/image_picker.dart';
 
 import 'package:flutter_app/models/message.dart';
+import 'package:flutter_app/models/plant.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:cloud_functions/cloud_functions.dart';
 
-import 'package:flutter_app/repositories/message_repo.dart';
+// import 'package:flutter_app/repositories/message_repo.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
-import 'package:flutter_app/models/plant.dart';
-
-// Define a Plant class to hold plant details
-class Plant {
-  String species;
-  DateTime plantingDate;
-  int wateringCycle; // in days
-  int fertilizationCycle; // in days
-  int pruningCycle; // in days
-
-  Plant(this.species, this.plantingDate, this.wateringCycle,
-      this.fertilizationCycle, this.pruningCycle);
-}
 
 // Function to process the image and identify the plant species
 // Future<String> identifyPlantSpecies(String imagePath) async {
