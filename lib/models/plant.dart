@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Plant {
@@ -44,12 +45,14 @@ class Plant {
       nextFertilizationDate:
           (map['nextFertilizationDate'] as Timestamp).toDate(),
       nextPruningDate: (map['nextPruningDate'] as Timestamp).toDate(),
+
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+
       'nickName': nickName,
       'locationId': locationId,
       'species': species,
@@ -64,3 +67,4 @@ class Plant {
     };
   }
 }
+
