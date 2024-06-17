@@ -11,7 +11,8 @@ import 'package:mime/mime.dart';
 
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:flutter_app/services/tool.dart';
-import 'package:flutter_app/view_models/all_messages_vm.dart';
+// import 'package:flutter_app/view_models/all_messages_vm.dart';
+import 'package:flutter_app/repositories/plant_repo.dart';
 
 class ImageHandler {
   Future<String?> convertImageToBase64(String? imagePath) async {
@@ -48,8 +49,10 @@ class ImageHandler {
     }
   }
 }
+
 class ChatBot extends ChangeNotifier {
   final MessageRepository _messageRepository;
+  final PlantRepository _plantRepository = PlantRepository();
   final ImageHandler imageHandler = ImageHandler();
   StreamSubscription<List<Message>>? _messagesSubscription;
   List<Message> windowMessages = [];
@@ -61,7 +64,7 @@ class ChatBot extends ChangeNotifier {
   late ThreadResponse threadCreate;
 
   String kToken = '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';
-  
+
   String systemPrompt = """
 You are Garden Gurdian, an advanced AI-powered assistant designed to provide concise and comprehensive information and assistance related to plants. It is specifically tailored for total beginners. Below are the 3 functionalities and capabilities of Garden Gurdian, you should analyze the user input and provide the appropriate response with EXACTLY one of the following functionalities:
 
@@ -112,24 +115,41 @@ You are a image analyzer , you will receive a user input message of a text and a
 - Check the user's input text if there is additional information needed about the image and add in the image description output.
 - You should give detailed description with all the necessary keywords included in the description.
 
-"""; 
-
+""";
 
   final tools = [
     {
       "type": "function",
       "function": {
         "name": "add_new_plant",
-        "description": "Use this function to add a new plant and get related information.",
+        "description":
+            "Use this function to add a new plant and get related information.",
         "parameters": {
           "type": "object",
           "properties": {
-            "species": {"type": "string", "description": "The specific species of the plant."},
-            "wateringCycle": {"type": "integer", "description": "The watering cycle of the plant in days."},
-            "fertilizationCycle": {"type": "integer", "description": "The fertilization cycle of the plant in days."},
-            "pruningCycle": {"type": "integer", "description": "The pruning cycle of the plant in days."}
+            "species": {
+              "type": "string",
+              "description": "The specific species of the plant."
+            },
+            "wateringCycle": {
+              "type": "integer",
+              "description": "The watering cycle of the plant in days."
+            },
+            "fertilizationCycle": {
+              "type": "integer",
+              "description": "The fertilization cycle of the plant in days."
+            },
+            "pruningCycle": {
+              "type": "integer",
+              "description": "The pruning cycle of the plant in days."
+            }
           },
-          "required": ["species", "wateringCycle", "fertilizationCycle", "pruningCycle"]
+          "required": [
+            "species",
+            "wateringCycle",
+            "fertilizationCycle",
+            "pruningCycle"
+          ]
         }
       }
     },
@@ -137,16 +157,35 @@ You are a image analyzer , you will receive a user input message of a text and a
       "type": "function",
       "function": {
         "name": "calculateNextCareDates",
-        "description": "Calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
+        "description":
+            "Calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
         "parameters": {
           "type": "object",
           "properties": {
-            "lastActionDate": {"type": "string", "description": "The lastAction(water/fertilize/prune) Date of the plant in the format of 'yyyy-MM-dd'."},
-            "wateringCycle": {"type": "integer", "description": "The watering cycle of the plant in days."},
-            "fertilizationCycle": {"type": "integer", "description": "The fertilization cycle of the plant in days."},
-            "pruningCycle": {"type": "integer", "description": "The pruning cycle of the plant in days."}
+            "lastActionDate": {
+              "type": "string",
+              "description":
+                  "The lastAction(water/fertilize/prune) Date of the plant in the format of 'yyyy-MM-dd'."
+            },
+            "wateringCycle": {
+              "type": "integer",
+              "description": "The watering cycle of the plant in days."
+            },
+            "fertilizationCycle": {
+              "type": "integer",
+              "description": "The fertilization cycle of the plant in days."
+            },
+            "pruningCycle": {
+              "type": "integer",
+              "description": "The pruning cycle of the plant in days."
+            }
           },
-          "required": ["lastActionDate", "wateringCycle", "fertilizationCycle", "pruningCycle"]
+          "required": [
+            "lastActionDate",
+            "wateringCycle",
+            "fertilizationCycle",
+            "pruningCycle"
+          ]
         }
       }
     },
@@ -154,11 +193,16 @@ You are a image analyzer , you will receive a user input message of a text and a
       "type": "function",
       "function": {
         "name": "find_similar_message",
-        "description": "Searches the database for past conversation contents related to the current query and appends them to the current thread.",
+        "description":
+            "Searches the database for past conversation contents related to the current query and appends them to the current thread.",
         "parameters": {
           "type": "object",
           "properties": {
-            "query": {"type": "string", "description": "The current query or context the assistant needs help with."}
+            "query": {
+              "type": "string",
+              "description":
+                  "The current query or context the assistant needs help with."
+            }
           },
           "required": ["query"]
         }
@@ -222,58 +266,67 @@ You are a image analyzer , you will receive a user input message of a text and a
   }
 
   Future<String?> _chatCompletion(Message message) async {
-    
     try {
       dynamic contentMessage;
       bool isImage = false;
-      var  CCrequestImage  ; 
+      var CCrequestImage;
+      String? base64Image;
 
       if (message.base64ImageUrl != null) {
-        final base64Image = await imageHandler.convertImageToBase64(message.base64ImageUrl!);
+        base64Image =
+            await imageHandler.convertImageToBase64(message.base64ImageUrl!);
         isImage = true;
 
         contentMessage = [
           {"type": "text", "text": message.text},
-          {"type": "image_url", "image_url": {"url": base64Image}}
+          {
+            "type": "image_url",
+            "image_url": {"url": base64Image}
+          }
         ];
-
-        
 
         // handle the another model of image description
 
-        final imageMessage = [{"role": "user", "content": contentMessage}]  ; 
-        List<Map<String, dynamic>> sysMessages = [{"role": "system", "content": imagesystemPrompt}] ; 
+        final imageMessage = [
+          {"role": "user", "content": contentMessage}
+        ];
+        List<Map<String, dynamic>> sysMessages = [
+          {"role": "system", "content": imagesystemPrompt}
+        ];
         debugPrint('Image Message: ${sysMessages + imageMessage}');
 
         CCrequestImage = ChatCompleteText(
-        messages: sysMessages + imageMessage,
-        maxToken: 200,
-        model: ChatModelFromValue(model: 'gpt-4o'),
-   //     tools: tools,
-   //     toolChoice: "auto"
-      );
-
-
+          messages: sysMessages + imageMessage,
+          maxToken: 200,
+          model: ChatModelFromValue(model: 'gpt-4o'),
+          //     tools: tools,
+          //     toolChoice: "auto"
+        );
       } else {
-        contentMessage = [{"type": "text", "text": message.text}];
+        contentMessage = [
+          {"type": "text", "text": message.text}
+        ];
       }
 
-      final currentMessage = [{"role": "user", "content": contentMessage}] ; 
+      final currentMessage = [
+        {"role": "user", "content": contentMessage}
+      ];
 
-      List<Map<String, dynamic>> previousMessages = windowMessages.map((windowMessage)=>windowMessage.contentMessage).toList();
+      List<Map<String, dynamic>> previousMessages = windowMessages
+          .map((windowMessage) => windowMessage.contentMessage)
+          .toList();
       previousMessages.insert(0, {"role": "system", "content": systemPrompt});
-    
-      final iptMsg = previousMessages + currentMessage ; 
+
+      final iptMsg = previousMessages + currentMessage;
 
       debugPrint('Message: $iptMsg');
 
       final CCrequest = ChatCompleteText(
-        messages: iptMsg,
-        maxToken: 200,
-        model: ChatModelFromValue(model: 'gpt-4o'),
-        tools: tools,
-        toolChoice: "auto"
-      );
+          messages: iptMsg,
+          maxToken: 200,
+          model: ChatModelFromValue(model: 'gpt-4o'),
+          tools: tools,
+          toolChoice: "auto");
 
       final response = await openAI.onChatCompletion(request: CCrequest);
 
@@ -295,7 +348,8 @@ You are a image analyzer , you will receive a user input message of a text and a
         String toolFunctionName = toolCalls[0]['function']['name'];
         debugPrint('toolFunctionName: $toolFunctionName');
 
-        Map<String, dynamic> toolArguments = jsonDecode(toolCalls[0]['function']['arguments']);
+        Map<String, dynamic> toolArguments =
+            jsonDecode(toolCalls[0]['function']['arguments']);
 
         if (toolFunctionName == 'add_new_plant') {
           debugPrint('add_new_plant called with arguments: $toolArguments');
@@ -306,7 +360,13 @@ You are a image analyzer , you will receive a user input message of a text and a
             int fertilizationCycle = toolArguments['fertilizationCycle'];
             int pruningCycle = toolArguments['pruningCycle'];
 
-            final results = await addNewPlant(species, wateringCycle, fertilizationCycle, pruningCycle);
+            final results = await addNewPlant(
+                species,
+                base64Image ?? '',
+                wateringCycle,
+                fertilizationCycle,
+                pruningCycle,
+                _plantRepository);
 
             debugPrint('results: $results');
 
@@ -332,13 +392,15 @@ You are a image analyzer , you will receive a user input message of a text and a
             msgList.add(Message(text: message ?? '', role: "assistant"));
             notifyListeners();
 
-            final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+            final finalResponse = await openAI.onChatCompletion(
+                request: CCrequestWithFunctionResponse);
             finalContent = finalResponse?.choices[0].message?.content ?? '';
           } catch (e) {
             debugPrint('Error in finalResponse: $e');
           }
         } else if (toolFunctionName == 'calculateNextCareDates') {
-          debugPrint('calculateNextCareDates called with arguments: $toolArguments');
+          debugPrint(
+              'calculateNextCareDates called with arguments: $toolArguments');
 
           try {
             String lastActionDate = toolArguments['lastActionDate'];
@@ -346,7 +408,8 @@ You are a image analyzer , you will receive a user input message of a text and a
             int fertilizationCycle = toolArguments['fertilizationCycle'];
             int pruningCycle = toolArguments['pruningCycle'];
 
-            final results = calculateNextCareDatesTool(lastActionDate, wateringCycle, fertilizationCycle, pruningCycle);
+            final results = calculateNextCareDatesTool(lastActionDate,
+                wateringCycle, fertilizationCycle, pruningCycle);
             debugPrint('results: $results');
 
             iptMsg.add({
@@ -371,13 +434,15 @@ You are a image analyzer , you will receive a user input message of a text and a
             msgList.add(Message(text: message ?? '', role: "assistant"));
             notifyListeners();
 
-            final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+            final finalResponse = await openAI.onChatCompletion(
+                request: CCrequestWithFunctionResponse);
             finalContent = finalResponse?.choices[0].message?.content ?? '';
           } catch (e) {
             debugPrint('Error in finalResponse: $e');
           }
         } else if (toolFunctionName == 'find_similar_message') {
-          debugPrint('find_and_append_similar_message called with arguments: $toolArguments');
+          debugPrint(
+              'find_and_append_similar_message called with arguments: $toolArguments');
 
           try {
             String query = toolArguments['query'];
@@ -400,10 +465,10 @@ You are a image analyzer , you will receive a user input message of a text and a
               maxToken: 200,
             );
 
-            final finalResponse = await openAI.onChatCompletion(request: CCrequestWithFunctionResponse);
+            final finalResponse = await openAI.onChatCompletion(
+                request: CCrequestWithFunctionResponse);
             finalContent = finalResponse?.choices[0].message?.content ?? '';
-         //   _messageRepository.addMessage(results) ; 
-
+            //   _messageRepository.addMessage(results) ;
           } catch (e) {
             debugPrint('Error in find_and_append_similar_message: $e');
           }
@@ -412,23 +477,25 @@ You are a image analyzer , you will receive a user input message of a text and a
         }
       } else {
         debugPrint("toolCalls is null or empty: ${responseMsg?.content}");
-        finalContent = responseMsg?.content as String; 
+        finalContent = responseMsg?.content as String;
       }
-      
-      if( CCrequestImage!=null )
-     {
-       final imageResponse = await openAI.onChatCompletion(request: CCrequestImage);
-       final imageDesMsg = imageResponse?.choices[0].message?.content ?? '' ; 
-       debugPrint('Image Des : $imageDesMsg') ; 
-       await _messageRepository.addMessage(Message(role: message.role, text: message.text,base64ImageUrl: message.base64ImageUrl,imageDescription: imageDesMsg));
-     }
-     else
-     {
-       await _messageRepository.addMessage(message);
-     }
-      _messageRepository.addMessage(Message(text: finalContent, role: "assistant"));
+
+      if (CCrequestImage != null) {
+        final imageResponse =
+            await openAI.onChatCompletion(request: CCrequestImage);
+        final imageDesMsg = imageResponse?.choices[0].message?.content ?? '';
+        debugPrint('Image Des : $imageDesMsg');
+        await _messageRepository.addMessage(Message(
+            role: message.role,
+            text: message.text,
+            base64ImageUrl: message.base64ImageUrl,
+            imageDescription: imageDesMsg));
+      } else {
+        await _messageRepository.addMessage(message);
+      }
+      _messageRepository
+          .addMessage(Message(text: finalContent, role: "assistant"));
       return finalContent;
-    
     } catch (e) {
       debugPrint('Error in _chatCompletion: $e');
       return null;
