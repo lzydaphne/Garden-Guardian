@@ -119,7 +119,9 @@ class MessageBubble extends StatelessWidget {
                               Padding(
                                   padding: const EdgeInsets.only(bottom: 8),
                                   child: Image.memory(
-                                      base64Decode(base64ImageUrl as String))),
+                                      Uri.parse(base64ImageUrl as String)
+                                          .data!
+                                          .contentAsBytes())),
                             if (base64ImageUrl != null)
                               Align(
                                 alignment: Alignment.centerLeft,
