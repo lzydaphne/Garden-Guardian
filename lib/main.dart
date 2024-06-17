@@ -3,15 +3,15 @@ import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/services/chat_bot_service.dart';
 import 'package:flutter_app/services/navigation.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_app/views/chat_page.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 
-import 'package:flutter_app/theme.dart'; 
+import 'package:flutter_app/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 //import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-
 Future<void> main() async {
-   //WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  //WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   // Defer the first frame until `FlutterNativeSplash.remove()` is called
   //FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -21,8 +21,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-
-  runApp(const MyApp()); 
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -30,25 +29,32 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const materialTheme = MaterialTheme(TextTheme()); 
+    const materialTheme = MaterialTheme(TextTheme());
 
     return MultiProvider(
       providers: [
-        Provider<NavigationService>(create: (_) => NavigationService()),
+        // Provider<NavigationService>(create: (_) => NavigationService()),
         ChangeNotifierProvider<ChatBot>(
           create: (_) => ChatBot(),
         ),
         ChangeNotifierProxyProvider0<AllMessagesViewModel>(
-          create: (BuildContext context) => AllMessagesViewModel(chatService: Provider.of<ChatBot>(context, listen: false)),
-          update: (BuildContext context, A) => AllMessagesViewModel(chatService: Provider.of<ChatBot>(context, listen: false)),
+          create: (BuildContext context) => AllMessagesViewModel(
+              chatService: Provider.of<ChatBot>(context, listen: false)),
+          update: (BuildContext context, A) => AllMessagesViewModel(
+              chatService: Provider.of<ChatBot>(context, listen: false)),
         ),
       ],
-      child: MaterialApp.router(
-        theme: materialTheme.light(), //Apply the light theme
-        // darkTheme: materialTheme.dark(), //Apply the dark theme
-        routerConfig: routerConfig,
-        restorationScopeId: 'app',
+      child: MaterialApp(
+        theme: materialTheme.light(), // Apply the light theme
+        // darkTheme: materialTheme.dark(), // Apply the dark theme
+        home: const ChatPage(),
       ),
+      // child: MaterialApp.router(
+      //   theme: materialTheme.light(), //Apply the light theme
+      //   // darkTheme: materialTheme.dark(), //Apply the dark theme
+      //   routerConfig: routerConfig,
+      //   restorationScopeId: 'app',
+      // ),
     );
   }
 }
