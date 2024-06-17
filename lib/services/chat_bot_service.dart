@@ -105,6 +105,16 @@ You are Garden Gurdian, an advanced AI-powered assistant designed to provide con
 Remember to keep responses brief and focused on the user's query, and a little blend of fun and humor.
 """;
 
+  String imagesystemPrompt = """
+You are a image analyzer , you will receive a user input message of a text and a image
+
+- You will need to analyze the image and give very detailed description about the image.
+- Check the user's input text if there is additional information needed about the image and add in the image description output.
+- You should give detailed description with all the necessary keywords included in the description.
+
+"""; 
+
+
   final tools = [
     {
       "type": "function",
@@ -216,6 +226,7 @@ Remember to keep responses brief and focused on the user's query, and a little b
     try {
       dynamic contentMessage;
       bool isImage = false;
+      var  CCrequestImage  ; 
 
       if (message.base64ImageUrl != null) {
         final base64Image = await imageHandler.convertImageToBase64(message.base64ImageUrl!);
@@ -226,7 +237,23 @@ Remember to keep responses brief and focused on the user's query, and a little b
           {"type": "image_url", "image_url": {"url": base64Image}}
         ];
 
+        
+
         // handle the another model of image description
+
+        final imageMessage = [{"role": "user", "content": contentMessage}]  ; 
+        List<Map<String, dynamic>> sysMessages = [{"role": "system", "content": imagesystemPrompt}] ; 
+        debugPrint('Image Message: ${sysMessages + imageMessage}');
+
+        CCrequestImage = ChatCompleteText(
+        messages: sysMessages + imageMessage,
+        maxToken: 200,
+        model: ChatModelFromValue(model: 'gpt-4o'),
+   //     tools: tools,
+   //     toolChoice: "auto"
+      );
+
+
       } else {
         contentMessage = [{"type": "text", "text": message.text}];
       }
@@ -387,8 +414,18 @@ Remember to keep responses brief and focused on the user's query, and a little b
         debugPrint("toolCalls is null or empty: ${responseMsg?.content}");
         finalContent = responseMsg?.content as String; 
       }
-
-      await _messageRepository.addMessage(message);
+      
+      if( CCrequestImage!=null )
+     {
+       final imageResponse = await openAI.onChatCompletion(request: CCrequestImage);
+       final imageDesMsg = imageResponse?.choices[0].message?.content ?? '' ; 
+       debugPrint('Image Des : $imageDesMsg') ; 
+       await _messageRepository.addMessage(Message(role: message.role, text: message.text,base64ImageUrl: message.base64ImageUrl,imageDescription: imageDesMsg));
+     }
+     else
+     {
+       await _messageRepository.addMessage(message);
+     }
       _messageRepository.addMessage(Message(text: finalContent, role: "assistant"));
       return finalContent;
     
