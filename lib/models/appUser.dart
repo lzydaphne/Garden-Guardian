@@ -1,28 +1,39 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_app/models/log_in_method.dart';
 
 class appUser {
-  final String? id;
-  final String userName;
-  int cnt_signin;
-  int cnt_watering;
-  int cnt_plantNum;
-  int cnt_plantType;
-  int cnt_drink;
+  String id;
+  final String? userName;
+  final String? email;
+  final String? avatarUrl;
+  late final List<LogInMethod> logInMethods;
+  String? pushMessagingToken;
+  int? cnt_signin;
+  int? cnt_watering;
+  int? cnt_plantNum;
+  int? cnt_plantType;
+  int? cnt_drink;
 
   appUser({
-    this.id,
-    required this.userName,
-    required this.cnt_signin,
-    required this.cnt_watering,
-    required this.cnt_plantNum,
-    required this.cnt_plantType,
-    required this.cnt_drink,
-  });
+    required this.id,
+    this.userName,
+    this.email,
+    this.avatarUrl,
+    this.cnt_signin,
+    this.cnt_watering,
+    this.cnt_plantNum,
+    this.cnt_plantType,
+    this.cnt_drink,
+    logInMethods,
+    this.pushMessagingToken,
+  }) : logInMethods = logInMethods ?? [];
 
-  factory appUser.fromMap(Map<String, dynamic> map) {
+  factory appUser.fromMap(Map<String, dynamic> map, String id) {
     return appUser(
       id: map['id'],
       userName: map['userName'],
+      email: map['email'],
+      avatarUrl: map['avatarUrl'],
       cnt_signin: map['cnt_signin'],
       cnt_watering: map['cnt_watering'],
       cnt_plantNum: map['cnt_plantNum'],
@@ -35,6 +46,11 @@ class appUser {
     return {
       'id': id,
       'userName': userName,
+      'email': email,
+      'avatarUrl': avatarUrl,
+      'logInMethods':
+          logInMethods?.map((logInMethod) => logInMethod.name).toList(),
+      'pushMessagingToken': pushMessagingToken,
       'cnt_signin': cnt_signin,
       'cnt_watering': cnt_watering,
       'cnt_plantNum': cnt_plantNum,

@@ -449,16 +449,17 @@ You are a image analyzer , you will receive a user input message of a text and a
             int fertilizationCycle = toolArguments['fertilizationCycle'];
             int pruningCycle = toolArguments['pruningCycle'];
 
-            final results = counting_goal(lastActionDate, wateringCycle,
-                fertilizationCycle, pruningCycle);
-            debugPrint('results: $results');
+            //! [TODO] START DEBUG HERE
+            // final results = counting_goal(lastActionDate, wateringCycle,
+            //     fertilizationCycle, pruningCycle);
+            // debugPrint('results: $results');
 
-            iptMsg.add({
-              "role": "tool",
-              "tool_call_id": toolCall_id,
-              "name": toolFunctionName,
-              "content": results
-            });
+            // iptMsg.add({
+            //   "role": "tool",
+            //   "tool_call_id": toolCall_id,
+            //   "name": toolFunctionName,
+            //   "content": results
+            // });
           } catch (e) {
             debugPrint('Error in calculateNextCareDates: $e');
           }

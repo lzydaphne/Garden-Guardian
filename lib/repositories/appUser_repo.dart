@@ -1,49 +1,40 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app/models/appUser.dart';
 
-class appUserRepository {
+class AppUserRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Stream<List<appUser>> streamAllUsers() {
-    return _db
-        .collection('users')
-        // .orderBy('plantingDate', descending: false)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => appUser.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
+  Stream<appUser?> streamUser(String userId) {
+    return _db.collection('users').doc(userId).snapshots().map((snapshot) {
+      return snapshot.data() == null
+          ? null
+          : appUser.fromMap(snapshot.data()!, snapshot.id);
     });
   }
 
-  Future<void> addUser(appUser user) async {
-    try {
-      DocumentReference docRef =
-          await _db.collection('users').add(user.toMap());
-      String generatedId = docRef.id;
-      // Update the document with the generated ID
-      await docRef.update({'id': generatedId});
-      print('appUser updated with ID: $generatedId');
-    } catch (e) {
-      print('Error adding user: $e');
+  Future<appUser?> getUserByEmail(String email) async {
+    QuerySnapshot querySnapshot =
+        await _db.collection('users').where('email', isEqualTo: email).get();
+    if (querySnapshot.docs.isEmpty) {
+      return null;
     }
+    return appUser.fromMap(
+        querySnapshot.docs.first.data() as Map<String, dynamic>,
+        querySnapshot.docs.first.id);
   }
 
-  Future<void> updateUser(String id, Map<String, dynamic> data) async {
-    try {
-      await _db.collection('users').doc(id).update(data);
-      print('appUser updated with ID: $id');
-    } catch (e) {
-      print('Error updating user: $e');
-    }
+  Future<void> updatePushMessagingToken(String userId, String? token) async {
+    await _db
+        .collection('users')
+        .doc(userId)
+        .update({'pushMessagingToken': token});
   }
 
-  Future<void> deleteUser(String id) async {
-    try {
-      await _db.collection('users').doc(id).delete();
-      print('appUser deleted with ID: $id');
-    } catch (e) {
-      print('Error deleting user: $e');
-    }
+  Future<void> createOrUpdateUser(appUser user) async {
+    Map<String, dynamic> userMap = user.toMap();
+    await _db
+        .collection('users')
+        .doc(user.id)
+        .set(userMap); // write to local cache immediately
   }
 }

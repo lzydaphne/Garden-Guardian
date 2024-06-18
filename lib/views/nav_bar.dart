@@ -7,13 +7,7 @@ import 'package:flutter_app/views/chat_page.dart';
 import 'package:flutter_app/views/goals_page.dart';
 import 'package:flutter_app/views/diary_page.dart';
 
-enum HomeTab {
-  home,
-  plant,
-  chat,
-  goal,
-  diary
-}
+enum HomeTab { home, plant, chat, goal, diary }
 
 class NavBar extends StatelessWidget {
   final HomeTab selectedTab;
@@ -22,11 +16,16 @@ class NavBar extends StatelessWidget {
 
   void _tapBottomNavigationBarItem(BuildContext context, index) {
     final nav = Provider.of<NavigationService>(context, listen: false);
-    nav.goHome(tab: index == 0 ? HomeTab.home :
-                    index == 1 ? HomeTab.plant :
-                    index == 2 ? HomeTab.chat :
-                    index == 3 ? HomeTab.goal :
-                                 HomeTab.diary);
+    nav.goHome(
+        tab: index == 0
+            ? HomeTab.home
+            : index == 1
+                ? HomeTab.plant
+                : index == 2
+                    ? HomeTab.chat
+                    : index == 3
+                        ? HomeTab.goal
+                        : HomeTab.diary);
   }
 
   @override
@@ -36,10 +35,10 @@ class NavBar extends StatelessWidget {
         'page': HomePage(),
         'title': 'Home',
       },
-      {
-        'page': const PlantFamilyPage(),
-        'title': 'Plant Family',
-      },
+      // {
+      //   'page': const PlantFamilyPage(),
+      //   'title': 'Plant Family',
+      // },
       {
         'page': const ChatPage(),
         'title': 'Chat',

@@ -106,7 +106,7 @@ Future<String> addNewPlant(
       'Planting Date: ${DateFormat('yyyy-MM-dd').format(newPlant.plantingDate ?? DateTime.now())}\n'
       'Watering Cycle: ${newPlant.wateringCycle} days\n'
       'Fertilization Cycle: ${newPlant.fertilizationCycle} days\n'
-      'Pruning Cycle: ${newPlant.pruningCycle > 0 ? newPlant.pruningCycle.toString() + " days" : "No need to prune!"}\n'
+      'Pruning Cycle: ${newPlant.pruningCycle! > 0 ? newPlant.pruningCycle.toString() + " days" : "No need to prune!"}\n'
       'Next Watering Date: ${DateFormat('yyyy-MM-dd').format(careDates["nextWateringDate"]!)}\n'
       'Next Fertilization Date: ${DateFormat('yyyy-MM-dd').format(careDates["nextFertilizationDate"]!)}\n'
       'Next Pruning Date: ${careDates["nextPruningDate"] != null ? DateFormat('yyyy-MM-dd').format(careDates["nextPruningDate"]!) : "No need to prune!"}';
@@ -124,16 +124,16 @@ Map<String, dynamic> counting_goal(
   // Handle user behavior counting
   switch (behavior) {
     case 'watering':
-      user.cnt_watering += 1;
+      user.cnt_watering = user.cnt_watering ?? 0 + 1;
       break;
     case 'plantNum':
-      user.cnt_plantNum += 1;
+      user.cnt_plantNum = user.cnt_plantNum ?? 0 + 1;
       break;
     case 'plantType':
-      user.cnt_plantType += 1;
+      user.cnt_plantType = user.cnt_plantType ?? 0 + 1;
       break;
-    case 'drink':
-      user.cnt_drink += 1;
+    case 'drink': //! [TODO] connect with water page to count drink
+      user.cnt_drink = user.cnt_drink ?? 0 + 300;
       break;
     default:
       throw ArgumentError('Unknown behavior: $behavior');
