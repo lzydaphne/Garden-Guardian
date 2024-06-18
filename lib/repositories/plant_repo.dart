@@ -4,6 +4,9 @@ import 'package:flutter_app/models/plant.dart';
 class PlantRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+/*
+ * can be used to listen to the returned stream to receive updates about the plant's data
+ */
   Stream<List<Plant>> streamAllPlants() {
     return _db
         .collection('plants')

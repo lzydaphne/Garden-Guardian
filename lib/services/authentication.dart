@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 class AuthenticationService {
   final AppUserRepository _appUuserRepository;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  List<Map<String, String>> registeredID = [];
 
   AuthenticationService({AppUserRepository? userRepository})
       : _appUuserRepository = userRepository ?? AppUserRepository();
@@ -39,6 +40,8 @@ class AuthenticationService {
           // avatarFile: avatarFile,
           // logInMethods: [LogInMethod.emailAndPassword],
         );
+        //* [ADD] add the successfully registered user id into the list of registered users
+        registeredID.add({'id': userId, 'email': email});
       } catch (e) {
         debugPrint('Error creating user4: $e');
       }

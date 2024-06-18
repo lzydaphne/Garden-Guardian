@@ -14,6 +14,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
+import 'package:flutter_app/repositories/appUser_repo.dart';
 import 'package:flutter_app/models/appUser.dart';
 
 // Function to process the image and identify the plant species
@@ -114,30 +115,34 @@ Future<String> addNewPlant(
   return formattedString;
 }
 
-Map<String, dynamic> counting_goal(
-    appUser user,
-    String behavior,
-    DateTime plantingDate,
-    int wateringCycle,
-    int fertilizationCycle,
-    int pruningCycle) {
+Future<String> counting_goal(String behavior, DateTime plantingDate,
+    int wateringCycle, int fertilizationCycle, int pruningCycle) async {
+  AppUserRepository userRepository = AppUserRepository();
+  appUser? user = await userRepository.getCurrentUser();
   // Handle user behavior counting
+  if (user == null) {
+    throw Exception('User not found');
+  }
+
   switch (behavior) {
     case 'watering':
       user.cnt_watering = user.cnt_watering ?? 0 + 1;
       break;
-    case 'plantNum':
-      user.cnt_plantNum = user.cnt_plantNum ?? 0 + 1;
-      break;
-    case 'plantType':
-      user.cnt_plantType = user.cnt_plantType ?? 0 + 1;
-      break;
-    case 'drink': //! [TODO] connect with water page to count drink
-      user.cnt_drink = user.cnt_drink ?? 0 + 300;
-      break;
+    // case 'plantNum':
+    //   user?.cnt_plantNum = user.cnt_plantNum ?? 0 + 1;
+    //   break;
+    // case 'plantType':
+    //   user?.cnt_plantType = user.cnt_plantType ?? 0 + 1;
+    //   break;
+    // case 'drink': //! [TODO] connect with water page to count drink
+    //   user?.cnt_drink = user.cnt_drink ?? 0 + 300;
+    //   break;
     default:
       throw ArgumentError('Unknown behavior: $behavior');
   }
+
+  // Update the user in Firestore
+  await userRepository.createOrUpdateUser(user);
 
   final nextCareDates = calculateNextCareDates(
       plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
@@ -154,15 +159,7 @@ Map<String, dynamic> counting_goal(
       'Next Pruning Date: ${formatter.format(nextPruningDate)}';
 
   // Return a map containing user and formatted string
-  return {
-    "user": user,
-    "nextCareDates": {
-      "nextWateringDate": nextWateringDate,
-      "nextFertilizationDate": nextFertilizationDate,
-      "nextPruningDate": nextPruningDate,
-    },
-    "formattedString": formattedString
-  };
+  return formattedString;
 }
 
 // void countingGoal(appUser user, String behavior) {

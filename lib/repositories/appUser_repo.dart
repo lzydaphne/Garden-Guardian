@@ -1,9 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app/models/appUser.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AppUserRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
+/**  listen to the returned stream to receive updates about the user's data
+ * 
+ * streamUser("someUserId").listen((appUser? user) {
+  if (user != null) {
+    // Handle the user data (e.g., update UI)
+    print("User data updated: ${user.name}");
+  } 
+});
+
+ * 
+*/
   Stream<appUser?> streamUser(String userId) {
     return _db.collection('users').doc(userId).snapshots().map((snapshot) {
       return snapshot.data() == null
@@ -36,5 +49,18 @@ class AppUserRepository {
         .collection('users')
         .doc(user.id)
         .set(userMap); // write to local cache immediately
+  }
+
+  Future<appUser?> getCurrentUser() async {
+    User? currentUser = _auth.currentUser;
+    if (currentUser == null) {
+      return null;
+    }
+    DocumentSnapshot doc =
+        await _db.collection('users').doc(currentUser.uid).get();
+    if (!doc.exists) {
+      return null;
+    }
+    return appUser.fromMap(doc.data() as Map<String, dynamic>, doc.id);
   }
 }

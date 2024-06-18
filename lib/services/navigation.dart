@@ -1,3 +1,4 @@
+import 'package:flutter_app/views/chat_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/views/cover_page.dart';
 import 'package:flutter_app/views/auth_page.dart';
@@ -6,17 +7,17 @@ import 'package:flutter_app/views/nav_bar.dart';
 final routerConfig = GoRouter(
   routes: <RouteBase>[
     GoRoute(
-      path: '/cover',
-      pageBuilder: (context, state) => const NoTransitionPage<void>(
-        child: CoverPage(),
-      ),
-      routes: <RouteBase>[
-        GoRoute(
-          path: 'auth',
-          builder: (context, state) => const AuthPage(),
-        )
-      ]
-    ),
+        path: '/cover',
+        pageBuilder: (context, state) => const NoTransitionPage<void>(
+              child: ChatPage(),
+              // child: CoverPage(),
+            ),
+        routes: <RouteBase>[
+          GoRoute(
+            path: 'auth',
+            builder: (context, state) => const AuthPage(),
+          )
+        ]),
     GoRoute(
       path: '/home',
       builder: (context, state) => const NavBar(selectedTab: HomeTab.home),

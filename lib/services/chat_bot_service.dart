@@ -164,41 +164,12 @@ You are a image analyzer , you will receive a user input message of a text and a
         "parameters": {
           "type": "object",
           "properties": {
-            "user": {
-              "type": "object",
+            "behavior": {
+              "type": "string",
               "description":
-                  "The appUser object containing user information and counters.",
-              "properties": {
-                "cnt_watering": {
-                  "type": "integer",
-                  "description": "The count of watering actions by the user."
-                },
-                // "cnt_plantNum": {
-                //   "type": "integer",
-                //   "description":
-                //       "The count of plant numbers handled by the user."
-                // },
-                // "cnt_plantType": {
-                //   "type": "integer",
-                //   "description":
-                //       "The count of different plant types handled by the user."
-                // },
-                // "cnt_drink": {
-                //   "type": "integer",
-                //   "description": "The count of drink actions by the user."
-                // }
-              },
-              "required": [
-                "cnt_watering"
-                // "cnt_plantNum",
-                // "cnt_plantType",
-                // "cnt_drink"
-              ]
+                  "The behavior(watering) the user performed on the plant."
+              // "The behavior(water/fertilize/prune) the user performed on the plant."
             },
-            // "behavior": {
-            //   "type": "string",
-            //   "description": "The behavior performed by the user."
-            // },
             "lastActionDate": {
               "type": "string",
               "description":
@@ -218,8 +189,7 @@ You are a image analyzer , you will receive a user input message of a text and a
             }
           },
           "required": [
-            "user",
-            // "behavior",
+            "behavior",
             "lastActionDate",
             "wateringCycle",
             "fertilizationCycle",
@@ -442,24 +412,24 @@ You are a image analyzer , you will receive a user input message of a text and a
 
           try {
             //! goal test
-            int cnt_watering = toolArguments['user']['cnt_watering'];
+            String behavior = toolArguments['behavior'];
 
-            String lastActionDate = toolArguments['lastActionDate'];
+            DateTime lastActionDate = toolArguments['lastActionDate'];
             int wateringCycle = toolArguments['wateringCycle'];
             int fertilizationCycle = toolArguments['fertilizationCycle'];
             int pruningCycle = toolArguments['pruningCycle'];
 
             //! [TODO] START DEBUG HERE
-            // final results = counting_goal(lastActionDate, wateringCycle,
-            //     fertilizationCycle, pruningCycle);
-            // debugPrint('results: $results');
+            final results = counting_goal(behavior, lastActionDate,
+                wateringCycle, fertilizationCycle, pruningCycle);
+            debugPrint('results: $results');
 
-            // iptMsg.add({
-            //   "role": "tool",
-            //   "tool_call_id": toolCall_id,
-            //   "name": toolFunctionName,
-            //   "content": results
-            // });
+            iptMsg.add({
+              "role": "tool",
+              "tool_call_id": toolCall_id,
+              "name": toolFunctionName,
+              "content": results
+            });
           } catch (e) {
             debugPrint('Error in calculateNextCareDates: $e');
           }
