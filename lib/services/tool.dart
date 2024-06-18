@@ -14,6 +14,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
+import 'package:flutter_app/models/appUser.dart';
 
 // Function to process the image and identify the plant species
 // Future<String> identifyPlantSpecies(String imagePath) async {
@@ -30,7 +31,7 @@ import 'package:flutter_app/repositories/plant_repo.dart';
 //   return "Ficus lyrata"; // Placeholder species name
 // }
 
-//* deliberately use "plantingDate" in case user reports "i watered the plant yesterday" or "i fertilized the plant last week"
+//! deliberately use "plantingDate" in case user reports "i watered the plant yesterday" or "i fertilized the plant last week"
 // Function to calculate the next care dates
 String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
     int fertilizationCycle, int pruningCycle) {
@@ -112,6 +113,80 @@ Future<String> addNewPlant(
 
   return formattedString;
 }
+
+Map<String, dynamic> counting_goal(
+    appUser user,
+    String behavior,
+    DateTime plantingDate,
+    int wateringCycle,
+    int fertilizationCycle,
+    int pruningCycle) {
+  // Handle user behavior counting
+  switch (behavior) {
+    case 'watering':
+      user.cnt_watering += 1;
+      break;
+    case 'plantNum':
+      user.cnt_plantNum += 1;
+      break;
+    case 'plantType':
+      user.cnt_plantType += 1;
+      break;
+    case 'drink':
+      user.cnt_drink += 1;
+      break;
+    default:
+      throw ArgumentError('Unknown behavior: $behavior');
+  }
+
+  final nextCareDates = calculateNextCareDates(
+      plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
+
+  DateTime nextWateringDate = nextCareDates["nextWateringDate"]!;
+  DateTime nextFertilizationDate = nextCareDates["nextFertilizationDate"]!;
+  DateTime? nextPruningDate = nextCareDates["nextPruningDate"]!;
+
+  // Formatting the date for a nice output
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  String formattedString = 'Next Care Dates:\n'
+      'Next Watering Date: ${formatter.format(nextWateringDate)}\n'
+      'Next Fertilization Date: ${formatter.format(nextFertilizationDate)}\n'
+      'Next Pruning Date: ${formatter.format(nextPruningDate)}';
+
+  // Return a map containing user and formatted string
+  return {
+    "user": user,
+    "nextCareDates": {
+      "nextWateringDate": nextWateringDate,
+      "nextFertilizationDate": nextFertilizationDate,
+      "nextPruningDate": nextPruningDate,
+    },
+    "formattedString": formattedString
+  };
+}
+
+// void countingGoal(appUser user, String behavior) {
+//   switch (behavior) {
+//     //* sign in should be triggered when user signin!
+//     // case 'signin':
+//     //   user.cnt_signin += 1;
+//     //   break;
+//     case 'watering':
+//       user.cnt_watering += 1;
+//       break;
+//     case 'plantNum':
+//       user.cnt_plantNum += 1;
+//       break;
+//     case 'plantType':
+//       user.cnt_plantType += 1;
+//       break;
+//     case 'drink':
+//       user.cnt_drink += 1;
+//       break;
+//     default:
+//       throw ArgumentError('Unknown behavior: $behavior');
+//   }
+// }
 
 Future<Message> findSimilarMessage(String query) async {
   debugPrint('Finding and appending similar message for query: $query');

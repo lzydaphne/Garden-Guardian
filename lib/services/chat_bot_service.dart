@@ -13,6 +13,7 @@ import 'package:intl/intl.dart'; // For date formatting
 import 'package:flutter_app/services/tool.dart';
 // import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
+import 'package:flutter_app/repositories/appUser_repo.dart';
 
 class ImageHandler {
   Future<String?> convertImageToBase64(String? imagePath) async {
@@ -82,11 +83,12 @@ You are Garden Gurdian, an advanced AI-powered assistant designed to provide con
     - Then Ask the user for a nickname for the plant and store all related information without asking again.
     - Call the "add_new_plant" function with the gathered information.
 
-2. When the user updates that they have watered, fertilized, or pruned a specific plant:
+2. When the user updates that they have watered, fertilized, or pruned a specific plant, call "counting_goal" tool function:
     - Calculate and provide the next watering, fertilization, or pruning date and response.
       - Your response should contain at least one of the following: Next Watering Date, Next Fertilization Date, Next Pruning Date. Depend on the user's input.
       - Your response need not contain other information (species, nickname, watering cycle, fertilization cycle, pruning cycle) unless explicitly asked.
-    - Store the last care date that user mentioned in the format 'yyyy-MM-dd'.
+    - When the user inputs such as "i watered the plant today" , you should call the "counting_goal" function with the "watering" action.
+    - Store the "last care date" that user mentioned in the format 'yyyy-MM-dd'.
       - Your response should contain "last care date" that user mentioned.
     - Do not provide additional information unless explicitly asked.
 3. When the user inputs their feelings or thoughts about the plant:
@@ -156,12 +158,47 @@ You are a image analyzer , you will receive a user input message of a text and a
     {
       "type": "function",
       "function": {
-        "name": "calculateNextCareDates",
+        "name": "counting_goal",
         "description":
-            "Calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
+            "Handles user behavior counting and calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
         "parameters": {
           "type": "object",
           "properties": {
+            "user": {
+              "type": "object",
+              "description":
+                  "The appUser object containing user information and counters.",
+              "properties": {
+                "cnt_watering": {
+                  "type": "integer",
+                  "description": "The count of watering actions by the user."
+                },
+                // "cnt_plantNum": {
+                //   "type": "integer",
+                //   "description":
+                //       "The count of plant numbers handled by the user."
+                // },
+                // "cnt_plantType": {
+                //   "type": "integer",
+                //   "description":
+                //       "The count of different plant types handled by the user."
+                // },
+                // "cnt_drink": {
+                //   "type": "integer",
+                //   "description": "The count of drink actions by the user."
+                // }
+              },
+              "required": [
+                "cnt_watering"
+                // "cnt_plantNum",
+                // "cnt_plantType",
+                // "cnt_drink"
+              ]
+            },
+            // "behavior": {
+            //   "type": "string",
+            //   "description": "The behavior performed by the user."
+            // },
             "lastActionDate": {
               "type": "string",
               "description":
@@ -181,6 +218,8 @@ You are a image analyzer , you will receive a user input message of a text and a
             }
           },
           "required": [
+            "user",
+            // "behavior",
             "lastActionDate",
             "wateringCycle",
             "fertilizationCycle",
@@ -398,18 +437,20 @@ You are a image analyzer , you will receive a user input message of a text and a
           } catch (e) {
             debugPrint('Error in finalResponse: $e');
           }
-        } else if (toolFunctionName == 'calculateNextCareDates') {
-          debugPrint(
-              'calculateNextCareDates called with arguments: $toolArguments');
+        } else if (toolFunctionName == 'counting_goal') {
+          debugPrint('countingGoal called with arguments: $toolArguments');
 
           try {
+            //! goal test
+            int cnt_watering = toolArguments['user']['cnt_watering'];
+
             String lastActionDate = toolArguments['lastActionDate'];
             int wateringCycle = toolArguments['wateringCycle'];
             int fertilizationCycle = toolArguments['fertilizationCycle'];
             int pruningCycle = toolArguments['pruningCycle'];
 
-            final results = calculateNextCareDatesTool(lastActionDate,
-                wateringCycle, fertilizationCycle, pruningCycle);
+            final results = counting_goal(lastActionDate, wateringCycle,
+                fertilizationCycle, pruningCycle);
             debugPrint('results: $results');
 
             iptMsg.add({

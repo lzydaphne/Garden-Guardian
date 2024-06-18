@@ -7,9 +7,9 @@ class Plant {
   final String? locationId;
   final String species;
   final String imageUrl;
-  final int wateringCycle; // in days
-  final int fertilizationCycle; // in days
-  final int pruningCycle; // in days
+  final int? wateringCycle; // in days
+  final int? fertilizationCycle; // in days
+  final int? pruningCycle; // in days
   final DateTime? plantingDate;
   final DateTime? nextWateringDate;
   final DateTime? nextFertilizationDate;
@@ -21,9 +21,9 @@ class Plant {
     this.locationId,
     required this.species,
     required this.imageUrl,
-    required this.wateringCycle,
-    required this.fertilizationCycle,
-    required this.pruningCycle,
+    this.wateringCycle,
+    this.fertilizationCycle,
+    this.pruningCycle,
     this.plantingDate,
     this.nextWateringDate,
     this.nextFertilizationDate,

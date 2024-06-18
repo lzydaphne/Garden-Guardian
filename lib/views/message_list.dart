@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
-import 'package:flutter_app/models/user.dart';
+import 'package:flutter_app/models/appUser.dart';
 // import 'package:flutter_app/view_models/me_vm.dart';
 import 'package:flutter_app/views/message_bubble.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +22,8 @@ class _MessageListState extends State<MessageList> {
         if (_scrollController.position.pixels != 0) {
           // At the bottom
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+            _scrollController
+                .jumpTo(_scrollController.position.maxScrollExtent);
           });
         }
       }
@@ -47,18 +48,17 @@ class _MessageListState extends State<MessageList> {
     });
   }
 
-  String? meORnotme(String? role){ 
-    if (role == null )return null ; 
-    if (role == "assistant" || role == "system")return "BOT" ; 
+  String? meORnotme(String? role) {
+    if (role == null) return null;
+    if (role == "assistant" || role == "system")
+      return "BOT";
     else {
-      return "ME" ;
-    } 
+      return "ME";
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    
-    
     final allMessagesViewModel = Provider.of<AllMessagesViewModel>(context);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -75,7 +75,7 @@ class _MessageListState extends State<MessageList> {
         child: Text('No messages.'),
       );
     }
-    
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.only(
@@ -97,7 +97,7 @@ class _MessageListState extends State<MessageList> {
         final isNextUserSame = nextMessageUsername == messageUsername;
         final preMessageUserId = meORnotme(prevMessage?.role);
         final isPreUserSame = preMessageUserId == messageUsername;
-        final base64ImageUrl = message.base64ImageUrl ; 
+        final base64ImageUrl = message.base64ImageUrl;
 
         if (isNextUserSame) {
           return MessageBubble(

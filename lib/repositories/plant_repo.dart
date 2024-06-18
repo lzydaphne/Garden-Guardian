@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app/models/plant.dart';
 
@@ -48,15 +47,17 @@ class PlantRepository {
     }
   }
 }
-class PlantRepository {
-  List<Plant> plants = [];
 
-  void addPlant(String name, String locationId, String avatarUrl) {
-    plants.add(Plant(name: name, locationId: locationId, avatarUrl: avatarUrl));
-  }
+//* [TODO] FIX this to work
+// class PlantRepository {
+//   List<Plant> plants = [];
 
-  List<Plant> getPlantsByLocation(String locationId) {
-    return plants.where((plant) => plant.locationId == locationId).toList();
-  }
-}
+//   void addPlant(String name, String locationId, String avatarUrl) {
+//     plants.add(Plant(nickName: name, locationId: locationId, imageUrl: avatarUrl));
+//   }
+
+//   List<Plant> getPlantsByLocation(String locationId) {
+//     return plants.where((plant) => plant.locationId == locationId).toList();
+//   }
+// }
 
