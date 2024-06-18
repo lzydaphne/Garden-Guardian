@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
-import 'package:flutter_app/models/appUser.dart';
+import 'package:flutter_app/models/msgUser.dart';
 // import 'package:flutter_app/view_models/me_vm.dart';
 import 'package:flutter_app/views/message/message_bubble.dart';
 import 'package:provider/provider.dart';
@@ -67,7 +67,7 @@ class _MessageListState extends State<MessageList> {
       }
     });
 
-    final me = appUser(id: "ME");
+    final me = msgUser("ME");
     final messages = allMessagesViewModel.messages;
 
     if (messages.isEmpty) {
@@ -102,7 +102,7 @@ class _MessageListState extends State<MessageList> {
         if (isNextUserSame) {
           return MessageBubble(
             text: message.text,
-            isMine: me.id == messageUsername,
+            isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,
             base64ImageUrl: base64ImageUrl,
           );
@@ -110,7 +110,7 @@ class _MessageListState extends State<MessageList> {
           return MessageBubble.withUser(
             userName: meORnotme(message.role),
             text: message.text,
-            isMine: me.id == messageUsername,
+            isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,
             base64ImageUrl: base64ImageUrl,
           );

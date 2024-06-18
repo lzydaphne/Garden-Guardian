@@ -51,16 +51,25 @@ class AppUserRepository {
         .set(userMap); // write to local cache immediately
   }
 
-  Future<appUser?> getCurrentUser() async {
-    User? currentUser = _auth.currentUser;
-    if (currentUser == null) {
+  Future<appUser?> getCurrentAppUser(String userName) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('users')
+          .where('userName', isEqualTo: userName)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        // Assuming appUser has a fromMap constructor that takes a map and the document ID
+        return appUser.fromMap(
+            snapshot.docs.first.data() as Map<String, dynamic>,
+            snapshot.docs.first.id);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error getting current app user: $e');
       return null;
     }
-    DocumentSnapshot doc =
-        await _db.collection('users').doc(currentUser.uid).get();
-    if (!doc.exists) {
-      return null;
-    }
-    return appUser.fromMap(doc.data() as Map<String, dynamic>, doc.id);
   }
 }

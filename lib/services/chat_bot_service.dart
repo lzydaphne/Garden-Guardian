@@ -19,7 +19,7 @@ class ImageHandler {
   Future<String?> convertImageToBase64(String? imagePath) async {
     if (imagePath == null) return null;
     try {
-      debugPrint('Converting image to base64: $imagePath');
+      // debugPrint('Converting image to base64: $imagePath');
       final bytes = await readImageAsBytes(imagePath);
       if (bytes == null) {
         throw Exception("Failed to load image");
@@ -36,7 +36,7 @@ class ImageHandler {
 
   Future<Uint8List?> readImageAsBytes(String url) async {
     try {
-      debugPrint('Reading image as bytes from URL: $url');
+      // debugPrint('Reading image as bytes from URL: $url');
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         return response.bodyBytes;
@@ -69,7 +69,8 @@ class ChatBot extends ChangeNotifier {
   String systemPrompt = """
 You are Garden Gurdian, an advanced AI-powered assistant designed to provide concise and comprehensive information and assistance related to plants. It is specifically tailored for total beginners. Below are the 3 functionalities and capabilities of Garden Gurdian, you should analyze the user input and provide the appropriate response with EXACTLY one of the following functionalities:
 
-1. When the user inputs a new plant image that is not in the database, identify the plant species and provide care guidance:
+1. When the user inputs like "i want to plant this" and input image, you MUST Call the tool "add_new_plant" function with the gathered information. 
+    - identify the plant species and provide care guidance:
     - Include species identification, planting date (today), watering cycle, fertilization cycle, and pruning cycle.
     - In the beginning, you should respond some necessary information about the plant
       - species, 
@@ -77,33 +78,39 @@ You are Garden Gurdian, an advanced AI-powered assistant designed to provide con
       - watering cycle, 
       - fertilization cycle, 
       - pruning cycle.
-      - Next Watering Date
-      - Next Fertilization Date
-      - Next Pruning Date
+      - Next Watering Date, in the format 'yyyy-MM-dd'.
+      - Next Fertilization Date, in the format 'yyyy-MM-dd'.
+      - Next Pruning Date, in the format 'yyyy-MM-dd'.
     - Then Ask the user for a nickname for the plant and store all related information without asking again.
-    - Call the "add_new_plant" function with the gathered information.
 
-2. When the user updates that they have watered, fertilized, or pruned a specific plant, call "counting_goal" tool function:
+2. When the user answer their preferred nickname for the plant:
+    - Store the nickname of the plant, call the "store_nickname" function with the gathered information.
+    - Encourage the user to continue caring for the plant and offer additional tips or advice if needed.
+    - Be concise and to the point. Do not provide additional information unless explicitly asked.
+
+3. When the user updates that they have watered, fertilized, or pruned a specific plant, you MUST call "counting_goal" tool function:
     - Calculate and provide the next watering, fertilization, or pruning date and response.
       - Your response should contain at least one of the following: Next Watering Date, Next Fertilization Date, Next Pruning Date. Depend on the user's input.
       - Your response need not contain other information (species, nickname, watering cycle, fertilization cycle, pruning cycle) unless explicitly asked.
     - When the user inputs such as "i watered the plant today" , you should call the "counting_goal" function with the "watering" action.
+    - You should store "last care date" that user mentioned in the format 'yyyy-MM-dd'.
     - Store the "last care date" that user mentioned in the format 'yyyy-MM-dd'.
       - Your response should contain "last care date" that user mentioned.
     - Do not provide additional information unless explicitly asked.
-3. When the user inputs their feelings or thoughts about the plant:
+
+4. When the user inputs their feelings or thoughts about the plant:
     - Provide a positive and encouraging response to the user's feelings.
     - Include a concise SINGLE bullet point of a fun fact or interesting tidbit about the plant to engage the user.
     - Encourage the user to continue caring for the plant and offer additional tips or advice if needed.
     - Be concise and to the point. Do not provide additional information unless explicitly asked.
 
-4. When the assistant can't remember the context or previous interactions:
+5. When the assistant can't remember the context or previous interactions:
     - Generate a query string for several kinds of possible keywords included in the pass messages.
     - Call the "find_similar_message" function with the query string to search for message that matches the keywords.
     - The "find_similar_message" function returns the message text of the pass conversation with user.
     - You can use the return pass conversation of the "find_similar_message" function to support your respond to the user's question.
 
-5. For any other user inputs:
+6. For any other user inputs:
     - Provide short, clear, and direct answers.
     - Avoid giving additional information unless explicitly asked.
 
@@ -112,7 +119,6 @@ Remember to keep responses brief and focused on the user's query, and a little b
 
   String imagesystemPrompt = """
 You are a image analyzer , you will receive a user input message of a text and a image
-
 - You will need to analyze the image and give very detailed description about the image.
 - Check the user's input text if there is additional information needed about the image and add in the image description output.
 - You should give detailed description with all the necessary keywords included in the description.
@@ -158,6 +164,26 @@ You are a image analyzer , you will receive a user input message of a text and a
     {
       "type": "function",
       "function": {
+        "name": "store_nickname",
+        "description":
+            "Use this function to store nickname for the latest added plant.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "nickname": {
+              "type": "string",
+              "description": "The nickname for the plant."
+            },
+          },
+          "required": [
+            "nickname",
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
         "name": "counting_goal",
         "description":
             "Handles user behavior counting and calculates the next care dates for watering, fertilization, and pruning based on the planting date and cycles.",
@@ -170,10 +196,11 @@ You are a image analyzer , you will receive a user input message of a text and a
                   "The behavior(watering) the user performed on the plant."
               // "The behavior(water/fertilize/prune) the user performed on the plant."
             },
-            "lastActionDate": {
+            "lastCareDate": {
               "type": "string",
               "description":
-                  "The lastAction(water/fertilize/prune) Date of the plant in the format of 'yyyy-MM-dd'."
+                  "The last care (water) date of the plant in the format of 'yyyy-MM-dd'."
+              // "The lastAction(water/fertilize/prune) Date of the plant in the format of 'yyyy-MM-dd'."
             },
             "wateringCycle": {
               "type": "integer",
@@ -190,7 +217,7 @@ You are a image analyzer , you will receive a user input message of a text and a
           },
           "required": [
             "behavior",
-            "lastActionDate",
+            "lastCareDate",
             "wateringCycle",
             "fertilizationCycle",
             "pruningCycle"
@@ -302,7 +329,7 @@ You are a image analyzer , you will receive a user input message of a text and a
         List<Map<String, dynamic>> sysMessages = [
           {"role": "system", "content": imagesystemPrompt}
         ];
-        debugPrint('Image Message: ${sysMessages + imageMessage}');
+        // debugPrint('Image Message: ${sysMessages + imageMessage}');
 
         CCrequestImage = ChatCompleteText(
           messages: sysMessages + imageMessage,
@@ -328,7 +355,7 @@ You are a image analyzer , you will receive a user input message of a text and a
 
       final iptMsg = previousMessages + currentMessage;
 
-      debugPrint('Message: $iptMsg');
+      // debugPrint('Message: $iptMsg');
 
       final CCrequest = ChatCompleteText(
           messages: iptMsg,
@@ -342,7 +369,7 @@ You are a image analyzer , you will receive a user input message of a text and a
       final responseMsg = response?.choices[0].message;
 
       if (responseMsg != null) {
-        debugPrint('responseMsg: ${responseMsg.toJson()}');
+        // debugPrint('responseMsg: ${responseMsg.toJson()}');
         iptMsg.add(responseMsg.toJson());
       }
 
@@ -407,6 +434,44 @@ You are a image analyzer , you will receive a user input message of a text and a
           } catch (e) {
             debugPrint('Error in finalResponse: $e');
           }
+        } else if (toolFunctionName == 'store_nickname') {
+          debugPrint('store_nickname called with arguments: $toolArguments');
+
+          try {
+            String nickname = toolArguments['nickname'];
+
+            final results = await storeNickname(nickname);
+
+            debugPrint('results: $results');
+
+            iptMsg.add({
+              "role": "tool",
+              "tool_call_id": toolCall_id,
+              "name": toolFunctionName,
+              "content": results
+            });
+          } catch (e) {
+            debugPrint('Error in storeNickname: $e');
+          }
+
+          final CCrequestWithFunctionResponse = ChatCompleteText(
+            messages: iptMsg,
+            model: ChatModelFromValue(model: 'gpt-4o'),
+            maxToken: 200,
+          );
+
+          try {
+            String? message;
+            List<Message> msgList = windowMessages;
+            msgList.add(Message(text: message ?? '', role: "assistant"));
+            notifyListeners();
+
+            final finalResponse = await openAI.onChatCompletion(
+                request: CCrequestWithFunctionResponse);
+            finalContent = finalResponse?.choices[0].message?.content ?? '';
+          } catch (e) {
+            debugPrint('Error in finalResponse: $e');
+          }
         } else if (toolFunctionName == 'counting_goal') {
           debugPrint('countingGoal called with arguments: $toolArguments');
 
@@ -414,13 +479,13 @@ You are a image analyzer , you will receive a user input message of a text and a
             //! goal test
             String behavior = toolArguments['behavior'];
 
-            DateTime lastActionDate = toolArguments['lastActionDate'];
+            String lastCareDate = toolArguments['lastCareDate'];
             int wateringCycle = toolArguments['wateringCycle'];
             int fertilizationCycle = toolArguments['fertilizationCycle'];
             int pruningCycle = toolArguments['pruningCycle'];
 
             //! [TODO] START DEBUG HERE
-            final results = counting_goal(behavior, lastActionDate,
+            final results = await counting_goal(behavior, lastCareDate,
                 wateringCycle, fertilizationCycle, pruningCycle);
             debugPrint('results: $results');
 

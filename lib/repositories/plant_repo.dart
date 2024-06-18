@@ -49,6 +49,25 @@ class PlantRepository {
       print('Error deleting plant: $e');
     }
   }
+
+  Future<String?> getLatestPlantID() async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('plants')
+          .orderBy('plantingDate', descending: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.id;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error getting latest plant: $e');
+      return null;
+    }
+  }
 }
 
 //* [TODO] FIX this to work

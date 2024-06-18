@@ -32,30 +32,6 @@ import 'package:flutter_app/models/appUser.dart';
 //   return "Ficus lyrata"; // Placeholder species name
 // }
 
-//! deliberately use "plantingDate" in case user reports "i watered the plant yesterday" or "i fertilized the plant last week"
-// Function to calculate the next care dates
-String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
-    int fertilizationCycle, int pruningCycle) {
-  // DateTime today = DateTime.now();
-  DateFormat formatter = DateFormat('yyyy-MM-dd');
-  DateTime parsedLastActionDate = formatter.parse(lastActionDate);
-
-  DateTime nextWateringDate =
-      parsedLastActionDate.add(Duration(days: wateringCycle));
-  DateTime nextFertilizationDate =
-      parsedLastActionDate.add(Duration(days: fertilizationCycle));
-  DateTime? nextPruningDate = pruningCycle > 0
-      ? parsedLastActionDate.add(Duration(days: pruningCycle))
-      : null;
-
-  // Formatting the date for a nice output
-  String formattedString = 'Next Care Dates:\n'
-      'Next Watering Date: ${DateFormat('yyyy-MM-dd').format(nextWateringDate)}\n'
-      'Next Fertilization Date: ${DateFormat('yyyy-MM-dd').format(nextFertilizationDate)}\n'
-      'Next Pruning Date: ${nextPruningDate != null ? DateFormat('yyyy-MM-dd').format(nextPruningDate) : "No need to prune!"}';
-  return formattedString;
-}
-
 Map<String, DateTime?> calculateNextCareDates(DateTime plantingDate,
     int wateringCycle, int fertilizationCycle, int pruningCycle) {
   // DateTime today = DateTime.now();
@@ -86,12 +62,15 @@ Future<String> addNewPlant(
       plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
 
   Plant newPlant = Plant(
+    nickName: 'wait to be updated',
     species: species,
     imageUrl: imageUrl,
     plantingDate: plantingDate,
     wateringCycle: wateringCycle,
     fertilizationCycle: fertilizationCycle,
     pruningCycle: pruningCycle,
+    lastCareDate:
+        plantingDate, //! [TODO] should be updated when user reports new care
     nextWateringDate: careDates["nextWateringDate"],
     nextFertilizationDate: careDates["nextFertilizationDate"],
     nextPruningDate: careDates["nextPruningDate"],
@@ -115,18 +94,37 @@ Future<String> addNewPlant(
   return formattedString;
 }
 
-Future<String> counting_goal(String behavior, DateTime plantingDate,
+Future<String> storeNickname(String nickname) async {
+  // store nickname for latest added plant
+  PlantRepository plantRepository = PlantRepository();
+  String? targetPlantID = await plantRepository.getLatestPlantID();
+  if (targetPlantID == null) {
+    throw Exception('Plant not found');
+  }
+  // Update the plant's nickname
+  await plantRepository.updatePlant(targetPlantID, {'nickName': nickname});
+
+  return 'Nickname updated successfully!';
+}
+
+Future<String> counting_goal(String behavior, String lastCareDate,
     int wateringCycle, int fertilizationCycle, int pruningCycle) async {
   AppUserRepository userRepository = AppUserRepository();
-  appUser? user = await userRepository.getCurrentUser();
+  appUser? user = await userRepository
+      .getCurrentAppUser("test"); //! [TODO] need to dynamically change
   // Handle user behavior counting
   if (user == null) {
     throw Exception('User not found');
   }
-
+  debugPrint('User found: ${user.userName}');
   switch (behavior) {
     case 'watering':
-      user.cnt_watering = user.cnt_watering ?? 0 + 1;
+      user.cnt_watering += 1;
+
+      // Update the user in Firestore
+      await userRepository.createOrUpdateUser(user);
+      debugPrint(
+          'User updated successfully, user.cnt_watering: ${user.cnt_watering}');
       break;
     // case 'plantNum':
     //   user?.cnt_plantNum = user.cnt_plantNum ?? 0 + 1;
@@ -141,49 +139,52 @@ Future<String> counting_goal(String behavior, DateTime plantingDate,
       throw ArgumentError('Unknown behavior: $behavior');
   }
 
-  // Update the user in Firestore
-  await userRepository.createOrUpdateUser(user);
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  DateTime parsedLastActionDate = formatter.parse(lastCareDate);
 
-  final nextCareDates = calculateNextCareDates(
-      plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
-
-  DateTime nextWateringDate = nextCareDates["nextWateringDate"]!;
-  DateTime nextFertilizationDate = nextCareDates["nextFertilizationDate"]!;
-  DateTime? nextPruningDate = nextCareDates["nextPruningDate"]!;
+  DateTime nextWateringDate =
+      parsedLastActionDate.add(Duration(days: wateringCycle));
+  DateTime nextFertilizationDate =
+      parsedLastActionDate.add(Duration(days: fertilizationCycle));
+  DateTime? nextPruningDate = pruningCycle > 0
+      ? parsedLastActionDate.add(Duration(days: pruningCycle))
+      : null;
 
   // Formatting the date for a nice output
-  DateFormat formatter = DateFormat('yyyy-MM-dd');
   String formattedString = 'Next Care Dates:\n'
       'Next Watering Date: ${formatter.format(nextWateringDate)}\n'
       'Next Fertilization Date: ${formatter.format(nextFertilizationDate)}\n'
-      'Next Pruning Date: ${formatter.format(nextPruningDate)}';
+      'Next Pruning Date: ${nextPruningDate != null ? DateFormat('yyyy-MM-dd').format(nextPruningDate) : "No need to prune!"}';
 
   // Return a map containing user and formatted string
   return formattedString;
 }
 
-// void countingGoal(appUser user, String behavior) {
-//   switch (behavior) {
-//     //* sign in should be triggered when user signin!
-//     // case 'signin':
-//     //   user.cnt_signin += 1;
-//     //   break;
-//     case 'watering':
-//       user.cnt_watering += 1;
-//       break;
-//     case 'plantNum':
-//       user.cnt_plantNum += 1;
-//       break;
-//     case 'plantType':
-//       user.cnt_plantType += 1;
-//       break;
-//     case 'drink':
-//       user.cnt_drink += 1;
-//       break;
-//     default:
-//       throw ArgumentError('Unknown behavior: $behavior');
-//   }
-// }
+/*
+// deliberately use "plantingDate" in case user reports "i watered the plant yesterday" or "i fertilized the plant last week"
+// Function to calculate the next care dates
+String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
+    int fertilizationCycle, int pruningCycle) {
+  // DateTime today = DateTime.now();
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  DateTime parsedLastActionDate = formatter.parse(lastActionDate);
+
+  DateTime nextWateringDate =
+      parsedLastActionDate.add(Duration(days: wateringCycle));
+  DateTime nextFertilizationDate =
+      parsedLastActionDate.add(Duration(days: fertilizationCycle));
+  DateTime? nextPruningDate = pruningCycle > 0
+      ? parsedLastActionDate.add(Duration(days: pruningCycle))
+      : null;
+
+  // Formatting the date for a nice output
+  String formattedString = 'Next Care Dates:\n'
+      'Next Watering Date: ${DateFormat('yyyy-MM-dd').format(nextWateringDate)}\n'
+      'Next Fertilization Date: ${DateFormat('yyyy-MM-dd').format(nextFertilizationDate)}\n'
+      'Next Pruning Date: ${nextPruningDate != null ? DateFormat('yyyy-MM-dd').format(nextPruningDate) : "No need to prune!"}';
+  return formattedString;
+}
+ */
 
 Future<Message> findSimilarMessage(String query) async {
   debugPrint('Finding and appending similar message for query: $query');

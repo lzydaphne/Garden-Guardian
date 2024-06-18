@@ -3,38 +3,36 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/message.dart';
 
-
 class MessageRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  Stream<List<Message>> streamViewMessages() { // all of the message in db with username != null (not system message)
-    
+  Stream<List<Message>> streamViewMessages() {
+    // all of the message in db with username != null (not system message)
+
     return _db
-        .collection('user')
-       // .where('role',isNotEqualTo: 'system') //filter message with role == system ( system message)
+        .collection('messages')
+        // .where('role',isNotEqualTo: 'system') //filter message with role == system ( system message)
         .orderBy('timeStamp', descending: false)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => Message.fromMap(doc.data()))
-          .toList();
-    });
-  } 
-  Stream<List<Message>> streamContentMessages() { // all of the message in db 
-    return _db
-        .collection('user')
-        .orderBy('timeStamp', descending: false)
-        .limitToLast(2)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => Message.fromMap(doc.data()))
-          .toList();
+      return snapshot.docs.map((doc) => Message.fromMap(doc.data())).toList();
     });
   }
-  
+
+  Stream<List<Message>> streamContentMessages() {
+    // all of the message in db
+    return _db
+        .collection('messages')
+        .orderBy('timeStamp', descending: false)
+        .limitToLast(5)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => Message.fromMap(doc.data())).toList();
+    });
+  }
+
   Future<void> addMessage(Message m) async {
     debugPrint('Adding message: ${m.text}');
- 
+
     // currentTokenCount += _calculateTokenCount(m.text) +
     //     _calculateTokenCount(m.base64ImageUrl) +
     //     _calculateTokenCount(m.timeStamp.toString()) +
@@ -54,37 +52,31 @@ class MessageRepository {
   //           _calculateTokenCount(message.imageDescription));
   // }
 
-
   Future<void> _storeInDatabase(Message message) async {
-  try {
-    debugPrint('Storing message in database: ${message.text}');
-    
-   // final HttpsCallable callable =  FirebaseFunctions.instance.httpsCallable('storeInDatabase');
-    
-    debugPrint('Callable created, waiting for response from database');
+    try {
+      debugPrint('Storing message in database: ${message.text}');
 
-    // final response = await callable.call(<String, dynamic>{
-    //   'role': message.role,
-    //   'text': message.text,
-    //   'base64ImageUrl': message.base64ImageUrl,
-    //   'timeStamp': message.timeStamp.toString(),
-    //   'imageDescription': message.imageDescription,
-    //   'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
-    //  // 'servertimeStamp' : FieldValue.serverTimestamp()
-    // });
+      // final HttpsCallable callable =  FirebaseFunctions.instance.httpsCallable('storeInDatabase');
 
-    DocumentReference docRef  = await FirebaseFirestore.instance.collection('user').add(message.toMap());
+      debugPrint('Callable created, waiting for response from database');
 
-    debugPrint('Received response from database: ${docRef.id}');
-  } catch (e) {
-    debugPrint('Error storing message in database: $e');
+      // final response = await callable.call(<String, dynamic>{
+      //   'role': message.role,
+      //   'text': message.text,
+      //   'base64ImageUrl': message.base64ImageUrl,
+      //   'timeStamp': message.timeStamp.toString(),
+      //   'imageDescription': message.imageDescription,
+      //   'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
+      //  // 'servertimeStamp' : FieldValue.serverTimestamp()
+      // });
+
+      DocumentReference docRef = await FirebaseFirestore.instance
+          .collection('messages')
+          .add(message.toMap());
+
+      debugPrint('Received response from database: ${docRef.id}');
+    } catch (e) {
+      debugPrint('Error storing message in database: $e');
+    }
   }
-}
-
-
-
-
-
-
-  
 }

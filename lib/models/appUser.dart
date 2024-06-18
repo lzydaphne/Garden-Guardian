@@ -8,22 +8,22 @@ class appUser {
   final String? avatarUrl;
   late final List<LogInMethod> logInMethods;
   String? pushMessagingToken;
-  int? cnt_signin;
-  int? cnt_watering;
-  int? cnt_plantNum;
-  int? cnt_plantType;
-  int? cnt_drink;
+  int cnt_signin;
+  int cnt_watering;
+  int cnt_plantNum;
+  int cnt_plantType;
+  int cnt_drink;
 
   appUser({
     required this.id,
     this.userName,
     this.email,
     this.avatarUrl,
-    this.cnt_signin,
-    this.cnt_watering,
-    this.cnt_plantNum,
-    this.cnt_plantType,
-    this.cnt_drink,
+    required this.cnt_signin,
+    required this.cnt_watering,
+    required this.cnt_plantNum,
+    required this.cnt_plantType,
+    required this.cnt_drink,
     logInMethods,
     this.pushMessagingToken,
   }) : logInMethods = logInMethods ?? [];
