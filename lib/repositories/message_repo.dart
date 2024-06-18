@@ -23,7 +23,7 @@ class MessageRepository {
     return _db
         .collection('messages')
         .orderBy('timeStamp', descending: false)
-        .limitToLast(5)
+        .limitToLast(2)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) => Message.fromMap(doc.data())).toList();
