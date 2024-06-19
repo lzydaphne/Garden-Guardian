@@ -69,7 +69,7 @@ class MessageRepository {
       //   'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
       //  // 'servertimeStamp' : FieldValue.serverTimestamp()
       // });
-
+      
       DocumentReference docRef = await FirebaseFirestore.instance
           .collection('messages')
           .add(message.toMap());

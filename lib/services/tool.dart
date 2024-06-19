@@ -186,37 +186,44 @@ String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
 }
  */
 
-Future<Message> findSimilarMessage(String query) async {
+Future<List<Message>> findSimilarMessage(String query, int queryNum) async {
   debugPrint('Finding and appending similar message for query: $query');
 
-  final results = await _vectorSearch(query);
+  final results = await _vectorSearch(query, queryNum);
 
-  if (results == null) {
+  if (results.isEmpty) {
     debugPrint("Memory database is empty");
 
     String systemHeader =
-        "The database is empty , can't retrieved information of pass conversation."; // system header for retrieve memory
-    return Message(
-        text: systemHeader,
-        role: 'system',
-        imageDescription: null,
-        base64ImageUrl: null); // can't be assistant or system , both failed
+        "The database is empty , can't retrieved information of past conversation."; // system header for retrieve memory
+    return [
+      Message(
+          text: systemHeader,
+          role: 'system',
+          imageDescription: null,
+          base64ImageUrl: null)
+    ]; // can't be assistant or system , both failed
   } else {
     String systemHeader =
-        "Retrieved memory from database , it may be helpful or not to your response :there is a prompt of ${results.role} , in ${results.timeStamp}, it says : "; // system header for retrieve memory
-    return Message(
-        text: systemHeader + results.text,
-        role: 'system',
-        imageDescription: results.imageDescription,
-        base64ImageUrl: results
-            .base64ImageUrl); // can't be assistant or system , both failed
+        "Retrieved memory from database , it may be helpful or not to your response :";
+        // gpt cant determine assistant role and user role is from who , make this part better.
+
+    List<Message> systemMessages = results.map((result) {
+      return Message(
+          text: "$systemHeader there is a prompt from ${result.role} role, in ${result.timeStamp}, it says: ${result.text}",
+          role: 'system',
+          imageDescription: result.imageDescription,
+          base64ImageUrl: result.base64ImageUrl);
+    }).toList();
+
+    return systemMessages;
   }
 }
 
-Future<Message?> _vectorSearch(String searchString) async {
+
+Future<List<Message>> _vectorSearch(String searchString, int queryNum) async {
   try {
-    UserCredential userCredential =
-        await FirebaseAuth.instance.signInAnonymously();
+    UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
     debugPrint('Signed in anonymously as: ${userCredential.user?.uid}');
 
     debugPrint('Performing vector search');
@@ -225,34 +232,33 @@ Future<Message?> _vectorSearch(String searchString) async {
         .httpsCallable('ext-firestore-vector-search-queryCallable');
 
     final response = await callable.call(<String, dynamic>{
-      //add a prefilter with username != null (don;t consider system message)
       'query': searchString,
-      'limit': 1,
-      // 'prefilters': [
-      //   {
-      //     'field': 'issystem',
-      //     'operator': '==', // can't use != , not supported in vector search
-      //     'value': "0",
-      //   },
-      // ],
+      'limit': queryNum,
     });
     debugPrint('Vector search response: ${response.data}');
 
-    debugPrint(
-        'Fetching message from Firestore with ID: ${response.data['ids'][0]}');
-    final docSnapshot = await FirebaseFirestore.instance
-        .collection('messages')
-        .doc(response.data['ids'][0])
-        .get();
+    List<Message> messages = [];
 
-    if (docSnapshot.exists) {
-      final data = docSnapshot.data();
-      return Message.fromMap(data ?? {});
-    } else {
-      return null;
+    for (int i = 0; i < queryNum; i++) {
+      if (i >= response.data['ids'].length) break;
+
+      debugPrint('Fetching message from Firestore with ID: ${response.data['ids'][i]}');
+
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('messages')
+          .doc(response.data['ids'][i])
+          .get();
+
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data();
+        messages.add(Message.fromMap(data ?? {}));
+      }
     }
+
+    return messages;
   } catch (e) {
     debugPrint('Error in vector search: $e');
+    return [];
   }
-  return null;
 }
+

@@ -120,7 +120,7 @@ Analyze the user input and provide the appropriate response with EXACTLY one of 
 
     5.Recall Context:
         Trigger: The assistant can't remember the context or previous interactions.
-        Action: Generate a query string with keywords from past messages.
+        Action: Generate a query string ONLY conatining 20 possible keywords that may conatin in the wanted past messages.
         Action: Call the "find_similar_message" function with the query string.
         Response:
             Use the returned past conversation to support your response to the user's question.
@@ -188,9 +188,9 @@ String systemPrompt = """
 */
   String imagesystemPrompt = """
 You are a image analyzer , you will receive a user input message of a text and a image
-- You will need to analyze the image and give very detailed description about the image.
-- Check the user's input text if there is additional information needed about the image and add in the image description output.
-- You should give detailed description with all the necessary keywords included in the description.
+- You will need to analyze the image and give a 20 mostly related keywords that covers all the recognizable contents and detail of this image.
+- Check the user's input text if there is additional information needed about the image and add those keywords in the image description output.
+- All the necessary keywords should be different.
 
 """;
 
@@ -299,14 +299,14 @@ You are a image analyzer , you will receive a user input message of a text and a
       "function": {
         "name": "find_similar_message",
         "description":
-            "Searches the database for past conversation contents related to the current query and appends them to the current thread.",
+            "Searches the database for past conversation contents related to the current query and appends them to the current context window.",
         "parameters": {
           "type": "object",
           "properties": {
             "query": {
               "type": "string",
               "description":
-                  "The current query or context the assistant needs help with."
+                  "The current query containing several keywords for the assistant to perform searching in the message record database."
             }
           },
           "required": ["query"]
@@ -590,27 +590,27 @@ You are a image analyzer , you will receive a user input message of a text and a
           debugPrint(
               'find_and_append_similar_message called with arguments: $toolArguments');
 
-          try {
+        try {
             String query = toolArguments['query'];
 
             debugPrint('query: $query');
-            final results = await findSimilarMessage(query);
+            final results = await findSimilarMessage(query, 5);
 
-            debugPrint('results: ${results.text}');
-
+            // Iterate through the list of results and add each message to iptMsg
+            
             iptMsg.add({
               "role": "tool",
               "tool_call_id": toolCall_id,
               "name": toolFunctionName,
-              "content": results.text
+              "content": results.map((result) => result.content).toList()
             });
+            
 
             final CCrequestWithFunctionResponse = ChatCompleteText(
               messages: iptMsg,
               model: ChatModelFromValue(model: 'gpt-4o'),
               maxToken: 200,
             );
-
             final finalResponse = await openAI.onChatCompletion(
                 request: CCrequestWithFunctionResponse);
             finalContent = finalResponse?.choices[0].message?.content ?? '';
