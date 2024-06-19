@@ -11,7 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 //import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
-  //WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   // Defer the first frame until `FlutterNativeSplash.remove()` is called
   //FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
