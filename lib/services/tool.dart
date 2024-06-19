@@ -228,20 +228,20 @@ Future<Message?> _vectorSearch(String searchString) async {
       //add a prefilter with username != null (don;t consider system message)
       'query': searchString,
       'limit': 1,
-      'prefilters': [
-        {
-          'field': 'issystem',
-          'operator': '==', // can't use != , not supported in vector search
-          'value': "0",
-        },
-      ],
+      // 'prefilters': [
+      //   {
+      //     'field': 'issystem',
+      //     'operator': '==', // can't use != , not supported in vector search
+      //     'value': "0",
+      //   },
+      // ],
     });
     debugPrint('Vector search response: ${response.data}');
 
     debugPrint(
         'Fetching message from Firestore with ID: ${response.data['ids'][0]}');
     final docSnapshot = await FirebaseFirestore.instance
-        .collection('user')
+        .collection('messages')
         .doc(response.data['ids'][0])
         .get();
 

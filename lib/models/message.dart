@@ -47,11 +47,11 @@ class Message {
   }
 
   Map<String, dynamic> toMap() {
-    Map<String, String> roletoNum = {
-      "system": "1",
-      "assistant": "0",
-      "user": "0"
-    };
+    // Map<String, String> roletoNum = {
+    //   "system": "1",
+    //   "assistant": "0",
+    //   "user": "0"
+    // };
     return {
       'role': role,
       'text': text,
@@ -59,7 +59,7 @@ class Message {
       'imageDescription': imageDescription,
       'timeStamp': FieldValue.serverTimestamp(),
       'stringtoEmbed': text + (imageDescription ?? '') + timeStamp.toString(),
-      'issystem': roletoNum[role]
+      // 'issystem': roletoNum[role]
     };
   }
 
