@@ -1,10 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-class MessageBubble extends StatelessWidget {
-  // Create a message bubble which is meant to be the first in the sequence.
+class MessageBubble extends StatefulWidget {
   const MessageBubble.withUser({
     super.key,
     required this.userName,
@@ -14,7 +12,6 @@ class MessageBubble extends StatelessWidget {
     this.base64ImageUrl,
   });
 
-  // Create a message bubble that continues the sequence.
   const MessageBubble({
     super.key,
     required this.text,
@@ -23,24 +20,70 @@ class MessageBubble extends StatelessWidget {
     this.base64ImageUrl,
   }) : userName = null;
 
-  // Whether this message bubble is the last in a sequence of messages from the same user. Modifies the message bubble slightly for these different cases - only shows user image for the first message from the same user, and changes the shape of the bubble for messages thereafter.
   final bool isLast;
-
-  // Username of the user. Not required if the message is not the first in a sequence.
   final String? userName;
   final String? base64ImageUrl;
   final String text;
-
-  // Controls how the MessageBubble will be aligned.
   final bool isMine;
 
   @override
+  _MessageBubbleState createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends State<MessageBubble>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<int> _characterCount;
+  bool _isAnimated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isAnimated = !widget.isMine;
+
+    if (_isAnimated) {
+      _controller = AnimationController(
+        duration: Duration(milliseconds: widget.text.length * 50),
+        vsync: this,
+      );
+
+      _characterCount =
+          StepTween(begin: 0, end: widget.text.length).animate(_controller)
+            ..addListener(() {
+              setState(() {});
+            })
+            ..addStatusListener((status) {
+              if (status == AnimationStatus.completed) {
+                setState(() {
+                  _isAnimated = false;
+                });
+              }
+            });
+
+      _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_isAnimated) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
+
+    String textToShow = widget.isMine || !_isAnimated
+        ? widget.text
+        : widget.text.substring(0, _characterCount.value);
 
     return Stack(
       children: [
-        if (!isMine)
+        if (!widget.isMine)
           Positioned(
             top: 16,
             child: CircleAvatar(
@@ -49,20 +92,19 @@ class MessageBubble extends StatelessWidget {
             ),
           ),
         Container(
-          // Add some margin to the edges of the messages, to allow space for the user's image.
-          margin: EdgeInsets.symmetric(horizontal: isMine ? 0 : 24),
+          margin: EdgeInsets.symmetric(horizontal: widget.isMine ? 0 : 24),
           child: Row(
-            // The side of the chat screen the message should show at.
             mainAxisAlignment:
-                isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+                widget.isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               Column(
-                crossAxisAlignment:
-                    isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment: widget.isMine
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
                 children: [
-                  // First messages in the sequence provide a visual buffer at the top.
-                  if (!isMine && userName != null) const SizedBox(height: 18),
-                  if (!isMine && userName != null)
+                  if (!widget.isMine && widget.userName != null)
+                    const SizedBox(height: 18),
+                  if (!widget.isMine && widget.userName != null)
                     Padding(
                       padding: const EdgeInsets.only(
                         left: 8,
@@ -70,7 +112,7 @@ class MessageBubble extends StatelessWidget {
                         bottom: 4,
                       ),
                       child: Text(
-                        userName!,
+                        widget.userName!,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
@@ -78,36 +120,32 @@ class MessageBubble extends StatelessWidget {
                       ),
                     ),
                   Column(
-                    // The "speech" box surrounding the message.
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          color: isMine
+                          color: widget.isMine
                               ? theme.colorScheme.primary
                               : theme.colorScheme.primaryContainer,
-                          // Only show the message bubble's "speaking edge" if first in the chain. Whether the "speaking edge" is on the left or right depends on whether or not the message bubble is the current user.
                           borderRadius: BorderRadius.only(
-                            topLeft: !isMine
+                            topLeft: !widget.isMine
                                 ? Radius.zero
                                 : const Radius.circular(16),
-                            topRight: isMine
+                            topRight: widget.isMine
                                 ? Radius.zero
                                 : const Radius.circular(16),
-                            bottomLeft: isMine || isLast
+                            bottomLeft: widget.isMine || widget.isLast
                                 ? const Radius.circular(16)
                                 : Radius.zero,
-                            bottomRight: !isMine || isLast
+                            bottomRight: !widget.isMine || widget.isLast
                                 ? const Radius.circular(16)
                                 : Radius.zero,
                           ),
                         ),
-                        // Set some reasonable constraints on the width of the message bubble so it can adjust to the amount of text it should show.
                         constraints: const BoxConstraints(maxWidth: 200),
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 16,
                         ),
-                        // Margin around the bubble.
                         margin: const EdgeInsets.symmetric(
                           vertical: 2,
                           horizontal: 8,
@@ -115,43 +153,27 @@ class MessageBubble extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (base64ImageUrl != null)
+                            if (widget.base64ImageUrl != null)
                               Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Image.memory(
-                                      Uri.parse(base64ImageUrl as String)
-                                          .data!
-                                          .contentAsBytes())),
-                            if (base64ImageUrl != null)
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: MarkdownBody(
-                                  data: text,
-                                  styleSheet: MarkdownStyleSheet(
-                                    p: TextStyle(
-                                      height: 1.3,
-                                      color: isMine
-                                          ? theme.colorScheme.onPrimary
-                                          : theme
-                                              .colorScheme.onPrimaryContainer,
-                                    ),
-                                  ),
-                                  softLineBreak: true,
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Image.memory(
+                                  Uri.parse(widget.base64ImageUrl as String)
+                                      .data!
+                                      .contentAsBytes(),
                                 ),
-                              )
-                            else
-                              MarkdownBody(
-                                data: text,
-                                styleSheet: MarkdownStyleSheet(
-                                  p: TextStyle(
-                                    height: 1.3,
-                                    color: isMine
-                                        ? theme.colorScheme.onPrimary
-                                        : theme.colorScheme.onPrimaryContainer,
-                                  ),
-                                ),
-                                softLineBreak: true,
                               ),
+                            MarkdownBody(
+                              data: textToShow,
+                              styleSheet: MarkdownStyleSheet(
+                                p: TextStyle(
+                                  height: 1.3,
+                                  color: widget.isMine
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                              softLineBreak: true,
+                            ),
                           ],
                         ),
                       ),
@@ -165,4 +187,7 @@ class MessageBubble extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

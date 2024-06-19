@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/models/msgUser.dart';
-// import 'package:flutter_app/view_models/me_vm.dart';
 import 'package:flutter_app/views/message/message_bubble.dart';
 import 'package:provider/provider.dart';
 
@@ -101,6 +100,7 @@ class _MessageListState extends State<MessageList> {
 
         if (isNextUserSame) {
           return MessageBubble(
+            key: ValueKey(message.timeStamp),
             text: message.text,
             isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,
@@ -108,6 +108,7 @@ class _MessageListState extends State<MessageList> {
           );
         } else {
           return MessageBubble.withUser(
+            key: ValueKey(message.timeStamp),
             userName: meORnotme(message.role),
             text: message.text,
             isMine: me.userName == messageUsername,
@@ -116,6 +117,7 @@ class _MessageListState extends State<MessageList> {
           );
         }
       },
+      addAutomaticKeepAlives: true,
     );
   }
 }
