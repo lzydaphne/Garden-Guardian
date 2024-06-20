@@ -87,7 +87,7 @@ class _MessageBubbleState extends State<MessageBubble>
           Positioned(
             top: 16,
             child: CircleAvatar(
-              backgroundColor: theme.colorScheme.primary.withAlpha(180),
+              backgroundImage: AssetImage('assets/images/avatar.jpg'),
               radius: 12,
             ),
           ),
@@ -156,10 +156,13 @@ class _MessageBubbleState extends State<MessageBubble>
                             if (widget.base64ImageUrl != null)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
-                                child: Image.memory(
-                                  Uri.parse(widget.base64ImageUrl as String)
-                                      .data!
-                                      .contentAsBytes(),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(5.0), // Adjust the radius as needed
+                                  child: Image.memory(
+                                    Uri.parse(widget.base64ImageUrl as String)
+                                        .data!
+                                        .contentAsBytes(),
+                                  ),
                                 ),
                               ),
                             MarkdownBody(

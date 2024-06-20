@@ -202,15 +202,17 @@ You just retrieved pass message records from database, every unit of message con
 - ROLE :  The role of the prompt, there will only be two kinds of ROLE which is "assistant" and "user", you should see the message of ROLE = "assisant" as the message that you sent, and the message of ROLE = "user" as the message the user sent.
 - DATE : The create date of the retrieved message, in the format of 'YYYY-MM-DD HH:MM:SS. 000' . 
 - TEXT : The text content of the retrieved message, you should recognize the content.
+- IMAGE : If this message contains a image, this metadata contains the description of the image including the name , big picture , and the detail of the image. If the message doesn't contain image , then this metadata will be empty.
 
 Now below is the list of the retrieved messages : 
 
 """;
     String combinedMessages = results.map((result) {
       return """
-ROLE : ${result.role}
-DATE : ${result.timeStamp}
-TEXT : ${result.text} 
+ROLE : \n${result.role}
+DATE : \n${result.timeStamp}
+TEXT : \n${result.text} 
+IMAGE : \n${result.imageDescription}
     
       """;
     }).join('\n');
