@@ -72,14 +72,11 @@ class NavigationService {
     _router.go('/${tab.name}');
   }
 
-<<<<<<< HEAD
   void goGoalDetailsOnGoal({required String goalId}) {
     _router.go('/goal/$goalId/goaldetails');
   }
 }
-=======
   // void goInform() {
   //   _router.go('/chat/inform'); // Add navigation to InformPage
   // }
-}
->>>>>>> 7032e29b790fcf1b9137c9100f50f67ae47af160
+
