@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_app/views/cover_page.dart';
 import 'package:flutter_app/views/auth_page.dart';
 import 'package:flutter_app/views/nav_bar.dart';
-import 'package:flutter_app/views/goal_details_page.dart';
 
 final routerConfig = GoRouter(
   routes: <RouteBase>[
@@ -42,12 +41,6 @@ final routerConfig = GoRouter(
     GoRoute(
       path: '/goal',
       builder: (context, state) => const NavBar(selectedTab: HomeTab.goal),
-      routes: <RouteBase>[
-        GoRoute(
-          path: ':goalId/goaldetails',
-          builder: (context, state) => GoalDetailsPage(goalId: state.pathParameters['goalId']!),
-        )
-      ]
     ),
     GoRoute(
       path: '/diary',
@@ -72,11 +65,7 @@ class NavigationService {
     _router.go('/${tab.name}');
   }
 
-  void goGoalDetailsOnGoal({required String goalId}) {
-    _router.go('/goal/$goalId/goaldetails');
-  }
-}
   // void goInform() {
   //   _router.go('/chat/inform'); // Add navigation to InformPage
   // }
-
+}

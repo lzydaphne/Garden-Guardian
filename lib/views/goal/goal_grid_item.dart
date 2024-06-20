@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/goal.dart';
 
-class GoalItem extends StatelessWidget {
-  const GoalItem({
+class GoalGridItem extends StatelessWidget {
+  const GoalGridItem({
     super.key,
     required this.goal,
     required this.onSelectGoal,
@@ -27,20 +27,9 @@ class GoalItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    goal.title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500
-                    )
-                  ),
+                  Text(goal.title),
                   const SizedBox(height: 5),
-                  Text(
-                    goal.content,
-                    style: const TextStyle(
-                      fontSize: 12,
-                    )
-                  )
+                  Text(goal.content)
                 ]
               ),
             ),
