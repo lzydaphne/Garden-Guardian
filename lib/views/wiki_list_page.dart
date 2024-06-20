@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/repositories/wiki_repo.dart';
 import 'package:flutter_app/views/wiki_detail_page.dart';
-import 'package:flutter_app/views/nav_bar.dart';
 
 class WikiListPage extends StatelessWidget {
   final WikiRepository wikiRepository = WikiRepository();
+
+  WikiListPage();
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +15,12 @@ class WikiListPage extends StatelessWidget {
         title: const Text('wiki', style: TextStyle(fontWeight: FontWeight.w800),),
         centerTitle: true,
         backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -36,12 +43,6 @@ class WikiListPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final wiki = wikiRepository.wikiList[index];
                 return ListTile(
-                  /*leading: Image.asset(
-                    wiki.imageUrl,
-                    /*height: 150,
-                    width: 150/*double.infinity*/,*/
-                    //fit: BoxFit.cover,
-                  ),*/
                   title: Container(
                     child: Column(
                       children: [
@@ -71,7 +72,6 @@ class WikiListPage extends StatelessWidget {
               },
             ),
           ),
-          //const NavBar(),
         ],
       ),
     );
