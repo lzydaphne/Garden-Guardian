@@ -6,8 +6,8 @@ import 'package:flutter_app/views/home_page.dart';
 import 'package:flutter_app/views/plant_family/plant_family_page.dart';
 import 'package:flutter_app/views/chat_page.dart';
 import 'package:flutter_app/views/goal/goals_page.dart';
-import 'package:flutter_app/views/plant_family/diary_page.dart';
-import 'package:flutter_app/views/profile_page.dart';
+//import 'package:flutter_app/views/plant_family/diary_page.dart';
+import 'package:flutter_app/views/profile/profile_page.dart';
 
 enum HomeTab { home, plant, chat, goal, profile }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/navigation.dart';
-import 'package:flutter_app/views/wiki_list_page.dart';
+import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 import 'package:go_router/go_router.dart';
 
 class HomePage extends StatefulWidget {
