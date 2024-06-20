@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/views/message/message_list.dart';
 import 'package:flutter_app/views/message/new_message_bar.dart';
 import 'package:flutter_app/views/user/user_info.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_app/services/navigation.dart';
+import 'package:flutter_app/views/chat_inform_page.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
@@ -14,6 +17,9 @@ class ChatPage extends StatelessWidget {
           IconButton(
             onPressed: () {
               // Information button logic
+              showDialog(context: context, builder: (BuildContext context){
+                  return const ChatInformDialog();
+                },); 
             },
             icon: Icon(
               Icons.info_outline_rounded,

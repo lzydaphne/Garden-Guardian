@@ -1,3 +1,4 @@
+
 import 'package:flutter_app/views/chat_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/views/cover_page.dart';
@@ -7,17 +8,17 @@ import 'package:flutter_app/views/nav_bar.dart';
 final routerConfig = GoRouter(
   routes: <RouteBase>[
     GoRoute(
-        path: '/cover',
-        pageBuilder: (context, state) => const NoTransitionPage<void>(
-              // child: ChatPage(),
-              child: CoverPage(),
-            ),
-        routes: <RouteBase>[
-          GoRoute(
-            path: 'auth',
-            builder: (context, state) => const AuthPage(),
-          )
-        ]),
+      path: '/cover',
+      pageBuilder: (context, state) => const NoTransitionPage<void>(
+        child: CoverPage(),
+      ),
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'auth',
+          builder: (context, state) => const AuthPage(),
+        )
+      ],
+    ),
     GoRoute(
       path: '/home',
       builder: (context, state) => const NavBar(selectedTab: HomeTab.home),
@@ -29,6 +30,12 @@ final routerConfig = GoRouter(
     GoRoute(
       path: '/chat',
       builder: (context, state) => const NavBar(selectedTab: HomeTab.chat),
+      // routes: <RouteBase>[
+      //   GoRoute(
+      //     path: 'inform',
+      //     builder: (context, state) => const ChatInformPage(),
+      //   ),
+      // ],
     ),
     GoRoute(
       path: '/goal',
@@ -56,4 +63,8 @@ class NavigationService {
   void goHome({required HomeTab tab}) {
     _router.go('/${tab.name}');
   }
+
+  // void goInform() {
+  //   _router.go('/chat/inform'); // Add navigation to InformPage
+  // }
 }
