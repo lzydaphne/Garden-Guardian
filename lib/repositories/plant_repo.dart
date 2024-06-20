@@ -68,7 +68,7 @@ class PlantRepository {
       return null;
     }
   }
-  
+
   Future<List<Plant>> getAllPlants() async {
     try {
       QuerySnapshot snapshot = await _db.collection('plants').get();

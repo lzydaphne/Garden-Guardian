@@ -50,7 +50,7 @@ class _MessageListState extends State<MessageList> {
   String? meORnotme(String? role) {
     if (role == null) return null;
     if (role == "assistant" || role == "system")
-      return "BOT";
+      return "Blossom";
     else {
       return "ME";
     }
