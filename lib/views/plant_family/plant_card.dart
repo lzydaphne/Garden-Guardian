@@ -33,9 +33,9 @@ class PlantCard extends StatelessWidget {
             // 植物圖片
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-              child: Image.asset(
+              child: Image.network(
                 plant.imageUrl,
-                height: 130,
+                height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),

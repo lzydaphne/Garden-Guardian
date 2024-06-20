@@ -1,5 +1,7 @@
 import 'dart:async';
-
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:image_picker/image_picker.dart';
@@ -16,6 +18,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
 import 'package:flutter_app/repositories/appUser_repo.dart';
 import 'package:flutter_app/models/appUser.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path_provider/path_provider.dart';
 
 // Function to process the image and identify the plant species
 // Future<String> identifyPlantSpecies(String imagePath) async {
@@ -51,7 +55,7 @@ Map<String, DateTime?> calculateNextCareDates(DateTime plantingDate,
 // Function to add a new plant
 Future<String> addNewPlant(
     String species,
-    String imageUrl,
+    String base64imageUrl,
     int wateringCycle,
     int fertilizationCycle,
     int pruningCycle,
@@ -61,10 +65,43 @@ Future<String> addNewPlant(
   Map<String, DateTime?> careDates = calculateNextCareDates(
       plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
 
+  //============== img storage ========//
+  // Decode the Base64 image
+  // Extract the actual base64 string from the input format
+  final RegExp base64RegExp = RegExp(r'data:image\/[a-zA-Z]+;base64,');
+  String base64String = base64imageUrl.replaceFirst(base64RegExp, '');
+
+  Uint8List imageBytes = base64Decode(base64String);
+
+  //* used in web
+  final storageRef = FirebaseStorage.instance
+      .ref()
+      .child('apps/plants/${DateTime.now().millisecondsSinceEpoch}.jpg');
+  UploadTask uploadTask = storageRef.putData(imageBytes);
+  TaskSnapshot taskSnapshot = await uploadTask;
+  String downloadURL = await taskSnapshot.ref.getDownloadURL();
+
+  /** used in android
+  // Get the temporary directory to store the image file
+  //Directory tempDir = await getTemporaryDirectory();
+  //String filePath ='${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+  // File imageFile = File(filePath);
+  // await imageFile.writeAsBytes(imageBytes);
+  // Upload image to Firebase Storage
+  // final storageRef = FirebaseStorage.instance
+  //     .ref()
+  //     .child('apps/plants/${DateTime.now().millisecondsSinceEpoch}.jpg');
+  // await storageRef.putFile(imageFile);
+  // String imageUrl = await storageRef.getDownloadURL();
+  */
+
+  //============== add to plants collection ========//
   Plant newPlant = Plant(
     nickName: 'wait to be updated',
+    locationId: 'living room', //! [TODO] need to be updated by user
     species: species,
-    imageUrl: imageUrl,
+    imageUrl: base64imageUrl,
+    downloadURL: downloadURL,
     plantingDate: plantingDate,
     wateringCycle: wateringCycle,
     fertilizationCycle: fertilizationCycle,
@@ -194,8 +231,9 @@ Future<String> findSimilarMessage(String query, int queryNum) async {
   if (results.isEmpty) {
     debugPrint("Memory database is empty");
 
-    String systemHeader = "The database is empty, can't retrieve information of past conversations.";
-    return  systemHeader;
+    String systemHeader =
+        "The database is empty, can't retrieve information of past conversations.";
+    return systemHeader;
   } else {
     String systemHeader = """
 You just retrieved pass message records from database, every unit of message contains three metadata as the following:
@@ -219,16 +257,16 @@ IMAGE : \n${result.imageDescription}
 
     String finalContent = "$systemHeader\n$combinedMessages";
 
-    debugPrint('Retrieved messsage : $finalContent' ) ; 
+    debugPrint('Retrieved messsage : $finalContent');
 
     return finalContent;
   }
 }
 
-
 Future<List<Message>> _vectorSearch(String searchString, int queryNum) async {
   try {
-    UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
+    UserCredential userCredential =
+        await FirebaseAuth.instance.signInAnonymously();
     debugPrint('Signed in anonymously as: ${userCredential.user?.uid}');
 
     debugPrint('Performing vector search');
@@ -247,7 +285,8 @@ Future<List<Message>> _vectorSearch(String searchString, int queryNum) async {
     for (int i = 0; i < queryNum; i++) {
       if (i >= response.data['ids'].length) break;
 
-      debugPrint('Fetching message from Firestore with ID: ${response.data['ids'][i]}');
+      debugPrint(
+          'Fetching message from Firestore with ID: ${response.data['ids'][i]}');
 
       final docSnapshot = await FirebaseFirestore.instance
           .collection('messages')
@@ -266,4 +305,3 @@ Future<List<Message>> _vectorSearch(String searchString, int queryNum) async {
     return [];
   }
 }
-
