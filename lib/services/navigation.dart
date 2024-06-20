@@ -1,4 +1,3 @@
-
 import 'package:flutter_app/views/chat_page.dart';
 import 'package:flutter_app/views/home_page.dart';
 import 'package:go_router/go_router.dart';
@@ -65,7 +64,7 @@ class NavigationService {
     _router.go('/${tab.name}');
   }
 
-  // void goInform() {
-  //   _router.go('/chat/inform'); // Add navigation to InformPage
-  // }
+  void goGoalDetailsOnGoal({required String goalId}) {
+    _router.go('/goal/$goalId/goaldetails');
+  }
 }
