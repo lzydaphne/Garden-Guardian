@@ -22,8 +22,17 @@
         "lib/firebase_options.dart": {
           "projectId": "finaltest-c212e",
           "configurations": {
+            "android": "1:269215038220:android:c375a9f219df42b7d22729",
+            "ios": "1:269215038220:ios:f61da2fd06940906d22729",
             "web": "1:269215038220:web:83fe071399b1237fd22729"
           }
+        }
+      },
+      "android": {
+        "default": {
+          "projectId": "finaltest-c212e",
+          "appId": "1:269215038220:android:c375a9f219df42b7d22729",
+          "fileOutput": "android/app/google-services.json"
         }
       }
     }

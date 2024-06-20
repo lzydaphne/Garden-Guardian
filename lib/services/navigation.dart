@@ -1,3 +1,6 @@
+
+import 'package:flutter_app/views/chat_page.dart';
+import 'package:flutter_app/views/home_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/views/cover_page.dart';
 import 'package:flutter_app/views/auth_page.dart';
@@ -16,7 +19,7 @@ final routerConfig = GoRouter(
           path: 'auth',
           builder: (context, state) => const AuthPage(),
         )
-      ]
+      ],
     ),
     GoRoute(
       path: '/home',
@@ -29,6 +32,12 @@ final routerConfig = GoRouter(
     GoRoute(
       path: '/chat',
       builder: (context, state) => const NavBar(selectedTab: HomeTab.chat),
+      // routes: <RouteBase>[
+      //   GoRoute(
+      //     path: 'inform',
+      //     builder: (context, state) => const ChatInformPage(),
+      //   ),
+      // ],
     ),
     GoRoute(
       path: '/goal',
@@ -63,7 +72,14 @@ class NavigationService {
     _router.go('/${tab.name}');
   }
 
+<<<<<<< HEAD
   void goGoalDetailsOnGoal({required String goalId}) {
     _router.go('/goal/$goalId/goaldetails');
   }
 }
+=======
+  // void goInform() {
+  //   _router.go('/chat/inform'); // Add navigation to InformPage
+  // }
+}
+>>>>>>> 7032e29b790fcf1b9137c9100f50f67ae47af160

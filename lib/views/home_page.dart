@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/views/navigation_bar.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -251,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                 left: 15,
                 child: CircleAvatar(
                   backgroundImage:
-                      NetworkImage('https://via.placeholder.com/150'), // 替換為實際圖片鏈接
+                      AssetImage('images/user.png'), 
                   radius: 30,
                 ),
               ),
@@ -285,7 +286,8 @@ class _HomePageState extends State<HomePage> {
                             '種植挑戰',
                             const Color.fromARGB(255, 216, 243, 224),
                             const Color.fromARGB(255, 112, 187, 134),
-                            Icons.local_florist,
+                            Icons.hotel_class_rounded,
+                            //Icons.local_florist,
                             '已種植8株植物\n最高難度3★',
                             '點擊查看紀錄',
                             0
@@ -348,6 +350,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          // 最下方的Bar
+          //const NavigationBottomBar(),
         ],
       ),
     );

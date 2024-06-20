@@ -1,10 +1,12 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app/models/plant.dart';
 
 class PlantRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+/*
+ * can be used to listen to the returned stream to receive updates about the plant's data
+ */
   Stream<List<Plant>> streamAllPlants() {
     return _db
         .collection('plants')
@@ -47,16 +49,66 @@ class PlantRepository {
       print('Error deleting plant: $e');
     }
   }
-}
-class PlantRepository {
-  List<Plant> plants = [];
 
-  void addPlant(String name, String locationId, String avatarUrl) {
-    plants.add(Plant(name: name, locationId: locationId, avatarUrl: avatarUrl));
+  Future<String?> getLatestPlantID() async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('plants')
+          .orderBy('plantingDate', descending: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.id;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error getting latest plant: $e');
+      return null;
+    }
   }
 
-  List<Plant> getPlantsByLocation(String locationId) {
-    return plants.where((plant) => plant.locationId == locationId).toList();
+  Future<List<Plant>> getAllPlants() async {
+    try {
+      QuerySnapshot snapshot = await _db.collection('plants').get();
+      return snapshot.docs
+          .map((doc) => Plant.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error getting all plants: $e');
+      return [];
+    }
+  }
+
+  Future<List<Plant>> getPlantsByLocation(String locationId) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('plants')
+          .where('locationId', isEqualTo: locationId)
+          .get();
+      return snapshot.docs
+          .map((doc) => Plant.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error getting plants by location: $e');
+      return [];
+    }
   }
 }
+
+
+
+//* [TODO] FIX this to work
+// class PlantRepository {
+//   List<Plant> plants = [];
+
+//   void addPlant(String name, String locationId, String avatarUrl) {
+//     plants.add(Plant(nickName: name, locationId: locationId, imageUrl: avatarUrl));
+//   }
+
+//   List<Plant> getPlantsByLocation(String locationId) {
+//     return plants.where((plant) => plant.locationId == locationId).toList();
+//   }
+// }
 

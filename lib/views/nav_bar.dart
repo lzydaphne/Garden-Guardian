@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/navigation.dart';
+import 'package:flutter_app/views/plant_family_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/views/home_page.dart';
-import 'package:flutter_app/views/plant_family_page.dart';
+import 'package:flutter_app/views/plant_family/plant_family_page.dart';
 import 'package:flutter_app/views/chat_page.dart';
-import 'package:flutter_app/views/goals_page.dart';
-import 'package:flutter_app/views/diary_page.dart';
+import 'package:flutter_app/views/goal/goals_page.dart';
+import 'package:flutter_app/views/plant_family/diary_page.dart';
 
-enum HomeTab {
-  home,
-  plant,
-  chat,
-  goal,
-  diary
-}
+enum HomeTab { home, plant, chat, goal, diary }
 
 class NavBar extends StatelessWidget {
   final HomeTab selectedTab;
@@ -22,11 +17,16 @@ class NavBar extends StatelessWidget {
 
   void _tapBottomNavigationBarItem(BuildContext context, index) {
     final nav = Provider.of<NavigationService>(context, listen: false);
-    nav.goHome(tab: index == 0 ? HomeTab.home :
-                    index == 1 ? HomeTab.plant :
-                    index == 2 ? HomeTab.chat :
-                    index == 3 ? HomeTab.goal :
-                                 HomeTab.diary);
+    nav.goHome(
+        tab: index == 0
+            ? HomeTab.home
+            : index == 1
+                ? HomeTab.plant
+                : index == 2
+                    ? HomeTab.chat
+                    : index == 3
+                        ? HomeTab.goal
+                        : HomeTab.diary);
   }
 
   @override
@@ -37,8 +37,8 @@ class NavBar extends StatelessWidget {
         'title': 'Home',
       },
       {
-        'page': const PlantFamilyPage(),
-        'title': 'Plant Family',
+      'page': const PlantFamilyPage(),
+      'title': 'Plant Family',
       },
       {
         'page': const ChatPage(),
@@ -55,9 +55,9 @@ class NavBar extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
+      /*appBar: AppBar(
         title: Text(tabs[selectedTab.index]['title']),
-      ),
+      ),*/
       body: tabs[selectedTab.index]['page'],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

@@ -14,6 +14,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
+import 'package:flutter_app/repositories/appUser_repo.dart';
+import 'package:flutter_app/models/appUser.dart';
 
 // Function to process the image and identify the plant species
 // Future<String> identifyPlantSpecies(String imagePath) async {
@@ -29,30 +31,6 @@ import 'package:flutter_app/repositories/plant_repo.dart';
 //   // Implement your image recognition logic here
 //   return "Ficus lyrata"; // Placeholder species name
 // }
-
-//* deliberately use "plantingDate" in case user reports "i watered the plant yesterday" or "i fertilized the plant last week"
-// Function to calculate the next care dates
-String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
-    int fertilizationCycle, int pruningCycle) {
-  // DateTime today = DateTime.now();
-  DateFormat formatter = DateFormat('yyyy-MM-dd');
-  DateTime parsedLastActionDate = formatter.parse(lastActionDate);
-
-  DateTime nextWateringDate =
-      parsedLastActionDate.add(Duration(days: wateringCycle));
-  DateTime nextFertilizationDate =
-      parsedLastActionDate.add(Duration(days: fertilizationCycle));
-  DateTime? nextPruningDate = pruningCycle > 0
-      ? parsedLastActionDate.add(Duration(days: pruningCycle))
-      : null;
-
-  // Formatting the date for a nice output
-  String formattedString = 'Next Care Dates:\n'
-      'Next Watering Date: ${DateFormat('yyyy-MM-dd').format(nextWateringDate)}\n'
-      'Next Fertilization Date: ${DateFormat('yyyy-MM-dd').format(nextFertilizationDate)}\n'
-      'Next Pruning Date: ${nextPruningDate != null ? DateFormat('yyyy-MM-dd').format(nextPruningDate) : "No need to prune!"}';
-  return formattedString;
-}
 
 Map<String, DateTime?> calculateNextCareDates(DateTime plantingDate,
     int wateringCycle, int fertilizationCycle, int pruningCycle) {
@@ -84,12 +62,15 @@ Future<String> addNewPlant(
       plantingDate, wateringCycle, fertilizationCycle, pruningCycle);
 
   Plant newPlant = Plant(
+    nickName: 'wait to be updated',
     species: species,
     imageUrl: imageUrl,
     plantingDate: plantingDate,
     wateringCycle: wateringCycle,
     fertilizationCycle: fertilizationCycle,
     pruningCycle: pruningCycle,
+    lastCareDate:
+        plantingDate, //! [TODO] should be updated when user reports new care
     nextWateringDate: careDates["nextWateringDate"],
     nextFertilizationDate: careDates["nextFertilizationDate"],
     nextPruningDate: careDates["nextPruningDate"],
@@ -105,7 +86,7 @@ Future<String> addNewPlant(
       'Planting Date: ${DateFormat('yyyy-MM-dd').format(newPlant.plantingDate ?? DateTime.now())}\n'
       'Watering Cycle: ${newPlant.wateringCycle} days\n'
       'Fertilization Cycle: ${newPlant.fertilizationCycle} days\n'
-      'Pruning Cycle: ${newPlant.pruningCycle > 0 ? newPlant.pruningCycle.toString() + " days" : "No need to prune!"}\n'
+      'Pruning Cycle: ${newPlant.pruningCycle! > 0 ? newPlant.pruningCycle.toString() + " days" : "No need to prune!"}\n'
       'Next Watering Date: ${DateFormat('yyyy-MM-dd').format(careDates["nextWateringDate"]!)}\n'
       'Next Fertilization Date: ${DateFormat('yyyy-MM-dd').format(careDates["nextFertilizationDate"]!)}\n'
       'Next Pruning Date: ${careDates["nextPruningDate"] != null ? DateFormat('yyyy-MM-dd').format(careDates["nextPruningDate"]!) : "No need to prune!"}';
@@ -113,37 +94,141 @@ Future<String> addNewPlant(
   return formattedString;
 }
 
-Future<Message> findSimilarMessage(String query) async {
+Future<String> storeNickname(String nickname) async {
+  // store nickname for latest added plant
+  PlantRepository plantRepository = PlantRepository();
+  String? targetPlantID = await plantRepository.getLatestPlantID();
+  if (targetPlantID == null) {
+    throw Exception('Plant not found');
+  }
+  // Update the plant's nickname
+  await plantRepository.updatePlant(targetPlantID, {'nickName': nickname});
+
+  return 'Nickname updated successfully!';
+}
+
+Future<String> counting_goal(String behavior, String lastCareDate,
+    int wateringCycle, int fertilizationCycle, int pruningCycle) async {
+  AppUserRepository userRepository = AppUserRepository();
+  appUser? user = await userRepository
+      .getCurrentAppUser("test"); //! [TODO] need to dynamically change
+  // Handle user behavior counting
+  if (user == null) {
+    throw Exception('User not found');
+  }
+  debugPrint('User found: ${user.userName}');
+  switch (behavior) {
+    case 'watering':
+      user.cnt_watering += 1;
+
+      // Update the user in Firestore
+      await userRepository.createOrUpdateUser(user);
+      debugPrint(
+          'User updated successfully, user.cnt_watering: ${user.cnt_watering}');
+      break;
+    // case 'plantNum':
+    //   user?.cnt_plantNum = user.cnt_plantNum ?? 0 + 1;
+    //   break;
+    // case 'plantType':
+    //   user?.cnt_plantType = user.cnt_plantType ?? 0 + 1;
+    //   break;
+    // case 'drink': //! [TODO] connect with water page to count drink
+    //   user?.cnt_drink = user.cnt_drink ?? 0 + 300;
+    //   break;
+    default:
+      throw ArgumentError('Unknown behavior: $behavior');
+  }
+
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  DateTime parsedLastActionDate = formatter.parse(lastCareDate);
+
+  DateTime nextWateringDate =
+      parsedLastActionDate.add(Duration(days: wateringCycle));
+  DateTime nextFertilizationDate =
+      parsedLastActionDate.add(Duration(days: fertilizationCycle));
+  DateTime? nextPruningDate = pruningCycle > 0
+      ? parsedLastActionDate.add(Duration(days: pruningCycle))
+      : null;
+
+  // Formatting the date for a nice output
+  String formattedString = 'Next Care Dates:\n'
+      'Next Watering Date: ${formatter.format(nextWateringDate)}\n'
+      'Next Fertilization Date: ${formatter.format(nextFertilizationDate)}\n'
+      'Next Pruning Date: ${nextPruningDate != null ? DateFormat('yyyy-MM-dd').format(nextPruningDate) : "No need to prune!"}';
+
+  // Return a map containing user and formatted string
+  return formattedString;
+}
+
+/*
+// deliberately use "plantingDate" in case user reports "i watered the plant yesterday" or "i fertilized the plant last week"
+// Function to calculate the next care dates
+String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
+    int fertilizationCycle, int pruningCycle) {
+  // DateTime today = DateTime.now();
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  DateTime parsedLastActionDate = formatter.parse(lastActionDate);
+
+  DateTime nextWateringDate =
+      parsedLastActionDate.add(Duration(days: wateringCycle));
+  DateTime nextFertilizationDate =
+      parsedLastActionDate.add(Duration(days: fertilizationCycle));
+  DateTime? nextPruningDate = pruningCycle > 0
+      ? parsedLastActionDate.add(Duration(days: pruningCycle))
+      : null;
+
+  // Formatting the date for a nice output
+  String formattedString = 'Next Care Dates:\n'
+      'Next Watering Date: ${DateFormat('yyyy-MM-dd').format(nextWateringDate)}\n'
+      'Next Fertilization Date: ${DateFormat('yyyy-MM-dd').format(nextFertilizationDate)}\n'
+      'Next Pruning Date: ${nextPruningDate != null ? DateFormat('yyyy-MM-dd').format(nextPruningDate) : "No need to prune!"}';
+  return formattedString;
+}
+ */
+
+Future<String> findSimilarMessage(String query, int queryNum) async {
   debugPrint('Finding and appending similar message for query: $query');
 
-  final results = await _vectorSearch(query);
+  final results = await _vectorSearch(query, queryNum);
 
-  if (results == null) {
+  if (results.isEmpty) {
     debugPrint("Memory database is empty");
 
-    String systemHeader =
-        "The database is empty , can't retrieved information of pass conversation."; // system header for retrieve memory
-    return Message(
-        text: systemHeader,
-        role: 'system',
-        imageDescription: null,
-        base64ImageUrl: null); // can't be assistant or system , both failed
+    String systemHeader = "The database is empty, can't retrieve information of past conversations.";
+    return  systemHeader;
   } else {
-    String systemHeader =
-        "Retrieved memory from database , it may be helpful or not to your response :there is a prompt of ${results.role} , in ${results.timeStamp}, it says : "; // system header for retrieve memory
-    return Message(
-        text: systemHeader + results.text,
-        role: 'system',
-        imageDescription: results.imageDescription,
-        base64ImageUrl: results
-            .base64ImageUrl); // can't be assistant or system , both failed
+    String systemHeader = """
+You just retrieved pass message records from database, every unit of message contains three metadata as the following:
+- ROLE :  The role of the prompt, there will only be two kinds of ROLE which is "assistant" and "user", you should see the message of ROLE = "assisant" as the message that you sent, and the message of ROLE = "user" as the message the user sent.
+- DATE : The create date of the retrieved message, in the format of 'YYYY-MM-DD HH:MM:SS. 000' . 
+- TEXT : The text content of the retrieved message, you should recognize the content.
+- IMAGE : If this message contains a image, this metadata contains the description of the image including the name , big picture , and the detail of the image. If the message doesn't contain image , then this metadata will be empty.
+
+Now below is the list of the retrieved messages : 
+
+""";
+    String combinedMessages = results.map((result) {
+      return """
+ROLE : \n${result.role}
+DATE : \n${result.timeStamp}
+TEXT : \n${result.text} 
+IMAGE : \n${result.imageDescription}
+    
+      """;
+    }).join('\n');
+
+    String finalContent = "$systemHeader\n$combinedMessages";
+
+    debugPrint('Retrieved messsage : $finalContent' ) ; 
+
+    return finalContent;
   }
 }
 
-Future<Message?> _vectorSearch(String searchString) async {
+
+Future<List<Message>> _vectorSearch(String searchString, int queryNum) async {
   try {
-    UserCredential userCredential =
-        await FirebaseAuth.instance.signInAnonymously();
+    UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
     debugPrint('Signed in anonymously as: ${userCredential.user?.uid}');
 
     debugPrint('Performing vector search');
@@ -152,34 +237,33 @@ Future<Message?> _vectorSearch(String searchString) async {
         .httpsCallable('ext-firestore-vector-search-queryCallable');
 
     final response = await callable.call(<String, dynamic>{
-      //add a prefilter with username != null (don;t consider system message)
       'query': searchString,
-      'limit': 1,
-      'prefilters': [
-        {
-          'field': 'issystem',
-          'operator': '==', // can't use != , not supported in vector search
-          'value': "0",
-        },
-      ],
+      'limit': queryNum,
     });
     debugPrint('Vector search response: ${response.data}');
 
-    debugPrint(
-        'Fetching message from Firestore with ID: ${response.data['ids'][0]}');
-    final docSnapshot = await FirebaseFirestore.instance
-        .collection('user')
-        .doc(response.data['ids'][0])
-        .get();
+    List<Message> messages = [];
 
-    if (docSnapshot.exists) {
-      final data = docSnapshot.data();
-      return Message.fromMap(data ?? {});
-    } else {
-      return null;
+    for (int i = 0; i < queryNum; i++) {
+      if (i >= response.data['ids'].length) break;
+
+      debugPrint('Fetching message from Firestore with ID: ${response.data['ids'][i]}');
+
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('messages')
+          .doc(response.data['ids'][i])
+          .get();
+
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data();
+        messages.add(Message.fromMap(data ?? {}));
+      }
     }
+
+    return messages;
   } catch (e) {
     debugPrint('Error in vector search: $e');
+    return [];
   }
-  return null;
 }
+

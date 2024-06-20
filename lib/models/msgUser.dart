@@ -1,7 +1,7 @@
- class User {
+class msgUser {
   final String _name;
 
-  User(this._name);
+  msgUser(this._name);
 
   get userName => _name;
 }

@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Plant {
@@ -7,9 +6,10 @@ class Plant {
   final String? locationId;
   final String species;
   final String imageUrl;
-  final int wateringCycle; // in days
-  final int fertilizationCycle; // in days
-  final int pruningCycle; // in days
+  final int? wateringCycle; // in days
+  final int? fertilizationCycle; // in days
+  final int? pruningCycle; // in days
+  final DateTime? lastCareDate;
   final DateTime? plantingDate;
   final DateTime? nextWateringDate;
   final DateTime? nextFertilizationDate;
@@ -21,9 +21,10 @@ class Plant {
     this.locationId,
     required this.species,
     required this.imageUrl,
-    required this.wateringCycle,
-    required this.fertilizationCycle,
-    required this.pruningCycle,
+    this.wateringCycle,
+    this.fertilizationCycle,
+    this.lastCareDate,
+    this.pruningCycle,
     this.plantingDate,
     this.nextWateringDate,
     this.nextFertilizationDate,
@@ -37,6 +38,7 @@ class Plant {
       locationId: map['locationId'],
       species: map['species'],
       imageUrl: map['imageUrl'],
+      lastCareDate: (map['lastCareDate'] as Timestamp).toDate(),
       plantingDate: (map['plantingDate'] as Timestamp).toDate(),
       wateringCycle: map['wateringCycle'],
       fertilizationCycle: map['fertilizationCycle'],
@@ -45,18 +47,17 @@ class Plant {
       nextFertilizationDate:
           (map['nextFertilizationDate'] as Timestamp).toDate(),
       nextPruningDate: (map['nextPruningDate'] as Timestamp).toDate(),
-
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-
       'nickName': nickName,
       'locationId': locationId,
       'species': species,
       'imageUrl': imageUrl,
+      'lastCareDate': lastCareDate,
       'plantingDate': plantingDate,
       'wateringCycle': wateringCycle,
       'fertilizationCycle': fertilizationCycle,
@@ -67,4 +68,3 @@ class Plant {
     };
   }
 }
-

@@ -52,12 +52,12 @@ class AllMessagesViewModel with ChangeNotifier {
       notifyListeners();
     }
     final response = await chatService.doResponse(newMessage);
-    return _handleResponse(newMessage, response);
+    return response;
   }
 
-  String _handleResponse(Message message, String? response) {
-    return response ?? '';
-  }
+  // String _handleResponse(Message message, String? response) {
+  //   return response ?? '';
+  // }
 
   // Future<void> deleteMessage(String messageId) async {
   //   await _messageRepository.deleteMessage(messageId);

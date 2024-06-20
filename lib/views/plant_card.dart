@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/plant.dart';
+import 'package:flutter_app/views/plant_card_dialog.dart';
 
 class PlantCard extends StatelessWidget {
   final Plant plant;
@@ -10,31 +11,7 @@ class PlantCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          //title: Text(plant.name),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                plant.avatarUrl,
-                height: 130,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-              SizedBox(height: 10),
-              Text('這是一個關於 ${plant.name} 的詳細信息。'),
-              TextButton(
-              child: Text('關閉'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ],
-          ),
-          /*actions: [
-            
-          ],*/
-        );
+        return PlantCardDialog(plant: plant,);
       },
     );
   }
@@ -55,7 +32,7 @@ class PlantCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
               child: Image.asset(
-                plant.avatarUrl,
+                plant.imageUrl,
                 height: 130,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -70,7 +47,7 @@ class PlantCard extends StatelessWidget {
                   Expanded(
                     child: Center(
                       child: Text(
-                        plant.name,
+                        plant.nickName!,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
