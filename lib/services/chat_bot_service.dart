@@ -9,10 +9,9 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 
-
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:flutter_app/services/tool.dart';
-import 'package:flutter_app/services/prompt.dart' ; 
+import 'package:flutter_app/services/prompt.dart';
 // import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
 import 'package:flutter_app/repositories/appUser_repo.dart';
@@ -67,11 +66,11 @@ class ChatBot extends ChangeNotifier {
   late ThreadResponse threadCreate;
 
   String kToken = ChatBotPrompts().kToken;
-  String systemPrompt = ChatBotPrompts().systemPrompt; 
-  String imagesystemPrompt = ChatBotPrompts().imagesystemPrompt ; 
-  String  keywordsystemPrompt = ChatBotPrompts().keywordsystemPrompt ; 
-  final tools = ChatBotPrompts().tools ; 
-  
+  String systemPrompt = ChatBotPrompts().systemPrompt;
+  String imagesystemPrompt = ChatBotPrompts().imagesystemPrompt;
+  String keywordsystemPrompt = ChatBotPrompts().keywordsystemPrompt;
+  final tools = ChatBotPrompts().tools;
+
   // int _calculateTokenCount(String? content) {
   //   if (content == null) return 0;
   //   return content.length ~/ 4;
@@ -130,16 +129,16 @@ class ChatBot extends ChangeNotifier {
   Future<String?> _chatCompletion(Message message) async {
     try {
       dynamic contentMessage;
-   //   bool isImage = false;
+      //   bool isImage = false;
       var CCrequestImage;
-      var CCrequestMessageKeyword ; 
+      var CCrequestMessageKeyword;
       String? base64Image;
 
 //################Process user input message###########################
       if (message.base64ImageUrl != null) {
         base64Image =
             await imageHandler.convertImageToBase64(message.base64ImageUrl!);
-      //  isImage = true;
+        //  isImage = true;
 
         contentMessage = [
           {"type": "text", "text": message.text},
@@ -152,7 +151,10 @@ class ChatBot extends ChangeNotifier {
         // handle the another model of image description
 
         final imageMessage = [
-          {"role": "user", "content": [contentMessage[1]]}
+          {
+            "role": "user",
+            "content": [contentMessage[1]]
+          }
         ];
         List<Map<String, dynamic>> sysMessages = [
           {"role": "system", "content": imagesystemPrompt}
@@ -371,21 +373,20 @@ class ChatBot extends ChangeNotifier {
           debugPrint(
               'find_and_append_similar_message called with arguments: $toolArguments');
 
-        try {
+          try {
             String query = toolArguments['query'];
 
             debugPrint('query: $query');
             final results = await findSimilarMessage(query, 5);
 
             // Iterate through the list of results and add each message to iptMsg
-            
+
             iptMsg.add({
               "role": "tool",
               "tool_call_id": toolCall_id,
               "name": toolFunctionName,
               "content": results
             });
-            
 
             final CCrequestWithFunctionResponse = ChatCompleteText(
               messages: iptMsg,
@@ -410,10 +411,10 @@ class ChatBot extends ChangeNotifier {
 //################  Update Database  ###########################
 
       final keywordResponse =
-            await openAI.onChatCompletion(request: CCrequestMessageKeyword);
+          await openAI.onChatCompletion(request: CCrequestMessageKeyword);
       final keywordDesMsg = keywordResponse?.choices[0].message?.content ?? '';
       debugPrint('Keyword Des : $keywordDesMsg');
-      
+
       if (CCrequestImage != null) {
         final imageResponse =
             await openAI.onChatCompletion(request: CCrequestImage);
@@ -425,13 +426,13 @@ class ChatBot extends ChangeNotifier {
             text: message.text,
             base64ImageUrl: message.base64ImageUrl,
             imageDescription: imageDesMsg,
-            stringtoEmbed:keywordDesMsg));
+            stringtoEmbed: keywordDesMsg));
       } else {
         await _messageRepository.addMessage(Message(
             role: message.role,
             text: message.text,
             base64ImageUrl: message.base64ImageUrl,
-            stringtoEmbed:keywordDesMsg));
+            stringtoEmbed: keywordDesMsg));
       }
       _messageRepository
           .addMessage(Message(text: finalContent, role: "assistant"));

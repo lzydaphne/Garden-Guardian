@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:flutter_app/views/search_bar.dart';
-import 'package:flutter_app/views/plant_card.dart';
+//import 'package:flutter_app/views/plant_card.dart';
 //import 'package:flutter_app/models/location.dart';
 import 'package:flutter_app/models/plant.dart';
 import 'package:flutter_app/repositories/location_repo.dart';
@@ -389,4 +389,5 @@ PreferredSizeWidget _buildAppBar(BuildContext context) {
   );
 }
 
-}
+}*/
+
