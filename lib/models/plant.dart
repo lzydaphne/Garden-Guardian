@@ -1,3 +1,5 @@
+import 'package:flutter_app/repositories/growth_log_repo.dart';
+
 class Plant{
   String?
     id;
@@ -9,6 +11,7 @@ class Plant{
   String? lastWateredDate;
   String? lastFertilizedDate;
   String? lastPrunedDate;
+  GrowthLogRepository? growthLogList;
   //to add more
 
   Plant({
