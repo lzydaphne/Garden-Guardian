@@ -120,7 +120,7 @@ Analyze the user input and provide the appropriate response with EXACTLY one of 
 
     5.Recall Context:
         Trigger: The assistant can't remember the context or previous interactions.
-        Action: Generate a query string ONLY conatining 20 possible keywords that may conatin in the wanted past messages.
+        Action: Generate a query string ONLY conatining at most 20 possible keywords that may conatin in the wanted past messages based on content in the user's input.
         Action: Call the "find_similar_message" function with the query string.
         Response:
             Use the returned past conversation to support your response to the user's question.
@@ -188,10 +188,18 @@ String systemPrompt = """
 */
   String imagesystemPrompt = """
 You are a image analyzer , you will receive a user input message of a text and a image
-- You will need to analyze the image and give a 20 mostly related keywords that covers all the recognizable contents and detail of this image.
+- You will need to analyze the image and give at most 20 related keywords that covers all the recognizable contents and detail of this image.
 - Check the user's input text if there is additional information needed about the image and add those keywords in the image description output.
 - All the necessary keywords should be different.
 
+""";
+String  keywordsystemPrompt = """
+You are a keyword extracter , you will receive a user input message of a text and maybe a image
+- You will need to analyze the image(if any) and the message text
+- Extract at most 20 necessary keywords that covers all the recognizable contents and detail of the image(if any).
+- The keywords you generated should be useful for future keywords queries to find this message.
+- The keyword extracted should also contain in the input message. You can't generate a keyword that doesn't contain in the input message.
+- Return the string with the keywords seperated by space.
 """;
 
   final tools = [
@@ -306,7 +314,7 @@ You are a image analyzer , you will receive a user input message of a text and a
             "query": {
               "type": "string",
               "description":
-                  "The current query containing several keywords for the assistant to perform searching in the message record database."
+                  "The current query containing one or several keywords for the assistant to perform searching in the message record database."
             }
           },
           "required": ["query"]
@@ -375,6 +383,7 @@ You are a image analyzer , you will receive a user input message of a text and a
       dynamic contentMessage;
       bool isImage = false;
       var CCrequestImage;
+      var CCrequestMessageKeyword ; 
       String? base64Image;
 
       if (message.base64ImageUrl != null) {
@@ -412,6 +421,26 @@ You are a image analyzer , you will receive a user input message of a text and a
           {"type": "text", "text": message.text}
         ];
       }
+
+      // handle the another model of image description
+
+        final keywordMessage = [
+          {"role": "user", "content": contentMessage}
+        ];
+        List<Map<String, dynamic>> sysMessages = [
+          {"role": "system", "content": keywordsystemPrompt}
+        ];
+        // debugPrint('Image Message: ${sysMessages + imageMessage}');
+
+        CCrequestMessageKeyword = ChatCompleteText(
+          messages: sysMessages + keywordMessage,
+          maxToken: 50,
+          model: ChatModelFromValue(model: 'gpt-4o'),
+          //     tools: tools,
+          //     toolChoice: "auto"
+        );
+
+
 
       final currentMessage = [
         {"role": "user", "content": contentMessage}
@@ -602,7 +631,7 @@ You are a image analyzer , you will receive a user input message of a text and a
               "role": "tool",
               "tool_call_id": toolCall_id,
               "name": toolFunctionName,
-              "content": results.map((result) => result.content).toList()
+              "content": results
             });
             
 
@@ -626,18 +655,29 @@ You are a image analyzer , you will receive a user input message of a text and a
         finalContent = responseMsg?.content as String;
       }
 
+      final keywordResponse =
+            await openAI.onChatCompletion(request: CCrequestMessageKeyword);
+      final keywordDesMsg = keywordResponse?.choices[0].message?.content ?? '';
+      debugPrint('Keyword Des : $keywordDesMsg');
+      
       if (CCrequestImage != null) {
         final imageResponse =
             await openAI.onChatCompletion(request: CCrequestImage);
         final imageDesMsg = imageResponse?.choices[0].message?.content ?? '';
         debugPrint('Image Des : $imageDesMsg');
+
         await _messageRepository.addMessage(Message(
             role: message.role,
             text: message.text,
             base64ImageUrl: message.base64ImageUrl,
-            imageDescription: imageDesMsg));
+            imageDescription: imageDesMsg,
+            stringtoEmbed:keywordDesMsg));
       } else {
-        await _messageRepository.addMessage(message);
+        await _messageRepository.addMessage(Message(
+            role: message.role,
+            text: message.text,
+            base64ImageUrl: message.base64ImageUrl,
+            stringtoEmbed:keywordDesMsg));
       }
       _messageRepository
           .addMessage(Message(text: finalContent, role: "assistant"));

@@ -72,7 +72,7 @@ class MessageRepository {
       
       DocumentReference docRef = await FirebaseFirestore.instance
           .collection('messages')
-          .add(message.toMap());
+          .add(await message.toMap());
 
       debugPrint('Received response from database: ${docRef.id}');
     } catch (e) {

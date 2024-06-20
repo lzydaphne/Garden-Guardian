@@ -8,13 +8,15 @@ class Message {
   final String? base64ImageUrl;
   final String? imageDescription;
   final DateTime? timeStamp;
+  final String? stringtoEmbed; 
 
   Message(
       {required this.role,
       required this.text,
       this.base64ImageUrl,
       this.imageDescription,
-      this.timeStamp});
+      this.timeStamp,
+      this.stringtoEmbed});
 
   Map<String, dynamic> get contentMessage {
     List<Map<String, dynamic>> contentList = [];
@@ -91,7 +93,7 @@ class Message {
       'base64ImageUrl': base64ImageUrl ?? '',
       'imageDescription': imageDescription ?? '',
       'timeStamp': FieldValue.serverTimestamp(),
-      'stringtoEmbed': text + (imageDescription ?? '') + timeStamp.toString(),
+      'stringtoEmbed': (stringtoEmbed ?? (text + (imageDescription ?? '')) )  + timeStamp.toString(),
       // 'issystem': roletoNum[role]
     };
     }catch(e){
@@ -102,7 +104,7 @@ class Message {
       'base64ImageUrl': base64ImageUrl ?? '',
       'imageDescription': imageDescription ?? '',
       'timeStamp': FieldValue.serverTimestamp(),
-      'stringtoEmbed': text + (imageDescription ?? '') + timeStamp.toString(),
+      'stringtoEmbed': (stringtoEmbed ?? (text + (imageDescription ?? '')) )  + timeStamp.toString(),
       // 'issystem': roletoNum[role]
     }; 
     }

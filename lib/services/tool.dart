@@ -186,7 +186,7 @@ String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
 }
  */
 
-Future<List<Message>> findSimilarMessage(String query, int queryNum) async {
+Future<String> findSimilarMessage(String query, int queryNum) async {
   debugPrint('Finding and appending similar message for query: $query');
 
   final results = await _vectorSearch(query, queryNum);
@@ -194,29 +194,32 @@ Future<List<Message>> findSimilarMessage(String query, int queryNum) async {
   if (results.isEmpty) {
     debugPrint("Memory database is empty");
 
-    String systemHeader =
-        "The database is empty , can't retrieved information of past conversation."; // system header for retrieve memory
-    return [
-      Message(
-          text: systemHeader,
-          role: 'system',
-          imageDescription: null,
-          base64ImageUrl: null)
-    ]; // can't be assistant or system , both failed
+    String systemHeader = "The database is empty, can't retrieve information of past conversations.";
+    return  systemHeader;
   } else {
-    String systemHeader =
-        "Retrieved memory from database , it may be helpful or not to your response :";
-        // gpt cant determine assistant role and user role is from who , make this part better.
+    String systemHeader = """
+You just retrieved pass message records from database, every unit of message contains three metadata as the following:
+- ROLE :  The role of the prompt, there will only be two kinds of ROLE which is "assistant" and "user", you should see the message of ROLE = "assisant" as the message that you sent, and the message of ROLE = "user" as the message the user sent.
+- DATE : The create date of the retrieved message, in the format of 'YYYY-MM-DD HH:MM:SS. 000' . 
+- TEXT : The text content of the retrieved message, you should recognize the content.
 
-    List<Message> systemMessages = results.map((result) {
-      return Message(
-          text: "$systemHeader there is a prompt from ${result.role} role, in ${result.timeStamp}, it says: ${result.text}",
-          role: 'system',
-          imageDescription: result.imageDescription,
-          base64ImageUrl: result.base64ImageUrl);
-    }).toList();
+Now below is the list of the retrieved messages : 
 
-    return systemMessages;
+""";
+    String combinedMessages = results.map((result) {
+      return """
+ROLE : ${result.role}
+DATE : ${result.timeStamp}
+TEXT : ${result.text} 
+    
+      """;
+    }).join('\n');
+
+    String finalContent = "$systemHeader\n$combinedMessages";
+
+    debugPrint('Retrieved messsage : $finalContent' ) ; 
+
+    return finalContent;
   }
 }
 
