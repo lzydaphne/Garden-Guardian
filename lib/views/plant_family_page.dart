@@ -5,9 +5,9 @@ import 'package:flutter_app/views/plant_card.dart';
 import 'package:flutter_app/models/plant.dart';
 import 'package:flutter_app/repositories/location_repo.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+import 'package:flutter_app/views/nav_bar.dart';
 
-final ValueNotifier<String> _msg = ValueNotifier('');
+//final ValueNotifier<String> _msg = ValueNotifier('');
 
 class PlantFamilyPage extends StatefulWidget {
   const PlantFamilyPage({Key? key}) : super(key: key);
@@ -41,9 +41,9 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     _locationRepo.addLocation("客廳");
     _locationRepo.addLocation("臥房陽台");
 
-    _plantRepo.addPlant("小草", "客廳", 'images/Snake_Plant.jpg', 'Snake_Plant');
-    _plantRepo.addPlant("小樹", "客廳", 'images/Pothos.png', 'Pothos');
-    _plantRepo.addPlant("小葉子", "客廳", 'images/spider_plant.jpg', 'spider_plant');
+    _plantRepo.addPlant(Plant(species: 'Snake_Plant', imageUrl: 'images/Snake_Plant.jpg', nickName: "小草", locationId: "客廳"));
+    _plantRepo.addPlant(Plant(species: 'Pothos', imageUrl: 'images/Pothos.png', nickName: "小樹", locationId: "客廳"));
+    _plantRepo.addPlant(Plant(species: 'spider_plant', imageUrl: 'images/spider_plant.jpg', nickName: "小葉子", locationId: "客廳"));
   }
 
   void _addLocation(String location) {
@@ -91,35 +91,56 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 93, 176, 117),
-        appBar: _buildAppBar(context),
-        body: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              SearchAppBar(
-                hintLabel: "尋找我的植物",
-                onSubmitted: (value) {
-                  setState(() {
-                    searchVal = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 10),
-              _buildLocationTabs(),
-              _buildPlantGrid(),
-              _buildPageIndicator(),
-              const NavigationBottomBar(),
-            ],
-          ),
+Widget build(BuildContext context) {
+  return SafeArea(
+    child: Scaffold(
+      backgroundColor: const Color.fromARGB(255, 93, 176, 117),
+      appBar: _buildAppBar(context),
+      body: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            SearchAppBar(
+              hintLabel: "尋找我的植物",
+              onSubmitted: (value) {
+                setState(() {
+                  searchVal = value;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            _buildLocationTabs(),
+            FutureBuilder<Widget>(
+              future: _buildPlantGrid(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return snapshot.data!;
+                }
+              },
+            ),
+            FutureBuilder<Widget>(
+              future: _buildPageIndicator(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return snapshot.data!;
+                }
+              },
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildLocationTabs() {
     return SingleChildScrollView(
@@ -166,8 +187,9 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     );
   }
 
-  Widget _buildPlantGrid() {
-  List<Plant> plants = _plantRepo.getPlantsByLocation(selectedLocation);
+  Future<Widget> _buildPlantGrid() async {
+  
+  List<Plant> plants = await _plantRepo.getPlantsByLocation(selectedLocation);
   int pageCount = (plants.length / 4).ceil();
   bool needsExtraPage = plants.length % 4 == 0;
 
@@ -282,7 +304,8 @@ void _showAddPlantDialog() {
           TextButton(
             onPressed: () {
               if (newPlantName.isNotEmpty) {
-                _addPlant(newPlantName, '');
+                //TODO: make it right(species and imageUrl)
+                _plantRepo.addPlant(Plant(species: newPlantName, imageUrl: 'images/Snake_Plant.jpg', nickName: newPlantName, locationId: selectedLocation));
               }
               Navigator.of(context).pop();
             },
@@ -294,15 +317,15 @@ void _showAddPlantDialog() {
   );
 }
 
-void _addPlant(String plantName, String? plantType) {
+/*void _addPlant(String plantName, String? plantType) {
   setState(() {
     _plantRepo.addPlant(plantName, selectedLocation, '', plantType);
   });
 }
+*/
 
-
-  Widget _buildPageIndicator() {
-  List<Plant> plants = _plantRepo.getPlantsByLocation(selectedLocation);
+  Future<Widget> _buildPageIndicator() async {
+  List<Plant> plants = await _plantRepo.getPlantsByLocation(selectedLocation);
   int pageCount = (plants.length / 4).ceil();
   bool needsExtraPage = plants.length % 4 == 0;
 

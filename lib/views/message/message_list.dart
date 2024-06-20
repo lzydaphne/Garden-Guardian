@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
-import 'package:flutter_app/models/user.dart';
-// import 'package:flutter_app/view_models/me_vm.dart';
-import 'package:flutter_app/views/message_bubble.dart';
+import 'package:flutter_app/models/msgUser.dart';
+import 'package:flutter_app/views/message/message_bubble.dart';
 import 'package:provider/provider.dart';
 
 class MessageList extends StatefulWidget {
@@ -22,7 +21,8 @@ class _MessageListState extends State<MessageList> {
         if (_scrollController.position.pixels != 0) {
           // At the bottom
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+            _scrollController
+                .jumpTo(_scrollController.position.maxScrollExtent);
           });
         }
       }
@@ -47,10 +47,17 @@ class _MessageListState extends State<MessageList> {
     });
   }
 
+  String? meORnotme(String? role) {
+    if (role == null) return null;
+    if (role == "assistant" || role == "system")
+      return "BOT";
+    else {
+      return "ME";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    
-    
     final allMessagesViewModel = Provider.of<AllMessagesViewModel>(context);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -59,7 +66,7 @@ class _MessageListState extends State<MessageList> {
       }
     });
 
-    final me = User("ME");
+    final me = msgUser("ME");
     final messages = allMessagesViewModel.messages;
 
     if (messages.isEmpty) {
@@ -67,7 +74,7 @@ class _MessageListState extends State<MessageList> {
         child: Text('No messages.'),
       );
     }
-    
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.only(
@@ -84,30 +91,33 @@ class _MessageListState extends State<MessageList> {
             index + 1 < messages.length ? messages[index + 1] : null;
         final prevMessage = index - 1 >= 0 ? messages[index - 1] : null;
 
-        final messageUsername = message.userName;
-        final nextMessageUsername = nextMessage?.userName;
+        final messageUsername = meORnotme(message.role);
+        final nextMessageUsername = meORnotme(nextMessage?.role);
         final isNextUserSame = nextMessageUsername == messageUsername;
-        final preMessageUserId = prevMessage?.userName;
+        final preMessageUserId = meORnotme(prevMessage?.role);
         final isPreUserSame = preMessageUserId == messageUsername;
-        final imageUrl = message.imageUrl ; 
+        final base64ImageUrl = message.base64ImageUrl;
 
         if (isNextUserSame) {
           return MessageBubble(
+            key: ValueKey(message.timeStamp),
             text: message.text,
             isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,
-            imageUrl: imageUrl,
+            base64ImageUrl: base64ImageUrl,
           );
         } else {
           return MessageBubble.withUser(
-            userName: message.userName,
+            key: ValueKey(message.timeStamp),
+            userName: meORnotme(message.role),
             text: message.text,
             isMine: me.userName == messageUsername,
             isLast: !isPreUserSame,
-            imageUrl: imageUrl,
+            base64ImageUrl: base64ImageUrl,
           );
         }
       },
+      addAutomaticKeepAlives: true,
     );
   }
 }

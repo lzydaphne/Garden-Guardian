@@ -20,7 +20,7 @@ class PlantCardDialog extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                 child: Image.asset(
-                  plant.avatarUrl,
+                  plant.imageUrl,
                   height: 350,
                   width: 400/*double.infinity*/,
                   fit: BoxFit.cover,
@@ -75,7 +75,7 @@ class PlantCardDialog extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        plant.name,
+                        plant.nickName!,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,

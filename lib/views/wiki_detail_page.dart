@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/wiki.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+import 'package:flutter_app/views/nav_bar.dart';
 
 class WikiDetailPage extends StatelessWidget {
   final Wiki wiki;
@@ -47,7 +47,7 @@ class WikiDetailPage extends StatelessWidget {
                   
               ),
           ),
-          const NavigationBottomBar(),
+          //const NavBar(),
         ],
       ),
     );

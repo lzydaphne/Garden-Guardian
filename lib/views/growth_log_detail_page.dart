@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/growth_log.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+import 'package:flutter_app/views/nav_bar.dart';
 
 class GrowthLogDetailPage extends StatelessWidget {
   final GrowthLog growthLog;
@@ -47,7 +47,7 @@ class GrowthLogDetailPage extends StatelessWidget {
                   
               ),
           ),
-          const NavigationBottomBar(),
+          //const NavBar(),
         ],
       ),
     );

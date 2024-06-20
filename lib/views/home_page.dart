@@ -351,27 +351,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           // 最下方的Bar
-          const NavigationBottomBar(),
-          /*BottomNavigationBar(
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.pets),
-                label: 'pets',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.local_florist),
-                label: 'a',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.book),
-                label: '日誌',
-              ),
-            ],
-          ),*/
+          //const NavigationBottomBar(),
         ],
       ),
     );

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_app/services/navigation.dart';
 
 class CoverPage extends StatelessWidget {
   const CoverPage({super.key});
@@ -101,7 +103,7 @@ class CoverPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: 
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => Provider.of<NavigationService>(context, listen: false).goAuth(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 93, 176, 117),
                       padding: const EdgeInsets.symmetric(vertical: 16.0),

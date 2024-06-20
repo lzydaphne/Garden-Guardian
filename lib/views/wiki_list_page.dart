@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/repositories/wiki_repo.dart';
 import 'package:flutter_app/views/wiki_detail_page.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+import 'package:flutter_app/views/nav_bar.dart';
 
 class WikiListPage extends StatelessWidget {
   final WikiRepository wikiRepository = WikiRepository();
@@ -71,7 +71,7 @@ class WikiListPage extends StatelessWidget {
               },
             ),
           ),
-          const NavigationBottomBar(),
+          //const NavBar(),
         ],
       ),
     );

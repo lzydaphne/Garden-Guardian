@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/views/message_list.dart';
-import 'package:flutter_app/views/new_message_bar.dart';
-import 'package:flutter_app/views/user_info.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+import 'package:flutter_app/views/message/message_list.dart';
+import 'package:flutter_app/views/message/new_message_bar.dart';
+import 'package:flutter_app/views/user/user_info.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
-  @override Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.background,
@@ -22,7 +22,7 @@ class ChatPage extends StatelessWidget {
           ),
         ],
       ),
-      body:  Column(
+      body: Column(
         children: [
           UserInfo(),
           Expanded(
@@ -30,7 +30,6 @@ class ChatPage extends StatelessWidget {
           ),
           // LeftIcons
           NewMessageBar(),
-          NavigationBottomBar(),
         ],
       ),
     );

@@ -12,31 +12,6 @@ class PlantCard extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return PlantCardDialog(plant: plant,);
-        /*Dialog(
-          //title: Text(plant.name),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                plant.avatarUrl,
-                height: 130,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-              SizedBox(height: 10),
-              Text('這是一個關於 ${plant.name} 的詳細信息。'),
-              TextButton(
-              child: Text('關閉'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ],
-          ),
-          /*actions: [
-            
-          ],*/
-        );*/
       },
     );
   }
@@ -57,7 +32,7 @@ class PlantCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
               child: Image.asset(
-                plant.avatarUrl,
+                plant.imageUrl,
                 height: 130,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -72,7 +47,7 @@ class PlantCard extends StatelessWidget {
                   Expanded(
                     child: Center(
                       child: Text(
-                        plant.name,
+                        plant.nickName!,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
