@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/repositories/wiki_repo.dart';
-import 'package:flutter_app/views/wiki_detail_page.dart';
+import 'package:flutter_app/views/wiki/wiki_detail_page.dart';
 import 'package:flutter_app/views/nav_bar.dart';
 
 class WikiListPage extends StatelessWidget {
@@ -11,7 +11,10 @@ class WikiListPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('wiki', style: TextStyle(fontWeight: FontWeight.w800),),
+        title: const Text(
+          'wiki',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
@@ -43,16 +46,16 @@ class WikiListPage extends StatelessWidget {
                     //fit: BoxFit.cover,
                   ),*/
                   title: Container(
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          wiki.imageUrl,
-                          height: 220,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                        Text(wiki.name),
-                      ],
+                      child: Column(
+                    children: [
+                      Image.asset(
+                        wiki.imageUrl,
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      Text(wiki.name),
+                    ],
                   )),
                   subtitle: Text(
                     wiki.description.length > 120

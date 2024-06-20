@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/navigation.dart';
-import 'package:flutter_app/views/plant_family_page.dart';
+import 'package:flutter_app/views/plant_family/plant_family_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/views/home_page.dart';
 import 'package:flutter_app/views/plant_family/plant_family_page.dart';
@@ -37,8 +37,8 @@ class NavBar extends StatelessWidget {
         'title': 'Home',
       },
       {
-      'page': const PlantFamilyPage(),
-      'title': 'Plant Family',
+        'page': const PlantFamilyPage(),
+        'title': 'Plant Family',
       },
       {
         'page': const ChatPage(),
