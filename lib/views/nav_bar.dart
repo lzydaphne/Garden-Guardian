@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/navigation.dart';
+import 'package:flutter_app/views/plant_family_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/views/home_page.dart';
 import 'package:flutter_app/views/plant_family/plant_family_page.dart';
@@ -35,10 +36,10 @@ class NavBar extends StatelessWidget {
         'page': HomePage(),
         'title': 'Home',
       },
-      // {
-      //   'page': const PlantFamilyPage(),
-      //   'title': 'Plant Family',
-      // },
+      {
+      'page': const PlantFamilyPage(),
+      'title': 'Plant Family',
+      },
       {
         'page': const ChatPage(),
         'title': 'Chat',
@@ -54,9 +55,9 @@ class NavBar extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
+      /*appBar: AppBar(
         title: Text(tabs[selectedTab.index]['title']),
-      ),
+      ),*/
       body: tabs[selectedTab.index]['page'],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

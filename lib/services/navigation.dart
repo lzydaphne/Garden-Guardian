@@ -1,5 +1,6 @@
 
 import 'package:flutter_app/views/chat_page.dart';
+import 'package:flutter_app/views/home_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/views/cover_page.dart';
 import 'package:flutter_app/views/auth_page.dart';

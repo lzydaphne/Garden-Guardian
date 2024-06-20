@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/services/chat_bot_service.dart';
 import 'package:flutter_app/services/navigation.dart';
+
+import 'package:flutter_app/views/cover_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 
