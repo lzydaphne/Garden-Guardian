@@ -27,7 +27,7 @@ class GoalGridItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(goal.title),
+                  Text(goal.title, style: TextStyle(fontWeight: FontWeight.w600),),
                   const SizedBox(height: 5),
                   Text(goal.content)
                 ]

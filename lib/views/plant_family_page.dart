@@ -5,7 +5,7 @@ import 'package:flutter_app/views/plant_card.dart';
 import 'package:flutter_app/models/plant.dart';
 import 'package:flutter_app/repositories/location_repo.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
-import 'package:flutter_app/views/nav_bar.dart';
+import 'package:flutter_app/views/wiki_list_page.dart';
 
 //final ValueNotifier<String> _msg = ValueNotifier('');
 
@@ -37,13 +37,13 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
 
   void _initializeData() {
     // 初始化一些範例資料
-    _locationRepo.addLocation("後陽台");
+    /*_locationRepo.addLocation("後陽台");*/
     _locationRepo.addLocation("客廳");
-    _locationRepo.addLocation("臥房陽台");
+    /*_locationRepo.addLocation("臥房陽台");*/
 
-    _plantRepo.addPlant(Plant(species: 'Snake_Plant', imageUrl: 'images/Snake_Plant.jpg', nickName: "小草", locationId: "客廳"));
+    /*_plantRepo.addPlant(Plant(species: 'Snake_Plant', imageUrl: 'images/Snake_Plant.jpg', nickName: "小草", locationId: "客廳"));
     _plantRepo.addPlant(Plant(species: 'Pothos', imageUrl: 'images/Pothos.png', nickName: "小樹", locationId: "客廳"));
-    _plantRepo.addPlant(Plant(species: 'spider_plant', imageUrl: 'images/spider_plant.jpg', nickName: "小葉子", locationId: "客廳"));
+    _plantRepo.addPlant(Plant(species: 'spider_plant', imageUrl: 'images/spider_plant.jpg', nickName: "小葉子", locationId: "客廳"));*/
   }
 
   void _addLocation(String location) {
@@ -100,9 +100,18 @@ Widget build(BuildContext context) {
         width: double.maxFinite,
         child: Column(
           children: [
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
+            /*TextField(
+              decoration: InputDecoration(
+                hintText: 'Search',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
+              ),
+            ),*/
             SearchAppBar(
-              hintLabel: "尋找我的植物",
+              hintLabel: "Search",
               onSubmitted: (value) {
                 setState(() {
                   searchVal = value;
@@ -175,13 +184,13 @@ Widget build(BuildContext context) {
                   },
                 ),
               )),
-          IconButton(
+          /*IconButton(
             icon: const Icon(
               Icons.add_circle, 
               color: Colors.white,
             ),
             onPressed: _showAddLocationDialog,
-          ),
+          ),*/
         ],
       ),
     );
@@ -217,7 +226,7 @@ Widget build(BuildContext context) {
           });
         },
         itemBuilder: (context, pageIndex) {
-          if (pageIndex == pageCount && needsExtraPage) {
+          /*if (pageIndex == pageCount && needsExtraPage) {
             // 顯示加號卡片的額外頁面
             return GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -242,7 +251,7 @@ Widget build(BuildContext context) {
                 );
               },
             );
-          } else {
+          } else {*/
             int startIndex = pageIndex * 4;
             int endIndex = (startIndex + 4).clamp(0, plants.length);
             List<Plant> pagePlants = plants.sublist(startIndex, endIndex);
@@ -256,7 +265,7 @@ Widget build(BuildContext context) {
                 ),
                 itemCount: pagePlants.length + (pageIndex == pageCount - 1 && !needsExtraPage ? 1 : 0), // 最後一頁多一個加號卡片
                 itemBuilder: (context, index) {
-                  if (pageIndex == pageCount - 1 && index == pagePlants.length && !needsExtraPage) {
+                  //if (pageIndex == pageCount - 1 && index == pagePlants.length && !needsExtraPage) {
                     // 最後一頁的加號卡片
                     return Card(
                       color: const Color.fromARGB(255, 216, 243, 224),
@@ -265,16 +274,16 @@ Widget build(BuildContext context) {
                         onPressed: _showAddPlantDialog,
                       ),
                     );
-                  } else {
+                  /*} else {
                     return PlantCard(plant: pagePlants[index]);
                     /*return Card(
                       child: Center(child: Text(pagePlants[index].name)),
                     );*/
-                  }
+                  }*/
                 },
               ),
             );
-          }
+          //}
         },
       ),
     ),
@@ -363,7 +372,13 @@ PreferredSizeWidget _buildAppBar(BuildContext context) {
             ],
           ),
         ),
-        onTap: () {}
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => WikiListPage(),
+            ),
+          );}
       ),
       /*IconButton(
         icon: const Icon(Icons.info_outline, color: Colors.white),
