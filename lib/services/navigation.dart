@@ -64,6 +64,7 @@ class NavigationService {
     _router.go('/${tab.name}');
   }
 
+<<<<<<< HEAD
   void goGoalDetailsOnGoal({required String goalId}) {
     _router.go('/goal/$goalId/goaldetails');
   }
