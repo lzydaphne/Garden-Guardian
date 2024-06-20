@@ -40,6 +40,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
         controller: _controller,
         // to get the focus point
         focusNode: _focusNode,
+        textAlignVertical: TextAlignVertical.top,
         decoration: InputDecoration(
           hintText: widget.hintLabel,
           hintStyle: const TextStyle(color: Colors.grey),

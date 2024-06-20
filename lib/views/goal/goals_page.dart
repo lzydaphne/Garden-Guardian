@@ -11,6 +11,12 @@ class GoalsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text("種植挑戰", style: TextStyle(fontWeight: FontWeight.w600),),
+        centerTitle: true,
+      ),
+      backgroundColor: Colors.white,
         body: ListView(
       children: [
         for (final goal in dummyGoals.values)

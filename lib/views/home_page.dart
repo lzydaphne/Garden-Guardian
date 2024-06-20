@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+import 'package:flutter_app/services/navigation.dart';
+import 'package:flutter_app/views/wiki_list_page.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -58,7 +60,7 @@ class _HomePageState extends State<HomePage> {
           // 最上方的綠色區域
           Container(
             color: const Color.fromARGB(255, 93, 176, 117),
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.only(left: 20, bottom: 20, top: 5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -83,7 +85,17 @@ class _HomePageState extends State<HomePage> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.settings, color: Colors.white),
-                      onPressed: () {},
+                      onPressed: 
+                            () {
+                              context.go('/profile'); // 使用 GoRouter 進行導航
+                            },/*() {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                            builder: (context) => ProfilePage(),
+                            ),
+                          );
+                        }*/
                     ),
                   ],
                 ),
@@ -111,7 +123,14 @@ class _HomePageState extends State<HomePage> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.info, color: Colors.white),
-                      onPressed: () {},
+                      onPressed: 
+                                  () {
+                                    Navigator.push(
+                                      context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WikiListPage(),
+                                    ),
+                                  );}
                     ),
                   ],
                 ),
@@ -158,7 +177,10 @@ class _HomePageState extends State<HomePage> {
                           const Spacer(),
                           IconButton(
                             icon: const Icon(Icons.notifications_none),
-                            onPressed: () {},
+                            onPressed: 
+                            () {
+                              context.go('/profile'); // 使用 GoRouter 進行導航
+                            },
                           ),
                         ],
                       ),
@@ -213,11 +235,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   Expanded(
-                                    child: GestureDetector(
-                                      onVerticalDragUpdate: (details) {
-                                        // 這裡可以根據需要添加自定義行為
-                                      },
-                                      child: ListView.builder(
+                                    child: ListView.builder(
                                         itemCount: _todoList.length,
                                         itemBuilder: (context, index) {
                                           return ListTile(
@@ -225,7 +243,6 @@ class _HomePageState extends State<HomePage> {
                                           );
                                         },
                                       ),
-                                    ),
                                   ),
                                   Align(
                                     alignment: Alignment.bottomCenter,
@@ -277,7 +294,10 @@ class _HomePageState extends State<HomePage> {
                             Icons.local_drink,
                             '目標2000ml\n已連續達成6日',
                             '點擊查看紀錄',
-                            0
+                            0,
+                            () {
+                              context.go('/goal'); // 使用 GoRouter 進行導航
+                            },
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -290,7 +310,10 @@ class _HomePageState extends State<HomePage> {
                             //Icons.local_florist,
                             '已種植8株植物\n最高難度3★',
                             '點擊查看紀錄',
-                            0
+                            0,
+                            () {
+                              context.go('/goal'); // 使用 GoRouter 進行導航
+                            },
                           ),
                         ),
                       ],
@@ -309,7 +332,10 @@ class _HomePageState extends State<HomePage> {
                             Icons.account_circle,
                             '編輯用戶資訊\n設定使用偏好',
                             '',
-                            0
+                            0,
+                            () {
+                              context.go('/profile'); // 使用 GoRouter 進行導航
+                            },
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -323,12 +349,22 @@ class _HomePageState extends State<HomePage> {
                                   const Color.fromARGB(255, 148, 223, 170),
                                   Colors.white,
                                   Icons.book,
+                                  '科普百科\n植物照顧指南',
                                   '',
-                                  '',
-                                  1
+                                  0,
+                                  () {
+                                    Navigator.push(
+                                      context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WikiListPage(),
+                                    ),
+                                  );}
+                                  /*() {
+                                    context.go('/wiki'); // 使用 GoRouter 進行導航
+                                  },*/
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              /*const SizedBox(height: 10),
                               Expanded(
                                 child: _buildButton(
                                   '新手指南',
@@ -337,9 +373,12 @@ class _HomePageState extends State<HomePage> {
                                   Icons.library_books,
                                   '',
                                   '',
-                                  1
+                                  1,
+                            () {
+                              context.go('/goal'); // 使用 GoRouter 進行導航
+                            },
                                 ),
-                              ),
+                              ),*/
                             ],
                           ),
                         ),
@@ -357,8 +396,16 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildButton(String text, Color color, Color iconColor, IconData icon,
-      String description, String linkText, int type) {
+  Widget _buildButton(
+    String text, 
+    Color color, 
+    Color iconColor, 
+    IconData icon,
+    String description, 
+    String linkText, 
+    int type,
+    VoidCallback onPressed,
+    ) {
         double? iconSize = 0;
         double? topPadding = 0;
     if (type == 0){
@@ -379,7 +426,7 @@ class _HomePageState extends State<HomePage> {
         ),
         padding: EdgeInsets.only(left: 20, top: topPadding),
       ),
-      onPressed: () {},
+      onPressed: onPressed,
       child: Stack(
         children: [
           Positioned(
@@ -417,15 +464,32 @@ class _HomePageState extends State<HomePage> {
               ],
               if (linkText.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const SizedBox(width: 88),
-                    Text(
+                /*Expanded(
+                  child: Text(
                       linkText,
+                      textAlign: TextAlign.right,
                       style: TextStyle(
                           fontSize: 10,
                           color: iconColor),
                     ),
+                ),*/
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    //const SizedBox(width: 88),
+                    Padding(padding: EdgeInsets.only(right: 16),
+                    child: Text(
+                      linkText,
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: iconColor),
+                    ),),
+                    /*Text(
+                      linkText,
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: iconColor),
+                    ),*/
                   ],
                 ),
               ],
