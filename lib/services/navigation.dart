@@ -9,8 +9,8 @@ final routerConfig = GoRouter(
     GoRoute(
         path: '/cover',
         pageBuilder: (context, state) => const NoTransitionPage<void>(
-              child: ChatPage(),
-              // child: CoverPage(),
+              // child: ChatPage(),
+              child: CoverPage(),
             ),
         routes: <RouteBase>[
           GoRoute(
