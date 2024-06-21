@@ -4,7 +4,7 @@ import 'package:flutter_app/views/plant_family/plant_card.dart';
 import 'package:flutter_app/models/plant.dart';
 import 'package:flutter_app/repositories/location_repo.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
-import 'package:flutter_app/views/nav_bar.dart';
+import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 
 class PlantFamilyPage extends StatefulWidget {
   const PlantFamilyPage({Key? key}) : super(key: key);
@@ -46,7 +46,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     });
   }
 
-  void _showAddLocationDialog() {
+  /*void _showAddLocationDialog() {
     String newLocation = "";
     showDialog(
       context: context,
@@ -79,7 +79,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
         );
       },
     );
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -158,13 +158,6 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
                   },
                 ),
               )),
-          IconButton(
-            icon: const Icon(
-              Icons.add_circle,
-              color: Colors.white,
-            ),
-            onPressed: _showAddLocationDialog,
-          ),
         ],
       ),
     );
@@ -174,7 +167,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     List<Plant> locationPlants =
         plants.where((plant) => plant.locationId == selectedLocation).toList();
     int pageCount = (locationPlants.length / 4).ceil();
-    bool needsExtraPage = locationPlants.length % 4 == 0;
+    //bool needsExtraPage = locationPlants.length % 4 == 0;
 
     return Expanded(
       child: GestureDetector(
@@ -195,37 +188,13 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
         },
         child: PageView.builder(
           controller: _pageController,
-          itemCount: pageCount + (needsExtraPage ? 1 : 0),
+          itemCount: pageCount,
           onPageChanged: (index) {
             setState(() {
               currentPage = index;
             });
           },
           itemBuilder: (context, pageIndex) {
-            if (pageIndex == pageCount && needsExtraPage) {
-              return GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                ),
-                itemCount: 1,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: GestureDetector(
-                        onTap: _showAddPlantDialog,
-                        child: Card(
-                          color: const Color.fromARGB(255, 216, 243, 224),
-                          child: IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: _showAddPlantDialog,
-                          ),
-                        )),
-                  );
-                },
-              );
-            } else {
               int startIndex = pageIndex * 4;
               int endIndex = (startIndex + 4).clamp(0, locationPlants.length);
               List<Plant> pagePlants =
@@ -238,26 +207,12 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
                   ),
-                  itemCount: pagePlants.length +
-                      (pageIndex == pageCount - 1 && !needsExtraPage ? 1 : 0),
+                  itemCount: pagePlants.length,
                   itemBuilder: (context, index) {
-                    if (pageIndex == pageCount - 1 &&
-                        index == pagePlants.length &&
-                        !needsExtraPage) {
-                      return Card(
-                        color: const Color.fromARGB(255, 216, 243, 224),
-                        child: IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: _showAddPlantDialog,
-                        ),
-                      );
-                    } else {
                       return PlantCard(plant: pagePlants[index]);
-                    }
                   },
                 ),
               );
-            }
           },
         ),
       ),
@@ -316,7 +271,13 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
                 ],
               ),
             ),
-            onTap: () {}),
+            onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => WikiListPage(),
+            ),
+          );}),
       ],
     );
   }

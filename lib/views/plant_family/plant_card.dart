@@ -35,7 +35,7 @@ class PlantCard extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
               child: Image.network(
                 plant.imageUrl,
-                height: 200,
+                height: 120,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),

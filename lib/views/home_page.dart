@@ -9,12 +9,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   final List<String> _todoList = [];
+  final List<bool> _todoStatus = [];
 
   void _addTodoItem(String item) {
     setState(() {
       _todoList.add(item);
+      _todoStatus.add(false);
     });
     Navigator.of(context).pop();
   }
@@ -85,10 +86,9 @@ class _HomePageState extends State<HomePage> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.settings, color: Colors.white),
-                      onPressed: 
-                            () {
-                              context.go('/profile'); // 使用 GoRouter 進行導航
-                            },/*() {
+                      onPressed: () {
+                        context.go('/profile'); // 使用 GoRouter 進行導航
+                      }, /*() {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -122,16 +122,15 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.info, color: Colors.white),
-                      onPressed: 
-                                  () {
-                                    Navigator.push(
-                                      context,
-                                    MaterialPageRoute(
-                                      builder: (context) => WikiListPage(),
-                                    ),
-                                  );}
-                    ),
+                        icon: const Icon(Icons.info, color: Colors.white),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => WikiListPage(),
+                            ),
+                          );
+                        }),
                   ],
                 ),
               ],
@@ -177,16 +176,14 @@ class _HomePageState extends State<HomePage> {
                           const Spacer(),
                           IconButton(
                             icon: const Icon(Icons.notifications_none),
-                            onPressed: 
-                            () {
+                            onPressed: () {
                               context.go('/profile'); // 使用 GoRouter 進行導航
                             },
                           ),
                         ],
                       ),
-                    ), 
-                    // 灰色框框
-                    Container(
+                    ),
+                    /*Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(10),
@@ -196,7 +193,8 @@ class _HomePageState extends State<HomePage> {
                       child: Row(
                         children: [
                           // 左半邊
-                          const Expanded(
+                          Expanded(
+                            flex: 12, // 左邊部分佔6
                             child: Padding(
                               padding: EdgeInsets.all(10.0),
                               child: Column(
@@ -222,34 +220,77 @@ class _HomePageState extends State<HomePage> {
                           ),
                           // 右半邊
                           Expanded(
+                            flex: 8, // 右邊部分佔4
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'To-do list',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 20.0),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'To-do list',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color.fromARGB(144, 0, 0, 0),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   Expanded(
                                     child: ListView.builder(
-                                        itemCount: _todoList.length,
-                                        itemBuilder: (context, index) {
-                                          return ListTile(
-                                            title: Text(_todoList[index]),
-                                          );
-                                        },
-                                      ),
+                                      padding: EdgeInsets.all(0),
+                                      itemCount: _todoList.length,
+                                      itemBuilder: (context, index) {
+                                        return /*Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: */
+                                            ListTile(
+                                          contentPadding:
+                                              EdgeInsets.only(left: 12),
+                                          minTileHeight: 0,
+                                          //dense: true,
+                                          leading: Checkbox(
+                                            side: BorderSide(
+                                              color:
+                                                  Color.fromARGB(144, 0, 0, 0),
+                                            ),
+                                            shape: CircleBorder(),
+                                            value: _todoStatus[index],
+                                            onChanged: (bool? value) {
+                                              setState(() {
+                                                _todoStatus[index] = value!;
+                                              });
+                                            },
+                                          ),
+                                          title: Text(
+                                            _todoList[index],
+                                            style: TextStyle(
+                                              color:
+                                                  Color.fromARGB(144, 0, 0, 0),
+                                              fontSize: 14,
+                                              decoration: _todoStatus[index]
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
+                                            ),
+                                          ),
+                                        );
+                                        //);
+                                      },
+                                    ),
                                   ),
                                   Align(
                                     alignment: Alignment.bottomCenter,
                                     child: IconButton(
                                       icon: const Icon(
-                                        Icons.add_circle_outline,
-                                        color: Colors.grey,
+                                        Icons.add_circle_rounded,
+                                        color: Color.fromARGB(96, 0, 0, 0),
+                                        size: 20,
                                       ),
                                       onPressed: _showAddTodoDialog,
                                     ),
@@ -260,7 +301,168 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                    ),
+                    ),*/
+                    Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          height: 200,
+          padding: const EdgeInsets.all(0.0),
+          child: Row(
+            children: [
+              // 左半邊
+              Expanded(
+                flex: 12, // 左邊部分佔6
+                child: Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      /*Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,*/
+                        //children: [
+                          Column(
+                            children: [
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '28°C  ',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.wb_sunny,
+                                    color: Colors.orange,
+                                  ),
+                                ],
+                              ),
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'June 21, 2024',
+                                    style: TextStyle(color: Color.fromARGB(255, 129, 129, 129)),
+                                  ),
+                                  Text(' | Hsinchu', style: TextStyle(color: Color.fromARGB(255, 129, 129, 129)),),
+                                ],
+                              ),
+                              Container(
+                                width: 200,
+                                height: 110,
+                                decoration: const BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage('images/timetable.png'),
+                                  fit: BoxFit.cover,
+                                ),
+                                ),
+                              ),
+                              /*Image.asset(
+                                'images/timetable.png',
+                                fit: BoxFit.cover,
+                              ),*/
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('May                ', style: TextStyle(color: Color.fromARGB(255, 129, 129, 129)),),
+                                  Text('June', style: TextStyle(color: Color.fromARGB(255, 129, 129, 129)),),
+                                ],
+                              ),
+                            ],
+                          ),
+                        //],
+                      //),
+                      
+                      
+                    ],
+                  ),
+                ),
+              ),
+              // 中間的白色分隔線
+              Container(
+                width: 1,
+                color: Colors.white,
+              ),
+              // 右半邊
+              Expanded(
+                flex: 8, // 右邊部分佔4
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 20.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              'To-do list',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(144, 0, 0, 0),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: EdgeInsets.all(0),
+                          itemCount: _todoList.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              contentPadding: EdgeInsets.only(left: 12),
+                              minTileHeight: 0,
+                              leading: Checkbox(
+                                side: BorderSide(
+                                  color: Color.fromARGB(144, 0, 0, 0),
+                                ),
+                                shape: CircleBorder(),
+                                value: _todoStatus[index],
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _todoStatus[index] = value!;
+                                  });
+                                },
+                              ),
+                              title: Text(
+                                _todoList[index],
+                                style: TextStyle(
+                                  color: Color.fromARGB(144, 0, 0, 0),
+                                  fontSize: 14,
+                                  decoration: _todoStatus[index]
+                                      ? TextDecoration.lineThrough
+                                      : TextDecoration.none,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.add_circle_rounded,
+                            color: Color.fromARGB(96, 0, 0, 0),
+                            size: 20,
+                          ),
+                          onPressed: _showAddTodoDialog,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
                   ],
                 ),
               ),
@@ -268,8 +470,7 @@ class _HomePageState extends State<HomePage> {
                 top: 15,
                 left: 15,
                 child: CircleAvatar(
-                  backgroundImage:
-                      AssetImage('images/user.png'), 
+                  backgroundImage: AssetImage('images/user.png'),
                   radius: 30,
                 ),
               ),
@@ -345,24 +546,24 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: _buildButton(
-                                  '植物百科',
-                                  const Color.fromARGB(255, 148, 223, 170),
-                                  Colors.white,
-                                  Icons.book,
-                                  '科普百科\n植物照顧指南',
-                                  '',
-                                  0,
-                                  () {
-                                    Navigator.push(
-                                      context,
+                                    '植物百科',
+                                    const Color.fromARGB(255, 148, 223, 170),
+                                    Colors.white,
+                                    Icons.book,
+                                    '科普百科\n植物照顧指南',
+                                    '',
+                                    0, () {
+                                  Navigator.push(
+                                    context,
                                     MaterialPageRoute(
                                       builder: (context) => WikiListPage(),
                                     ),
-                                  );}
-                                  /*() {
+                                  );
+                                }
+                                    /*() {
                                     context.go('/wiki'); // 使用 GoRouter 進行導航
                                   },*/
-                                ),
+                                    ),
                               ),
                               /*const SizedBox(height: 10),
                               Expanded(
@@ -397,22 +598,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildButton(
-    String text, 
-    Color color, 
-    Color iconColor, 
+    String text,
+    Color color,
+    Color iconColor,
     IconData icon,
-    String description, 
-    String linkText, 
+    String description,
+    String linkText,
     int type,
     VoidCallback onPressed,
-    ) {
-        double? iconSize = 0;
-        double? topPadding = 0;
-    if (type == 0){
+  ) {
+    double? iconSize = 0;
+    double? topPadding = 0;
+    if (type == 0) {
       iconSize = 40;
       topPadding = 12;
-    }
-    else {
+    } else {
       iconSize = 24;
       topPadding = 7;
     }
@@ -430,41 +630,41 @@ class _HomePageState extends State<HomePage> {
       child: Stack(
         children: [
           Positioned(
-            left: 0, 
+            left: 0,
             top: 10,
             child: Icon(icon, size: iconSize, color: iconColor),
           ),
           Padding(
-          padding: const EdgeInsets.only(left: 50, top: 10.0, bottom: 9.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  //Icon(icon, size: 28, color: iconColor),
-                  //const SizedBox(width: 8),
+            padding: const EdgeInsets.only(left: 50, top: 10.0, bottom: 9.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    //Icon(icon, size: 28, color: iconColor),
+                    //const SizedBox(width: 8),
+                    Text(
+                      text,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: iconColor),
+                    ),
+                  ],
+                ),
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 8),
                   Text(
-                    text,
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: iconColor),
+                    description,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color.fromARGB(255, 120, 120, 120),
+                    ),
                   ),
                 ],
-              ),
-              if (description.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color.fromARGB(255, 120, 120, 120),
-                  ),
-                ),
-              ],
-              if (linkText.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                /*Expanded(
+                if (linkText.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  /*Expanded(
                   child: Text(
                       linkText,
                       textAlign: TextAlign.right,
@@ -473,32 +673,31 @@ class _HomePageState extends State<HomePage> {
                           color: iconColor),
                     ),
                 ),*/
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    //const SizedBox(width: 88),
-                    Padding(padding: EdgeInsets.only(right: 16),
-                    child: Text(
-                      linkText,
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: iconColor),
-                    ),),
-                    /*Text(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      //const SizedBox(width: 88),
+                      Padding(
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          linkText,
+                          style: TextStyle(fontSize: 10, color: iconColor),
+                        ),
+                      ),
+                      /*Text(
                       linkText,
                       style: TextStyle(
                           fontSize: 10,
                           color: iconColor),
                     ),*/
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
         ],
       ),
     );
   }
 }
-
