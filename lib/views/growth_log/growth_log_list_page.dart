@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 //import 'package:flutter_app/models/growth_log.dart';
 import 'package:flutter_app/repositories/growth_log_repo.dart';
+import 'package:flutter_app/views/add_note_page.dart';
 import 'package:flutter_app/views/growth_log/growth_log_detail_page.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+//import 'package:flutter_app/views/navigation_bar.dart';
 
 class GrowthLogListPage extends StatelessWidget {
   final GrowthLogRepository growthRepository = GrowthLogRepository();
@@ -77,16 +78,23 @@ class GrowthLogListPage extends StatelessWidget {
                 },
               ),
             ),
-            const NavigationBottomBar(),
+           // const NavigationBottomBar(),
           ],
         ),
         Positioned(
-          bottom: 80.0,
+          bottom: 30.0,
           right: 16.0,
           child: FloatingActionButton(
             shape: CircleBorder(eccentricity: 1.0),
             elevation: 5,
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddNotePage(),
+                ),
+              );
+            },
             child: Icon(Icons.add, color: Colors.white),
             backgroundColor: const Color.fromARGB(255, 93, 176, 117),
           ),
