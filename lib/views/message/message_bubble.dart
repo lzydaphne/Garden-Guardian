@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -35,11 +36,19 @@ class _MessageBubbleState extends State<MessageBubble>
   late AnimationController _controller;
   late Animation<int> _characterCount;
   bool _isAnimated = false;
+  String get _animationKey => 'animated_${widget.text.hashCode}';
 
   @override
   void initState() {
     super.initState();
-    _isAnimated = !widget.isMine;
+    _loadAnimationState(); //! this method is for web to prevent animation on every page load
+    // refer to this link if translation to android is needed: https://chatgpt.com/g/g-cZPwvslfA-flutter
+  }
+
+  void _loadAnimationState() {
+    String? animatedState = html.window.localStorage[_animationKey];
+    _isAnimated =
+        !widget.isMine && (animatedState == null || animatedState != 'true');
 
     if (_isAnimated) {
       _controller = AnimationController(
@@ -56,6 +65,7 @@ class _MessageBubbleState extends State<MessageBubble>
               if (status == AnimationStatus.completed) {
                 setState(() {
                   _isAnimated = false;
+                  html.window.localStorage[_animationKey] = 'true';
                 });
               }
             });
@@ -157,7 +167,7 @@ class _MessageBubbleState extends State<MessageBubble>
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5.0), // Adjust the radius as needed
+                                  borderRadius: BorderRadius.circular(5.0),
                                   child: Image.memory(
                                     Uri.parse(widget.base64ImageUrl as String)
                                         .data!
