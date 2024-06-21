@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/wiki.dart';
-import 'package:flutter_app/views/nav_bar.dart';
 
 class WikiDetailPage extends StatelessWidget {
   final Wiki wiki;
@@ -20,34 +19,31 @@ class WikiDetailPage extends StatelessWidget {
         children: [
           Expanded(
             child: SingleChildScrollView(
-                child:  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          wiki.name,
-                          style: const TextStyle(
-                            fontSize: 24, 
-                            fontWeight: FontWeight.bold, 
-                            ),
-                        ),
-                        const SizedBox(height: 16),
-                        Image.asset(
-                          wiki.imageUrl,
-                          height: 150,
-                          width: 250/*double.infinity*/,
-                          //fit: BoxFit.cover,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(wiki.description),
-                      ],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      wiki.name,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  
+                    const SizedBox(height: 16),
+                    Image.network(
+                      wiki.imageUrl,
+                      height: 150,
+                      width: 250,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(wiki.description),
+                  ],
+                ),
               ),
+            ),
           ),
-          //const NavBar(),
         ],
       ),
     );

@@ -1,7 +1,11 @@
 class Wiki {
-  final String name;
   final String imageUrl;
+  final String name;
   final String description;
 
-  Wiki({required this.name, required this.imageUrl, required this.description});
+  Wiki({
+    required this.imageUrl,
+    required this.name,
+    required this.description,
+  });
 }

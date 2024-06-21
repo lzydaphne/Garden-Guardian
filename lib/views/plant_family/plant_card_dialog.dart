@@ -38,7 +38,8 @@ class PlantCardDialog extends StatelessWidget {
                 child: IconButton.filled(
                   icon: Icon(Icons.highlight_off),
                   color: Color.fromARGB(141, 0, 0, 0),
-                  style: IconButton.styleFrom(backgroundColor: const Color.fromARGB(68, 255, 255, 255)),
+                  style: IconButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(68, 255, 255, 255)),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -79,12 +80,10 @@ class PlantCardDialog extends StatelessWidget {
             width: 400,
             height: 230,
             decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                bottomRight: Radius.circular(15),
-                bottomLeft: Radius.circular(15)
-              ),
-              color: Color.fromARGB(255, 216, 243, 224)
-            ),
+                borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(15),
+                    bottomLeft: Radius.circular(15)),
+                color: Color.fromARGB(255, 216, 243, 224)),
             child: Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 4),
               child: Column(
@@ -114,7 +113,8 @@ class PlantCardDialog extends StatelessWidget {
                                 children: [
                                   Container(
                                     height: 20,
-                                    padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 0, vertical: 2),
                                     decoration: BoxDecoration(
                                       border: Border.all(color: Colors.green),
                                       borderRadius: BorderRadius.circular(5),
@@ -139,14 +139,16 @@ class PlantCardDialog extends StatelessWidget {
                                 icon: Icon(Icons.info, size: 14),
                                 color: Color.fromARGB(255, 74, 142, 93),
                                 onPressed: () {
-                                  Wiki? wiki = wikiRepository.getWikiByName(plant.species);
+                                  Wiki? wiki = wikiRepository
+                                      .getWikiByName(plant.species);
                                   if (wiki != null) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => WikiDetailPage(wiki: wiki),
-                                      ),
-                                    );
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) =>
+                                    //         WikiDetailPage(wiki: wiki),
+                                    //   ),
+                                    // );
                                   } else {
                                     // 顯示錯誤信息或提示
                                   }
@@ -157,19 +159,18 @@ class PlantCardDialog extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.bookmarks),
-                        color: Color.fromARGB(151, 0, 0, 0),
-                        iconSize: 22,
-                        //style: IconButton.styleFrom(backgroundColor: const Color.fromARGB(68, 255, 255, 255)),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => GrowthLogListPage(),
-                            ),
-                          );
-                        }
-                      ),
+                          icon: Icon(Icons.bookmarks),
+                          color: Color.fromARGB(151, 0, 0, 0),
+                          iconSize: 22,
+                          //style: IconButton.styleFrom(backgroundColor: const Color.fromARGB(68, 255, 255, 255)),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => GrowthLogListPage(),
+                              ),
+                            );
+                          }),
                       /*IconButton(
                         icon: const Icon(Icons.border_color_rounded),
                         color: const Color.fromARGB(131, 0, 0, 0),
@@ -206,8 +207,7 @@ class PlantCardDialog extends StatelessWidget {
           decoration: const BoxDecoration(
             color: const Color.fromARGB(255, 93, 176, 117),
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(5), bottomLeft: Radius.circular(5)
-            ),
+                topLeft: Radius.circular(5), bottomLeft: Radius.circular(5)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -215,7 +215,8 @@ class PlantCardDialog extends StatelessWidget {
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w100),
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w100),
               ),
             ],
           ),
@@ -227,8 +228,8 @@ class PlantCardDialog extends StatelessWidget {
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                topRight: Radius.circular(5), bottomRight: Radius.circular(5)
-              ),
+                  topRight: Radius.circular(5),
+                  bottomRight: Radius.circular(5)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

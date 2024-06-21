@@ -70,17 +70,17 @@ class PlantRepository {
     }
   }
 
-  Future<List<Plant>> getAllPlants() async {
-    try {
-      QuerySnapshot snapshot = await _db.collection('plants').get();
-      return snapshot.docs
-          .map((doc) => Plant.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      print('Error getting all plants: $e');
-      return [];
-    }
-  }
+  // Future<List<Plant>> getAllPlants() async {
+  //   try {
+  //     QuerySnapshot snapshot = await _db.collection('plants').get();
+  //     return snapshot.docs
+  //         .map((doc) => Plant.fromMap(doc.data() as Map<String, dynamic>))
+  //         .toList();
+  //   } catch (e) {
+  //     print('Error getting all plants: $e');
+  //     return [];
+  //   }
+  // }
 
   Future<List<Plant>> getPlantsByLocation(String locationId) async {
     try {

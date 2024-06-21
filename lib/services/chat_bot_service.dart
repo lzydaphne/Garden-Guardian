@@ -69,6 +69,7 @@ class ChatBot extends ChangeNotifier {
   String systemPrompt = ChatBotPrompts().systemPrompt;
   String imagesystemPrompt = ChatBotPrompts().imagesystemPrompt;
   String keywordsystemPrompt = ChatBotPrompts().keywordsystemPrompt;
+  String imageDescriptionPrompt = ChatBotPrompts().imageDescriptionPrompt;
   final tools = ChatBotPrompts().tools;
 
   // int _calculateTokenCount(String? content) {
@@ -132,6 +133,7 @@ class ChatBot extends ChangeNotifier {
       //   bool isImage = false;
       var CCrequestImage;
       var CCrequestMessageKeyword;
+      var CCrequestDescribeImage;
       String? base64Image;
 
 //################Process user input message###########################
@@ -159,10 +161,20 @@ class ChatBot extends ChangeNotifier {
         List<Map<String, dynamic>> sysMessages = [
           {"role": "system", "content": imagesystemPrompt}
         ];
+        List<Map<String, dynamic>> sysMessages4describe = [
+          {"role": "system", "content": imageDescriptionPrompt}
+        ];
         // debugPrint('Image Message: ${sysMessages + imageMessage}');
 
         CCrequestImage = ChatCompleteText(
           messages: sysMessages + imageMessage,
+          maxToken: 200,
+          model: ChatModelFromValue(model: 'gpt-4o'),
+          //     tools: tools,
+          //     toolChoice: "auto"
+        );
+        CCrequestDescribeImage = ChatCompleteText(
+          messages: sysMessages4describe + imageMessage,
           maxToken: 200,
           model: ChatModelFromValue(model: 'gpt-4o'),
           //     tools: tools,
@@ -248,9 +260,18 @@ class ChatBot extends ChangeNotifier {
             int fertilizationCycle = toolArguments['fertilizationCycle'];
             int pruningCycle = toolArguments['pruningCycle'];
 
+            // if (CCrequestImage != null) {
+            final imageResponse =
+                await openAI.onChatCompletion(request: CCrequestDescribeImage);
+            final imageDesMsg =
+                imageResponse?.choices[0].message?.content ?? '';
+            debugPrint('Image Des inside add_new_plant: \n$imageDesMsg');
+            // }
+
             final results = await addNewPlant(
                 species,
                 base64Image ?? '',
+                imageDesMsg,
                 wateringCycle,
                 fertilizationCycle,
                 pruningCycle,
