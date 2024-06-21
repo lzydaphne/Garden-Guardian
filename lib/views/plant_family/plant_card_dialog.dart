@@ -44,7 +44,7 @@ class PlantCardDialog extends StatelessWidget {
                   },
                 ),
               ),
-              Positioned(
+              /*Positioned(
                 top: 8,
                 right: 8,
                 child: IconButton(
@@ -55,8 +55,8 @@ class PlantCardDialog extends StatelessWidget {
                     // 相機功能待實現
                   },
                 ),
-              ),
-              Positioned(
+              ),*/
+              /*Positioned(
                 bottom: 8,
                 right: 8,
                 child: IconButton(
@@ -72,7 +72,7 @@ class PlantCardDialog extends StatelessWidget {
                     );
                   }
                 ),
-              ),
+              ),*/
             ],
           ),
           Container(
@@ -157,13 +157,27 @@ class PlantCardDialog extends StatelessWidget {
                         ),
                       ),
                       IconButton(
+                        icon: Icon(Icons.bookmarks),
+                        color: Color.fromARGB(151, 0, 0, 0),
+                        iconSize: 22,
+                        //style: IconButton.styleFrom(backgroundColor: const Color.fromARGB(68, 255, 255, 255)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => GrowthLogListPage(),
+                            ),
+                          );
+                        }
+                      ),
+                      /*IconButton(
                         icon: const Icon(Icons.border_color_rounded),
                         color: const Color.fromARGB(131, 0, 0, 0),
                         iconSize: 20,
                         onPressed: () {
                           // 書寫按鈕功能待實現
                         },
-                      ),
+                      ),*/
                     ],
                   ),
                   SizedBox(height: 16),
