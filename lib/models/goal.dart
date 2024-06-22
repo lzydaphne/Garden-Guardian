@@ -41,6 +41,7 @@ class Goal {
       icon: icon ?? this.icon,
       total: total ?? this.total,
       progress: progress ?? this.progress,
+      goaldetails: goaldetails ?? this.goaldetails,
       completed: completed ?? this.completed,
       done: done ?? this.done, goaldetails: {},
     );

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_app/models/plant.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -67,6 +68,43 @@ class PlantRepository {
     } catch (e) {
       print('Error getting latest plant: $e');
       return null;
+    }
+  }
+
+  Future<Plant?> getPlantByNickname(String nickName) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('plants')
+          .where('nickName', isEqualTo: nickName)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        return Plant.fromMap(
+            snapshot.docs.first.data() as Map<String, dynamic>);
+      } else {
+        return null; // No plant found with the given nickname
+      }
+    } catch (e) {
+      print('Error getting plant by nickname: $e');
+      return null; // Return null in case of an error
+    }
+  }
+
+  Future<String?> getPlantIDByNickname(String nickName) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('plants')
+          .where('nickName', isEqualTo: nickName)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        // debugPrint("snapshot.docs.first.id: ${snapshot.docs.first.id}");
+        return snapshot
+            .docs.first.id; // Return the ID of the first document found
+      } else {
+        return null; // No plant found with the given nickname
+      }
+    } catch (e) {
+      print('Error getting plant ID by nickname: $e');
+      return null; // Return null in case of an error
     }
   }
 

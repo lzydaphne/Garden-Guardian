@@ -167,7 +167,9 @@ class PlantCardDialog extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => GrowthLogListPage(),
+                                builder: (context) => GrowthLogListPage(
+                                  plantID: plant.id ?? 'fail to load plant id',
+                                ),
                               ),
                             );
                           }),
