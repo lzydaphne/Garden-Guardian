@@ -121,6 +121,9 @@ String systemPrompt = """
 // Remember to keep responses brief and focused on the user's query, and a little blend of fun and humor.
 // """;
 */
+  String imageDescriptionPrompt = """
+    Imagine you are writing a Wikipedia entry. Analyze the given image of a plant and provide a concise, introductory description in a factual and neutral tone. Focus on the plant's appearance, type, habitat, and any notable characteristics.
+    """;
   String imagesystemPrompt = """
 You are a image keyword analyzer , you will receive a user input message of a image, and you will need to analyze the image. Then generate a string in the following format : 
 - Image Name : Give this image a appropriate title.
@@ -128,7 +131,7 @@ You are a image keyword analyzer , you will receive a user input message of a im
 - Details : Analyze the image , generate a series of details or properties of the content of the image.
     
 """;
-  String  keywordsystemPrompt = """
+  String keywordsystemPrompt = """
 You are a keyword extracter , you will receive a user input message of a text and maybe a image
 - You will need to analyze the image(if any) and the message text
 - Extract at most 20 necessary keywords that covers all the recognizable contents and detail of the image(if any).
@@ -258,6 +261,4 @@ You are a keyword extracter , you will receive a user input message of a text an
       }
     }
   ];
-
 }
-

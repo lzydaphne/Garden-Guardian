@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/navigation.dart';
-import 'package:flutter_app/views/plant_family_page.dart';
+import 'package:flutter_app/views/plant_family/plant_family_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/views/home_page.dart';
 import 'package:flutter_app/views/plant_family/plant_family_page.dart';
 import 'package:flutter_app/views/chat_page.dart';
 import 'package:flutter_app/views/goal/goals_page.dart';
-import 'package:flutter_app/views/plant_family/diary_page.dart';
+//import 'package:flutter_app/views/plant_family/diary_page.dart';
+import 'package:flutter_app/views/profile/profile_page.dart';
 
-enum HomeTab { home, plant, chat, goal, diary }
+enum HomeTab { home, plant, chat, goal, profile }
 
 class NavBar extends StatelessWidget {
   final HomeTab selectedTab;
@@ -26,7 +27,7 @@ class NavBar extends StatelessWidget {
                     ? HomeTab.chat
                     : index == 3
                         ? HomeTab.goal
-                        : HomeTab.diary);
+                        : HomeTab.profile);
   }
 
   @override
@@ -37,8 +38,8 @@ class NavBar extends StatelessWidget {
         'title': 'Home',
       },
       {
-      'page': const PlantFamilyPage(),
-      'title': 'Plant Family',
+        'page': const PlantFamilyPage(),
+        'title': 'Plant Family',
       },
       {
         'page': const ChatPage(),
@@ -49,8 +50,8 @@ class NavBar extends StatelessWidget {
         'title': 'Achievement',
       },
       {
-        'page': const DiaryPage(),
-        'title': 'Diary',
+        'page': ProfilePage(),
+        'title': 'Profile',
       },
     ];
 
@@ -59,37 +60,59 @@ class NavBar extends StatelessWidget {
         title: Text(tabs[selectedTab.index]['title']),
       ),*/
       body: tabs[selectedTab.index]['page'],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        fixedColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).colorScheme.secondary,
-        onTap: (index) => _tapBottomNavigationBarItem(context, index),
-        currentIndex: selectedTab.index,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.nature),
-            label: 'Plant Family',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: 'Chat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star),
-            label: 'Achievement',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Diary',
+      bottomNavigationBar: Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 5,
+            blurRadius: 10,
+            offset: const Offset(0, -3),
           ),
         ],
       ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+        child: BottomNavigationBar(
+          //backgroundColor: const Color.fromARGB(255, 93, 176, 117),
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.local_florist),
+              label: '我的植物',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_outlined),
+              label: 'ChatBox',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.hotel_class_rounded),
+              label: '種植挑戰',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle),
+              label: '帳號維護',
+            ),
+          ],
+          currentIndex: selectedTab.index,
+          selectedItemColor: const Color.fromARGB(255, 93, 176, 117),
+          //unselectedItemColor: const Color.fromARGB(255, 93, 176, 117).withOpacity(0.7),
+          onTap: (index) => _tapBottomNavigationBarItem(context, index),
+        ),
+      ),
+    )
     );
   }
 }

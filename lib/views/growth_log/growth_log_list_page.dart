@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 //import 'package:flutter_app/models/growth_log.dart';
 import 'package:flutter_app/repositories/growth_log_repo.dart';
-import 'package:flutter_app/views/growth_log_detail_page.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+import 'package:flutter_app/views/add_note_page.dart';
+import 'package:flutter_app/views/growth_log/growth_log_detail_page.dart';
+//import 'package:flutter_app/views/navigation_bar.dart';
 
 class GrowthLogListPage extends StatelessWidget {
   final GrowthLogRepository growthRepository = GrowthLogRepository();
@@ -12,12 +13,15 @@ class GrowthLogListPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Growth Log', style: TextStyle(fontWeight: FontWeight.w800),),
+        title: const Text(
+          'Growth Log',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
-      body: Stack(
-        children: [Column(
+      body: Stack(children: [
+        Column(
           children: [
             const Padding(
               padding: EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
@@ -45,16 +49,16 @@ class GrowthLogListPage extends StatelessWidget {
                       //fit: BoxFit.cover,
                     ),*/
                     title: Container(
-                      child: Column(
-                        children: [
-                          Image.asset(
-                            growthLog.imageUrl,
-                            height: 220,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                          Text(growthLog.name),
-                        ],
+                        child: Column(
+                      children: [
+                        Image.asset(
+                          growthLog.imageUrl,
+                          height: 220,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                        Text(growthLog.name),
+                      ],
                     )),
                     subtitle: Text(
                       growthLog.description.length > 120
@@ -65,7 +69,8 @@ class GrowthLogListPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GrowthLogDetailPage(growthLog: growthLog),
+                          builder: (context) =>
+                              GrowthLogDetailPage(growthLog: growthLog),
                         ),
                       );
                     },
@@ -73,22 +78,28 @@ class GrowthLogListPage extends StatelessWidget {
                 },
               ),
             ),
-            const NavigationBottomBar(),
+           // const NavigationBottomBar(),
           ],
         ),
         Positioned(
-            bottom: 80.0, 
-            right: 16.0,
-            child: FloatingActionButton(
-              shape: CircleBorder(eccentricity: 1.0),
-              elevation: 5,
-              onPressed: (){},
-              child: Icon(Icons.add, color: Colors.white),
-              backgroundColor: const Color.fromARGB(255, 93, 176, 117),
-            ),
+          bottom: 30.0,
+          right: 16.0,
+          child: FloatingActionButton(
+            shape: CircleBorder(eccentricity: 1.0),
+            elevation: 5,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddNotePage(),
+                ),
+              );
+            },
+            child: Icon(Icons.add, color: Colors.white),
+            backgroundColor: const Color.fromARGB(255, 93, 176, 117),
           ),
-        ]
-      ),
+        ),
+      ]),
     );
   }
 }

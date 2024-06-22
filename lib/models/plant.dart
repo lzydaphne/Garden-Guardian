@@ -6,6 +6,8 @@ class Plant {
   final String? locationId;
   final String species;
   final String imageUrl;
+  final String? downloadURL;
+  final String description;
   final int? wateringCycle; // in days
   final int? fertilizationCycle; // in days
   final int? pruningCycle; // in days
@@ -21,6 +23,8 @@ class Plant {
     this.locationId,
     required this.species,
     required this.imageUrl,
+    required this.description,
+    this.downloadURL,
     this.wateringCycle,
     this.fertilizationCycle,
     this.lastCareDate,
@@ -38,6 +42,8 @@ class Plant {
       locationId: map['locationId'],
       species: map['species'],
       imageUrl: map['imageUrl'],
+      downloadURL: map['downloadURL'],
+      description: map['description'],
       lastCareDate: (map['lastCareDate'] as Timestamp).toDate(),
       plantingDate: (map['plantingDate'] as Timestamp).toDate(),
       wateringCycle: map['wateringCycle'],
@@ -57,6 +63,8 @@ class Plant {
       'locationId': locationId,
       'species': species,
       'imageUrl': imageUrl,
+      'downloadURL': downloadURL,
+      'description': description,
       'lastCareDate': lastCareDate,
       'plantingDate': plantingDate,
       'wateringCycle': wateringCycle,

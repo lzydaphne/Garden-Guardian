@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app/models/plant.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class PlantRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -69,17 +70,17 @@ class PlantRepository {
     }
   }
 
-  Future<List<Plant>> getAllPlants() async {
-    try {
-      QuerySnapshot snapshot = await _db.collection('plants').get();
-      return snapshot.docs
-          .map((doc) => Plant.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      print('Error getting all plants: $e');
-      return [];
-    }
-  }
+  // Future<List<Plant>> getAllPlants() async {
+  //   try {
+  //     QuerySnapshot snapshot = await _db.collection('plants').get();
+  //     return snapshot.docs
+  //         .map((doc) => Plant.fromMap(doc.data() as Map<String, dynamic>))
+  //         .toList();
+  //   } catch (e) {
+  //     print('Error getting all plants: $e');
+  //     return [];
+  //   }
+  // }
 
   Future<List<Plant>> getPlantsByLocation(String locationId) async {
     try {

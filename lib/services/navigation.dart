@@ -1,11 +1,13 @@
 
 import 'package:flutter_app/views/chat_page.dart';
 import 'package:flutter_app/views/home_page.dart';
+import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/views/cover_page.dart';
 import 'package:flutter_app/views/auth_page.dart';
 import 'package:flutter_app/views/nav_bar.dart';
 import 'package:flutter_app/views/goal/goal_details_page.dart';
+import 'package:flutter_app/views/goal/goals_page.dart';
 
 final routerConfig = GoRouter(
   routes: <RouteBase>[
@@ -50,8 +52,12 @@ final routerConfig = GoRouter(
       ]
     ),
     GoRoute(
-      path: '/diary',
-      builder: (context, state) => const NavBar(selectedTab: HomeTab.diary),
+      path: '/wiki',
+      builder: (context, state) => WikiListPage(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const NavBar(selectedTab: HomeTab.profile),
     ),
   ],
   initialLocation: '/cover',

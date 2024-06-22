@@ -13,42 +13,28 @@ class GoalItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return
-      InkWell(
-      onTap: onSelectGoal,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(goal.icon),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    goal.title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500
-                    )
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    goal.content,
-                    style: const TextStyle(
-                      fontSize: 15,
-                    )
-                  )
-                ]
+    return InkWell(
+        onTap: onSelectGoal,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(children: [
+              Icon(goal.icon),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        goal.title,
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(goal.content)
+                    ]),
               ),
-            ),
-            const SizedBox(width: 10),
-            Text('${goal.completed}/${goal.total}')
-          ]
-        )
-      )
-    );
+              const SizedBox(width: 10),
+              Text('${goal.progress}/${goal.total}')
+            ])));
   }
 }

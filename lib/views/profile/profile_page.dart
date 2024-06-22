@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_app/views/navigation_bar.dart';
+import 'package:flutter_app/services/authentication.dart';
+import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -92,7 +94,13 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              /*Provider.of<PushMessagingService>(context, listen: false)
+                  .unsubscribeFromAllTopics();*/
+              Provider.of<AuthenticationService>(context, listen: false)
+                .logOut();
+              context.go('/cover'); // 使用 GoRouter 進行導航
+            },
             child: const Text('Logout', style: TextStyle(color: Colors.white),),
           ),
         ],
@@ -153,11 +161,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              const NavigationBottomBar(),
             ],
           ),
-          Positioned(
-            bottom: 80.0, 
+          /*Positioned(
+            bottom: 25.0, 
             right: 16.0,
             child: FloatingActionButton(
               shape: CircleBorder(eccentricity: 1.0),
@@ -166,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Icon(Icons.add, color: Colors.white),
               backgroundColor: const Color.fromARGB(255, 93, 176, 117),
             ),
-          ),
+          ),*/
         ],
       ),
     );
