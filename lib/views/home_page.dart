@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/navigation.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/models/todo.dart';
@@ -91,11 +92,12 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Text(
                           'GARDEN',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(fontFamily: 'JuliusSansOne',fontSize: 12),
+                          
                         ),
                         Text(
                           'GUARDIAN',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(fontFamily: 'JuliusSansOne',fontSize: 15),
                         ),
                       ],
                     ),

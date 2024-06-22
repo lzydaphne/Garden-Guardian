@@ -95,7 +95,7 @@ class NavBar extends StatelessWidget {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat_outlined),
-              label: 'ChatBox',
+              label: 'ChatBot',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.hotel_class_rounded),
