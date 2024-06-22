@@ -4,6 +4,7 @@ import 'package:flutter_app/services/chat_bot_service.dart';
 import 'package:flutter_app/services/navigation.dart';
 
 import 'package:flutter_app/views/cover_page.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
 
@@ -16,7 +17,7 @@ Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   // Defer the first frame until `FlutterNativeSplash.remove()` is called
-  //FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // Make sure you have your Firebase options configured
   await Firebase.initializeApp(
@@ -24,6 +25,8 @@ Future<void> main() async {
   );
 
   runApp(const MyApp());
+  
+  FlutterNativeSplash.remove();
 }
 
 class MyApp extends StatelessWidget {
