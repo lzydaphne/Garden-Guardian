@@ -138,17 +138,17 @@ class PlantCardDialog extends StatelessWidget {
                               child: IconButton(
                                 icon: Icon(Icons.info, size: 14),
                                 color: Color.fromARGB(255, 74, 142, 93),
-                                onPressed: () {
-                                  Wiki? wiki = wikiRepository
+                                onPressed: () async {
+                                  Wiki? wiki = await wikiRepository
                                       .getWikiByName(plant.species);
                                   if (wiki != null) {
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) =>
-                                    //         WikiDetailPage(wiki: wiki),
-                                    //   ),
-                                    // );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            WikiDetailPage(wiki: wiki),
+                                      ),
+                                    );
                                   } else {
                                     // 顯示錯誤信息或提示
                                   }

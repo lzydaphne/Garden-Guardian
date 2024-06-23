@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app/models/plant.dart';
 import 'package:flutter_app/models/wiki.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
 
 class WikiRepository {
   final PlantRepository _plantRepository = PlantRepository();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   Stream<List<Wiki>> streamAllWiki() {
     return _plantRepository.streamAllPlants().map((plantList) {
       return plantList.map((plant) {
@@ -17,7 +19,21 @@ class WikiRepository {
     });
   }
 
-  final List<Wiki> wikiList = [
+  Future<Wiki?> getWikiByName(String name) async {
+    try {
+      // Convert the stream to a list
+      List<Wiki> wikiList = await streamAllWiki().first;
+      // Find the wiki with the matching name
+      return wikiList.firstWhere((wiki) => wiki.name == name/*, orElse: () => null*/);
+    } catch (e) {
+      // Handle any errors that might occur
+      print("Error getting wiki by name: $e");
+      return null;
+    }
+  }
+}
+
+/*final List<Wiki> wikiList = [
     Wiki(
       name: 'Snake Plant (Sansevieria)',
       imageUrl: 'images/Snake_Plant.jpg',
@@ -44,5 +60,4 @@ class WikiRepository {
     } catch (e) {
       return null;
     }
-  }
-}
+  }*/
