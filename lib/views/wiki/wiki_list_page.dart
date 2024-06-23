@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/repositories/wiki_repo.dart';
 import 'package:flutter_app/views/wiki/wiki_detail_page.dart';
+import 'package:flutter_app/views/wiki/search_bar_wiki.dart';
 import 'package:flutter_app/models/wiki.dart';
 
-class WikiListPage extends StatelessWidget {
+class WikiListPage extends StatefulWidget {
+  @override
+  State<WikiListPage> createState() => _WikiListPageState();
+}
+
+class _WikiListPageState extends State<WikiListPage> {
   final WikiRepository wikiRepository = WikiRepository();
+
+  String searchVal = '';
+
+  List<Wiki> searchResults = [];
+
+  void _searchWikis(String query) {
+    setState(() {
+      searchVal = query;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,17 +36,17 @@ class WikiListPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                ),
+            child: SearchAppBarWiki(
+                hintLabel: "Search",
+                onSubmitted: (value) {
+                  setState(() {
+                    searchVal = value;
+                  });
+                  _searchWikis(value);
+                },
               ),
-            ),
           ),
           Expanded(
             child: StreamBuilder<List<Wiki>>(
@@ -43,12 +59,19 @@ class WikiListPage extends StatelessWidget {
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(child: Text('No data available'));
                 } else {
-                  final wikiList = snapshot.data!;
+                  final allWikis = snapshot.data!;
+                  List<Wiki> filteredWikis = searchVal.isEmpty
+                        ? allWikis
+                        : allWikis
+                            .where((Wiki) => Wiki.name!
+                                .toLowerCase()
+                                .startsWith(searchVal.toLowerCase()))
+                            .toList();
                   return ListView.builder(
                     padding: const EdgeInsets.only(left: 4, right: 4),
-                    itemCount: wikiList.length,
+                    itemCount: filteredWikis.length,
                     itemBuilder: (context, index) {
-                      final wiki = wikiList[index];
+                      final wiki = filteredWikis[index];
                       return ListTile(
                         title: Column(
                           children: [
