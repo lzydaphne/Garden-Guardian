@@ -247,6 +247,9 @@ class AuthenticationService {
           await _appUserRepository.getUserById(userCredential.user!.uid);
       print('User fetched: ${_currentUser!.id}'); // Debug message
 
+      //* handle user sign-in challenge
+      _appUserRepository.incrementCntSignin(_currentUser!.id);
+
       return userCredential.user!.uid;
     } on FirebaseAuthException catch (e) {
       print(

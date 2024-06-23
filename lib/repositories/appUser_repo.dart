@@ -86,6 +86,19 @@ class AppUserRepository {
     });
   }
 
+  Future<void> incrementCntSignin(String userId) async {
+    DocumentReference userRef = _db.collection('users').doc(userId);
+    await _db.runTransaction((transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(userRef);
+      if (!snapshot.exists) {
+        throw Exception("User does not exist!");
+      }
+      int newCntSignin =
+          (snapshot.data() as Map<String, dynamic>)['cnt_signin'] + 1;
+      transaction.update(userRef, {'cnt_signin': newCntSignin});
+    });
+  }
+
   Future<appUser?> getUserById(String userId) async {
     DocumentSnapshot docSnapshot =
         await _db.collection('users').doc(userId).get();
