@@ -4,6 +4,7 @@ import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/models/todo.dart';
 import 'package:flutter_app/repositories/todo_repo.dart';
+import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,6 +14,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TodoRepository _todoRepository = TodoRepository();
   final List<Todo> _todoList = [];
+  Map<DateTime, int> heatMapDatasets = {
+    DateTime(2024, 5, 6): 8,
+    DateTime(2024, 5, 7): 7,
+    DateTime(2024, 6, 8): 10,
+    DateTime(2024, 6, 22): 13,
+    DateTime(2024, 6, 12): 10,
+    DateTime(2024, 5, 20): 10,
+    DateTime(2024, 5, 30): 6,
+  };
 
   @override
   void initState() {
@@ -208,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      height: 200,
+                      height: 280,
                       padding: const EdgeInsets.all(0.0),
                       child: Row(
                         children: [
@@ -219,74 +229,69 @@ class _HomePageState extends State<HomePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Column(
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '28°C  ',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.orange,
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.wb_sunny,
-                                            color: Colors.orange,
-                                          ),
-                                        ],
-                                      ),
-                                      const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            'June 21, 2024',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 129, 129, 129)),
-                                          ),
-                                          Text(
-                                            ' | Hsinchu',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 129, 129, 129)),
-                                          ),
-                                        ],
-                                      ),
-                                      Container(
-                                        width: 200,
-                                        height: 110,
-                                        decoration: const BoxDecoration(
-                                          image: DecorationImage(
-                                            image: AssetImage(
-                                                'images/timetable.png'),
-                                            fit: BoxFit.cover,
-                                          ),
+                                      Text(
+                                        '28°C  ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange,
                                         ),
                                       ),
-                                      const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'May                ',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 129, 129, 129)),
-                                          ),
-                                          Text(
-                                            'June',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 129, 129, 129)),
-                                          ),
-                                        ],
+                                      Icon(
+                                        Icons.wb_sunny,
+                                        color: Colors.orange,
                                       ),
                                     ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'June 21, 2024',
+                                        style: TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 129, 129, 129),
+                                        ),
+                                      ),
+                                      Text(
+                                        ' | Hsinchu',
+                                        style: TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 129, 129, 129),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      child: HeatMap(
+                                        scrollable: true,
+                                        datasets: heatMapDatasets,
+                                        colorsets: const {
+                                          1: Colors.red,
+                                          3: Colors.orange,
+                                          7: Colors.green,
+                                          5: Colors.yellow,
+                                          9: Colors.blue,
+                                          11: Colors.indigo,
+                                          13: Colors.purple,
+                                        },
+                                        startDate: DateTime.now()
+                                            .subtract(Duration(days: 60)),
+                                        endDate: DateTime.now(),
+                                        onClick: (value) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content:
+                                                    Text(value.toString())),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -303,7 +308,7 @@ class _HomePageState extends State<HomePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Padding(
+                                  Padding(
                                     padding: EdgeInsets.only(left: 20.0),
                                     child: Row(
                                       children: [
@@ -328,7 +333,7 @@ class _HomePageState extends State<HomePage> {
                                         return ListTile(
                                           contentPadding:
                                               EdgeInsets.only(left: 12),
-                                          minTileHeight: 0,
+                                          minVerticalPadding: 0,
                                           leading: Checkbox(
                                             side: BorderSide(
                                               color:
@@ -360,7 +365,7 @@ class _HomePageState extends State<HomePage> {
                                   Align(
                                     alignment: Alignment.bottomCenter,
                                     child: IconButton(
-                                      icon: const Icon(
+                                      icon: Icon(
                                         Icons.add_circle_rounded,
                                         color: Color.fromARGB(96, 0, 0, 0),
                                         size: 20,
