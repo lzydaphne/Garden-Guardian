@@ -7,17 +7,16 @@ class GrowthLogRepository {
   final CollectionReference plantCollection =
       FirebaseFirestore.instance.collection('plants');
 
-  Future<void> addGrowthLog(
-      String plantID, String plantNickname, GrowthLog growthLog) async {
+  Future<void> addGrowthLog(String plantID, GrowthLog growthLog) async {
     await plantCollection
         .doc(plantID)
         .collection('growth_logs')
         .add(growthLog.toMap());
   }
 
-  Stream<List<GrowthLog>> getGrowthLogs(String plantNickname) {
+  Stream<List<GrowthLog>> getGrowthLogs(String plantID) {
     return plantCollection
-        .doc(plantNickname)
+        .doc(plantID)
         .collection('growth_logs')
         .orderBy('timestamp', descending: true) // Order by timestamp
         .snapshots()

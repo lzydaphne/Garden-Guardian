@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_app/repositories/growth_log_repo.dart';
+import 'package:flutter_app/views/add_note_page.dart';
 import 'package:flutter_app/views/growth_log/growth_log_detail_page.dart';
 
 class GrowthLogListPage extends StatelessWidget {
@@ -77,6 +79,14 @@ class GrowthLogListPage extends StatelessWidget {
         elevation: 5,
         onPressed: () {
           // Handle add growth log navigation
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddNotePage(
+                plantID: plantID,
+              ),
+            ),
+          );
         },
         child: Icon(Icons.add, color: Colors.white),
         backgroundColor: const Color.fromARGB(255, 93, 176, 117),

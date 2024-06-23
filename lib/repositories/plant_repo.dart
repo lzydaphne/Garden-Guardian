@@ -71,6 +71,22 @@ class PlantRepository {
     }
   }
 
+  Future<Plant?> getPlantByID(String plantID) async {
+    try {
+      QuerySnapshot snapshot =
+          await _db.collection('plants').where('id', isEqualTo: plantID).get();
+      if (snapshot.docs.isNotEmpty) {
+        return Plant.fromMap(
+            snapshot.docs.first.data() as Map<String, dynamic>);
+      } else {
+        return null; // No plant found with the given nickname
+      }
+    } catch (e) {
+      print('Error getting plant by plantID: $e');
+      return null; // Return null in case of an error
+    }
+  }
+
   Future<Plant?> getPlantByNickname(String nickName) async {
     try {
       QuerySnapshot snapshot = await _db
