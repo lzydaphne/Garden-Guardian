@@ -80,8 +80,19 @@ class AppUserRepository {
       if (!snapshot.exists) {
         throw Exception("User does not exist!");
       }
-      int newCntWatering = (snapshot.data() as Map<String, dynamic>)['cnt_watering'] + 1;
+      int newCntWatering =
+          (snapshot.data() as Map<String, dynamic>)['cnt_watering'] + 1;
       transaction.update(userRef, {'cnt_watering': newCntWatering});
     });
+  }
+
+  Future<appUser?> getUserById(String userId) async {
+    DocumentSnapshot docSnapshot =
+        await _db.collection('users').doc(userId).get();
+    if (!docSnapshot.exists) {
+      return null;
+    }
+    return appUser.fromMap(
+        docSnapshot.data() as Map<String, dynamic>, docSnapshot.id);
   }
 }

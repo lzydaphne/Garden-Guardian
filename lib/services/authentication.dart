@@ -11,12 +11,16 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AuthenticationService {
-  final AppUserRepository _appUuserRepository;
+  final AppUserRepository _appUserRepository;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  List<Map<String, String>> registeredID = [];
+
+  models.appUser? _currentUser;
+
+  // List<Map<String, String>> registeredID = [];
 
   AuthenticationService({AppUserRepository? userRepository})
-      : _appUuserRepository = userRepository ?? AppUserRepository();
+      : _appUserRepository = userRepository ?? AppUserRepository();
+  models.appUser? get currentUser => _currentUser;
 
   /// Returns the user ID.
   Future<String?> signUp({
@@ -41,7 +45,7 @@ class AuthenticationService {
           // logInMethods: [LogInMethod.emailAndPassword],
         );
         //* [ADD] add the successfully registered user id into the list of registered users
-        registeredID.add({'id': userId, 'email': email});
+        // registeredID.add({'id': userId, 'email': email});
       } catch (e) {
         debugPrint('Error creating user4: $e');
       }
@@ -50,7 +54,7 @@ class AuthenticationService {
       return userId;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        final existingUserDoc = await _appUuserRepository.getUserByEmail(email);
+        final existingUserDoc = await _appUserRepository.getUserByEmail(email);
         if (existingUserDoc == null) {
           throw Exception('Email already in use but no user doc found');
         }
@@ -144,7 +148,7 @@ class AuthenticationService {
     // }
 
     try {
-      await _appUuserRepository.createOrUpdateUser(models.appUser(
+      await _appUserRepository.createOrUpdateUser(models.appUser(
           id: userId,
           email: email,
           userName: name,
@@ -232,7 +236,9 @@ class AuthenticationService {
         email: email,
         password: password,
       );
-      _postLogIn(userCredential.user!);
+      await _postLogIn(userCredential.user!);
+      _currentUser =
+          await _appUserRepository.getUserById(userCredential.user!.uid);
 
       return userCredential.user!.uid;
     } on FirebaseAuthException catch (e) {
@@ -264,7 +270,7 @@ class AuthenticationService {
       // Check if the email is already associated with an email account
       final googleEmail = googleUser.email;
       final existingUserDoc =
-          await _appUuserRepository.getUserByEmail(googleEmail);
+          await _appUserRepository.getUserByEmail(googleEmail);
 
       if (!context.mounted) return null;
 

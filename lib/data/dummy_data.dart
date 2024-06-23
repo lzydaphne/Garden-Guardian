@@ -2,55 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/models/goal.dart';
 import 'package:flutter_app/models/goal_detail.dart';
 
-const dummyGoals = {
+Map<String, Goal> dummyGoals = {
   'g1': Goal(
-    id: 'g1',
-    title: 'Daily Sign In',
-    content: 'Sign in every day to get all the badges!',
-    icon: Icons.check_box,
-    total: 10,
-    goaldetails: dummyGoalDetails1
-  ),
+      id: 'g1',
+      title: 'Daily Sign In',
+      content: 'Sign in every day to get all the badges!',
+      icon: Icons.check_box,
+      total: 10,
+      goaldetails: dummyGoalDetails1),
   'g2': Goal(
-    id: 'g2',
-    title: 'Plant Amount',
-    content: 'Grow plants to get all the badges!',
-    icon: Icons.forest,
-    total: 10,
-    goaldetails: dummyGoalDetails2
-  ),
+      id: 'g2',
+      title: 'Plant Amount',
+      content: 'Grow plants to get all the badges!',
+      icon: Icons.forest,
+      total: 10,
+      goaldetails: dummyGoalDetails2),
   'g3': Goal(
-    id: 'g3',
-    title: 'Plant Category',
-    content: 'Grow different kinds of plants to get all the badges!',
-    icon: Icons.nature,
-    total: 10,
-    goaldetails: dummyGoalDetails3
-  ),
+      id: 'g3',
+      title: 'Plant Category',
+      content: 'Grow different kinds of plants to get all the badges!',
+      icon: Icons.nature,
+      total: 10,
+      goaldetails: dummyGoalDetails3),
   'g4': Goal(
-    id: 'g4',
-    title: 'Watering',
-    content: 'Water your plants to get all the badges!',
-    icon: Icons.water_drop,
-    total: 10,
-    goaldetails: dummyGoalDetails4
-  ),
+      id: 'g4',
+      title: 'Watering',
+      content: 'Water your plants to get all the badges!',
+      icon: Icons.water_drop,
+      total: 10,
+      goaldetails: dummyGoalDetails4),
   'g5': Goal(
-    id: 'g5',
-    title: 'Drink Water',
-    content: 'Drink water every day to get all the badges!',
-    icon: Icons.local_drink,
-    total: 10,
-    goaldetails: dummyGoalDetails5
-  ),
+      id: 'g5',
+      title: 'Drink Water',
+      content: 'Drink water every day to get all the badges!',
+      icon: Icons.local_drink,
+      total: 10,
+      goaldetails: dummyGoalDetails5),
   'g6': Goal(
-    id: 'g6',
-    title: 'All Achievements',
-    content: 'Complete all the achievements to get the badge!',
-    icon: Icons.stars_rounded,
-    total: 1,
-    goaldetails: dummyGoalDetails6
-  )
+      id: 'g6',
+      title: 'All Achievements',
+      content: 'Complete all the achievements to get the badge!',
+      icon: Icons.stars_rounded,
+      total: 1,
+      goaldetails: dummyGoalDetails6)
 };
 
 const dummyGoalDetails1 = {
