@@ -1,6 +1,6 @@
 class Todo {
-  final String id;
-  final String title;
+  String id;
+  String title;
   bool isCompleted;
 
   Todo({
@@ -9,19 +9,19 @@ class Todo {
     required this.isCompleted,
   });
 
+  factory Todo.fromMap(Map<String, dynamic> data) {
+    return Todo(
+      id: data['id'] ?? '',
+      title: data['title'] ?? '',
+      isCompleted: data['isCompleted'] ?? false,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'title': title,
       'isCompleted': isCompleted,
     };
-  }
-
-  factory Todo.fromMap(Map<String, dynamic> map) {
-    return Todo(
-      id: map['id'] as String,
-      title: map['title'] as String,
-      isCompleted: map['isCompleted'] as bool,
-    );
   }
 }

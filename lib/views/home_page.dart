@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/navigation.dart';
-//import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/models/todo.dart';
@@ -27,12 +26,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _updateTodoItem(Todo item) async {
-    await _todoRepository
-        .updateTodoItem(item.id, {'isCompleted': !item.isCompleted});
+    try {
+      await _todoRepository
+          .updateTodoItem(item.id, {'isCompleted': !item.isCompleted});
+      setState(() {
+        item.isCompleted = !item.isCompleted;
+      });
+    } catch (e) {
+      print('Error updating todo item: $e');
+    }
   }
 
   void _addTodoItem(String item) async {
-    Todo newItem = Todo(id: '', title: item, isCompleted: false);
+    Todo newItem = Todo(
+      id: '',
+      title: item,
+      isCompleted: false,
+    );
     await _todoRepository.addTodoItem(newItem);
     Navigator.of(context).pop();
   }
@@ -92,12 +102,13 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Text(
                           'GARDEN',
-                          style: TextStyle(fontFamily: 'JuliusSansOne',fontSize: 12),
-                          
+                          style: TextStyle(
+                              fontFamily: 'JuliusSansOne', fontSize: 12),
                         ),
                         Text(
                           'GUARDIAN',
-                          style: TextStyle(fontFamily: 'JuliusSansOne',fontSize: 15),
+                          style: TextStyle(
+                              fontFamily: 'JuliusSansOne', fontSize: 15),
                         ),
                       ],
                     ),
@@ -217,9 +228,10 @@ class _HomePageState extends State<HomePage> {
                                           Text(
                                             '28°C  ',
                                             style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.orange),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.orange,
+                                            ),
                                           ),
                                           Icon(
                                             Icons.wb_sunny,
@@ -325,10 +337,9 @@ class _HomePageState extends State<HomePage> {
                                             shape: CircleBorder(),
                                             value: todo.isCompleted,
                                             onChanged: (bool? value) {
-                                              setState(() {
-                                                todo.isCompleted = value!;
-                                              });
-                                              _updateTodoItem(todo);
+                                              if (value != null) {
+                                                _updateTodoItem(todo);
+                                              }
                                             },
                                           ),
                                           title: Text(
@@ -519,14 +530,13 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Row(
                   children: [
-                    //Icon(icon, size: 28, color: iconColor),
-                    //const SizedBox(width: 8),
                     Text(
                       text,
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: iconColor),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: iconColor,
+                      ),
                     ),
                   ],
                 ),
@@ -542,19 +552,9 @@ class _HomePageState extends State<HomePage> {
                 ],
                 if (linkText.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  /*Expanded(
-                  child: Text(
-                      linkText,
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: iconColor),
-                    ),
-                ),*/
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      //const SizedBox(width: 88),
                       Padding(
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
@@ -562,12 +562,6 @@ class _HomePageState extends State<HomePage> {
                           style: TextStyle(fontSize: 10, color: iconColor),
                         ),
                       ),
-                      /*Text(
-                      linkText,
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: iconColor),
-                    ),*/
                     ],
                   ),
                 ],
