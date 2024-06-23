@@ -5,7 +5,7 @@ import 'package:flutter_app/data/dummy_data.dart';
 import 'package:flutter_app/views/goal/goal_item.dart';
 import 'package:flutter_app/services/navigation.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_app/views/goal/goal_item.dart';
+//import 'package:flutter_app/views/goal/goal_item.dart';
 
 class GoalsPage extends StatefulWidget {
   const GoalsPage({super.key});

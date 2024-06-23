@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/models/appUser.dart';
 import 'package:flutter_app/models/plant.dart';
+import 'package:flutter_app/repositories/appUser_repo.dart';
 import 'package:flutter_app/views/plant_family/plant_card_dialog.dart';
 
 class PlantCard extends StatelessWidget {
   final Plant plant;
+  final AppUserRepository _appUserRepo = AppUserRepository();
 
-  const PlantCard({super.key, required this.plant});
+  PlantCard({super.key, required this.plant});
 
   void _showPlantDetailsDialog(BuildContext context) {
     showDialog(
@@ -88,9 +91,28 @@ class PlantCard extends StatelessWidget {
                           borderRadius: BorderRadius.all(Radius.circular(10))),
                       padding: const EdgeInsets.only(left: 7, right: 7),
                     ),
-                    onPressed: () {
-                      // 按鈕功能待實現
-                    },
+                    onPressed: () async {
+                      try {
+                        appUser? currentUser = await _appUserRepo.getCurrentAppUser("test");
+                        if (currentUser != null) {
+                          String userId = currentUser.id;
+                          await _appUserRepo.incrementCntWatering(userId);
+                          print('cnt_watering 已成功增加 1');
+                        } else {
+                          print('用戶未登錄');
+                        }
+                      } catch (e) {
+                        print('增加 cnt_watering 時發生錯誤: $e');
+                      }
+                    }, /*() async {
+                      try {
+                        String userId = _appUserRepo.id;
+                        await _appUserRepo.incrementCntWatering(userId);
+                        print('cnt_watering 已成功增加 1');
+                      } catch (e) {
+                        print('增加 cnt_watering 時發生錯誤: $e');
+                      }
+                    },*/
                   ),
                   // 施肥按鈕
                   ElevatedButton.icon(

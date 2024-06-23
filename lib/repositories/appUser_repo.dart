@@ -72,4 +72,16 @@ class AppUserRepository {
       return null;
     }
   }
+
+  Future<void> incrementCntWatering(String userId) async {
+    DocumentReference userRef = _db.collection('users').doc(userId);
+    await _db.runTransaction((transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(userRef);
+      if (!snapshot.exists) {
+        throw Exception("User does not exist!");
+      }
+      int newCntWatering = (snapshot.data() as Map<String, dynamic>)['cnt_watering'] + 1;
+      transaction.update(userRef, {'cnt_watering': newCntWatering});
+    });
+  }
 }
