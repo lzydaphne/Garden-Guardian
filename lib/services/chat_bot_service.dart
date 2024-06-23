@@ -15,6 +15,7 @@ import 'package:flutter_app/services/prompt.dart';
 // import 'package:flutter_app/view_models/all_messages_vm.dart';
 import 'package:flutter_app/repositories/plant_repo.dart';
 import 'package:flutter_app/repositories/appUser_repo.dart';
+import 'package:flutter_app/repositories/growth_log_repo.dart';
 
 class ImageHandler {
   Future<String?> convertImageToBase64(String? imagePath) async {
@@ -55,6 +56,7 @@ class ImageHandler {
 class ChatBot extends ChangeNotifier {
   final MessageRepository _messageRepository;
   final PlantRepository _plantRepository = PlantRepository();
+  final GrowthLogRepository _growthLogRepository = GrowthLogRepository();
   final ImageHandler imageHandler = ImageHandler();
   StreamSubscription<List<Message>>? _messagesSubscription;
   List<Message> windowMessages = [];
@@ -370,6 +372,46 @@ class ChatBot extends ChangeNotifier {
             });
           } catch (e) {
             debugPrint('Error in calculateNextCareDates: $e');
+          }
+
+          final CCrequestWithFunctionResponse = ChatCompleteText(
+            messages: iptMsg,
+            model: ChatModelFromValue(model: 'gpt-4o'),
+            maxToken: 200,
+          );
+
+          try {
+            String? message;
+            List<Message> msgList = windowMessages;
+            msgList.add(Message(text: message ?? '', role: "assistant"));
+            notifyListeners();
+
+            final finalResponse = await openAI.onChatCompletion(
+                request: CCrequestWithFunctionResponse);
+            finalContent = finalResponse?.choices[0].message?.content ?? '';
+          } catch (e) {
+            debugPrint('Error in finalResponse: $e');
+          }
+        } else if (toolFunctionName == 'add_growth_log') {
+          debugPrint('addGrowthLog called with arguments: $toolArguments');
+
+          try {
+            String plantNickname = toolArguments['nickname'];
+            String text = toolArguments['text'];
+
+            final results = await addGrowthLog(plantNickname, text,
+                base64Image ?? '', _plantRepository, _growthLogRepository);
+
+            debugPrint('results: $results');
+
+            iptMsg.add({
+              "role": "tool",
+              "tool_call_id": toolCall_id,
+              "name": toolFunctionName,
+              "content": results
+            });
+          } catch (e) {
+            debugPrint('Error in addGrowthLog: $e');
           }
 
           final CCrequestWithFunctionResponse = ChatCompleteText(

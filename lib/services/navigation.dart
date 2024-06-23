@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_app/views/cover_page.dart';
 import 'package:flutter_app/views/auth_page.dart';
 import 'package:flutter_app/views/nav_bar.dart';
+import 'package:flutter_app/views/goal/goal_details_page.dart';
 import 'package:flutter_app/views/goal/goals_page.dart';
 
 final routerConfig = GoRouter(
@@ -43,6 +44,12 @@ final routerConfig = GoRouter(
     GoRoute(
       path: '/goal',
       builder: (context, state) => const NavBar(selectedTab: HomeTab.goal),
+      routes: <RouteBase>[
+        GoRoute(
+          path: ':goalId',
+          builder: (context, state) => GoalDetailsPage(goalId: state.pathParameters['goalId']!),
+        )
+      ]
     ),
     GoRoute(
       path: '/wiki',
@@ -69,6 +76,10 @@ class NavigationService {
 
   void goHome({required HomeTab tab}) {
     _router.go('/${tab.name}');
+  }
+
+  void goGoalDetailsOnCategory({required String goalId}) {
+    _router.go('/goal/$goalId');
   }
 
   // void goInform() {

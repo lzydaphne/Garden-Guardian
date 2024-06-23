@@ -43,8 +43,12 @@ class _ChatInformDialogState extends State<ChatInformDialog> with SingleTickerPr
             width: MediaQuery.of(context).size.width * 0.8,
             height: MediaQuery.of(context).size.height * 0.8,
             decoration: BoxDecoration(
-              color: Colors.white,
               borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [Color.fromARGB(255, 195, 226, 196), Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
             child: Column(
               children: [
@@ -57,68 +61,67 @@ class _ChatInformDialogState extends State<ChatInformDialog> with SingleTickerPr
                     },
                   ),
                 ),
-                const Expanded(
+                Expanded(
                   child: Padding(
                     padding: EdgeInsets.all(16.0),
                     child: SingleChildScrollView(
                       child: MarkdownBody(
                         data: """
-## ChatBot Service Documentation
+# 🌸 Hi , I'm Blossom !  🌸
+##
+## 🌼 About Me 🌼
+Hello! I am **Blossom**, your AI assistant designed to help you nurture and grow your plants. With a deep-rooted interest in horticulture, I am here to make your gardening experience seamless and enjoyable. I am particularly enthusiastic about using technology to enhance plant care and ensuring that you have all the knowledge and tools you need to cultivate a thriving garden.
 
-### Overview
+## 🌿 What am I capable of? 🌿
+I have a range of features to assist you with your gardening needs:
 
-The ChatBot is designed to interact with users and provide responses based on user inputs. It leverages the OpenAI GPT-4 model to generate responses and can handle various functionalities, including image processing, storing nicknames, counting goals, and finding similar messages.
+#### 🌱 Answer Planting Questions 🌱
+Whether you're a seasoned gardener or just starting, I can provide answers to your planting questions. From selecting the right soil to understanding watering needs, I'm here to guide you through every step of the planting process.
 
-### Features
+#### 📄 Forming Planting Documents 📄
+I can help you create detailed planting documents, including care instructions, growth timelines, and maintenance schedules for various plants. These documents will ensure you have a comprehensive guide to refer to, helping your plants thrive.
 
-1. **Text and Image Processing**:
-   - The ChatBot can process both text and images. If an image URL is provided, it converts the image to a base64 string and includes it in the message content.
-   
-2. **Tool Calls**:
-   - The ChatBot can call specific tools/functions based on the user's input and the context of the conversation. These tools can perform various tasks such as adding new plants, storing nicknames, and counting goals.
+#### ⏰ Schedule Routines for Planting ⏰
+Managing your garden can be a breeze with my scheduling capabilities. I can assist you in setting up routines for planting, watering, fertilizing, and more. With tailored reminders and schedules, you can ensure that your plants receive consistent care.
 
-3. **Keyword Extraction**:
-   - The ChatBot can extract keywords from user messages and use them to enhance the understanding and processing of the conversation.
+#### 🧠 Long-Term Memory 🧠
+I have the ability to remember all past messages by searching my database. This long-term memory feature ensures that I can recall previous conversations and provide continuity in our interactions, making your experience more personalized and efficient.
 
-4. **Response Generation**:
-   - The ChatBot generates responses using the OpenAI GPT-4 model, ensuring high-quality and contextually relevant replies.
+Let's grow something beautiful together!
 
-5. **Memory and Database Integration**:
-   - The ChatBot maintains a history of messages and can retrieve similar past conversations to provide more relevant responses. It also updates the message database with new interactions and responses.
-
-### Services and Functionalities
-
-#### 1. **Image Processing**
-
-- **Convert Image to Base64**: 
-  - The `convertImageToBase64` method converts an image from a given URL to a base64 string for easy embedding in messages.
-
-- **Read Image as Bytes**: 
-  - The `readImageAsBytes` method reads the image data from the provided URL and returns it as bytes.
-
-#### 2. **Tool Functions**
-
-- **Add New Plant**:
-  - The `addNewPlant` function adds a new plant with specified species, image, and care cycles (watering, fertilization, pruning).
-
-- **Store Nickname**:
-  - The `storeNickname` function stores a user's nickname in the database.
-
-- **Counting Goal**:
-  - The `counting_goal` function calculates goals related to plant care based on the user's input and care cycles.
-
-- **Find Similar Messages**:
-  - The `findSimilarMessage` function retrieves past messages similar to the current user query from the message database.
-
-### Example Usage
-
-#### Adding a New Plant
-
-When a user provides an image URL and details about a new plant species, the ChatBot can process the image, store it, and add the plant to the user's plant list. This involves converting the image to base64, calling the `addNewPlant` function, and updating the message database with the response.
-                        ],"""
-                      )
+Blossom 🌸
+                        """,
+                        styleSheet: MarkdownStyleSheet(
+                          p: const TextStyle(
+                            color: Colors.black,
+                          ),
+                          h1: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          h2: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          h3: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          h4: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          h5: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          h6: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-
                   ),
                 ),
               ],

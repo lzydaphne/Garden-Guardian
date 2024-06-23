@@ -20,6 +20,8 @@ import 'package:flutter_app/repositories/appUser_repo.dart';
 import 'package:flutter_app/models/appUser.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_app/models/growth_log.dart';
+import 'package:flutter_app/repositories/growth_log_repo.dart';
 
 // Function to process the image and identify the plant species
 // Future<String> identifyPlantSpecies(String imagePath) async {
@@ -224,6 +226,54 @@ String calculateNextCareDatesTool(String lastActionDate, int wateringCycle,
   return formattedString;
 }
  */
+Future<String> addGrowthLog(
+    String plantNickname,
+    String text,
+    String base64Image,
+    PlantRepository _plantRepository,
+    GrowthLogRepository _growthLogRepository) async {
+  try {
+    // Find the plant by nickname
+    final plant = await _plantRepository.getPlantByNickname(plantNickname);
+    if (plant == null) {
+      return 'Plant not found';
+    }
+
+    // Use plant's imageUrl as the default image if base64Image is empty
+    final imageUrl = base64Image.isNotEmpty ? base64Image : plant.imageUrl;
+
+    // Create a new growth log entry
+    final growthLog = GrowthLog(
+      name: plantNickname,
+      imageUrl: imageUrl,
+      description: text,
+      timestamp: Timestamp.now(),
+    );
+
+    // Add the growth log entry to the repository
+    try {
+      // Retrieve the plantID using the plantNickname
+      final plantID =
+          await _plantRepository.getPlantIDByNickname(plantNickname);
+      if (plantID == null) {
+        throw Exception('Plant ID not found for nickname: $plantNickname');
+      }
+      debugPrint('plantID: $plantID');
+
+      // Add the growth log to the repository
+      await _growthLogRepository.addGrowthLog(
+          plantID, plantNickname, growthLog);
+      debugPrint('Growth log added successfully');
+    } catch (e) {
+      debugPrint('Failed to add growth log: $e');
+    }
+
+    return 'Growth log added successfully';
+  } catch (e) {
+    debugPrint('Error in addGrowthLog: $e');
+    return 'Error adding growth log';
+  }
+}
 
 Future<String> findSimilarMessage(String query, int queryNum) async {
   debugPrint('Finding and appending similar message for query: $query');

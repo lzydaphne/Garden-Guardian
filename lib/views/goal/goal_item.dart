@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/goal.dart';
 
-class GoalGridItem extends StatelessWidget {
-  const GoalGridItem({
+class GoalItem extends StatelessWidget {
+  const GoalItem({
     super.key,
     required this.goal,
     required this.onSelectGoal,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/models/goal_detail.dart';
 
 class Goal {
   const Goal({
@@ -7,6 +8,7 @@ class Goal {
     required this.content,
     required this.icon,
     required this.total,
+    required this.goaldetails,
     this.progress = 0,
     this.completed = 0,
     this.done = false,
@@ -17,6 +19,7 @@ class Goal {
   final String content;
   final IconData icon;
   final int total;
+  final Map<String, GoalDetail> goaldetails;
   final int progress;
   final int completed;
   final bool done;
@@ -38,8 +41,9 @@ class Goal {
       icon: icon ?? this.icon,
       total: total ?? this.total,
       progress: progress ?? this.progress,
+      goaldetails: goaldetails ?? this.goaldetails,
       completed: completed ?? this.completed,
-      done: done ?? this.done,
+      done: done ?? this.done, goaldetails: {},
     );
   }
 }
