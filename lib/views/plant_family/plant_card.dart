@@ -91,84 +91,91 @@ class PlantCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // 澆水按鈕
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.water_drop,
-                        size: 16, color: Color.fromARGB(255, 39, 159, 255)),
-                    label: const Text(
-                      "澆水",
-                      style: TextStyle(
+                  Tooltip(
+                    message: '澆水+1',
+                    child: ElevatedButton.icon(
+                      icon: const Icon(
+                        Icons.water_drop,
+                        size: 16,
+                        color: Color.fromARGB(255, 39, 159, 255),
+                      ),
+                      label: const Text(
+                        "澆水",
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color.fromARGB(255, 39, 159, 255)),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 196, 228, 244),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      padding: const EdgeInsets.only(left: 7, right: 7),
-                    ),
-                    onPressed: () async {
-                      try {
-                        appUser? currentUser =
-                            await _appUserRepo.getCurrentAppUser("test");
-                        if (currentUser != null) {
-                          String userId = currentUser.id;
-                          await _appUserRepo.incrementCntWatering(userId);
-                          print('cnt_watering 已成功增加 1');
-                        } else {
-                          print('用戶未登錄');
+                          color: Color.fromARGB(255, 39, 159, 255),
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 196, 228, 244),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        padding: const EdgeInsets.only(left: 7, right: 7),
+                      ),
+                      onPressed: () async {
+                        try {
+                          appUser? currentUser =
+                              await _appUserRepo.getCurrentAppUser("test");
+                          if (currentUser != null) {
+                            String userId = currentUser.id;
+                            await _appUserRepo.incrementCntWatering(userId);
+                            print('cnt_watering 已成功增加 1');
+                          } else {
+                            print('用戶未登錄');
+                          }
+                        } catch (e) {
+                          print('增加 cnt_watering 時發生錯誤: $e');
                         }
-                      } catch (e) {
-                        print('增加 cnt_watering 時發生錯誤: $e');
-                      }
-                    }, /*() async {
-                      try {
-                        String userId = _appUserRepo.id;
-                        await _appUserRepo.incrementCntWatering(userId);
-                        print('cnt_watering 已成功增加 1');
-                      } catch (e) {
-                        print('增加 cnt_watering 時發生錯誤: $e');
-                      }
-                    },*/
+                      },
+                    ),
                   ),
                   // 施肥按鈕
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.local_florist,
-                        size: 16, color: Color.fromARGB(255, 97, 178, 121)),
-                    label: const Text(
-                      "施肥",
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: Color.fromARGB(255, 97, 178, 121)),
+                  Tooltip(
+                    message: "施肥+1",
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.local_florist,
+                          size: 16, color: Color.fromARGB(255, 97, 178, 121)),
+                      label: const Text(
+                        "施肥",
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color.fromARGB(255, 97, 178, 121)),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 196, 229, 202),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10))),
+                        padding: const EdgeInsets.only(left: 7, right: 7),
+                      ),
+                      onPressed: () {
+                        // 按鈕功能待實現
+                      },
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 196, 229, 202),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      padding: const EdgeInsets.only(left: 7, right: 7),
-                    ),
-                    onPressed: () {
-                      // 按鈕功能待實現
-                    },
                   ),
                   // 修剪按鈕
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.content_cut,
-                        size: 16, color: Color.fromARGB(255, 245, 121, 58)),
-                    label: const Text(
-                      "修剪",
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: Color.fromARGB(255, 245, 121, 58)),
+                  Tooltip(
+                    message: "修剪+1",
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.content_cut,
+                          size: 16, color: Color.fromARGB(255, 245, 121, 58)),
+                      label: const Text(
+                        "修剪",
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color.fromARGB(255, 245, 121, 58)),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 255, 223, 173),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10))),
+                        padding: const EdgeInsets.only(left: 7, right: 7),
+                      ),
+                      onPressed: () {
+                        // 按鈕功能待實現
+                      },
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 255, 223, 173),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      padding: const EdgeInsets.only(left: 7, right: 7),
-                    ),
-                    onPressed: () {
-                      // 按鈕功能待實現
-                    },
                   ),
                 ],
               ),
