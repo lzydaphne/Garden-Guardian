@@ -261,8 +261,7 @@ Future<String> addGrowthLog(
       debugPrint('plantID: $plantID');
 
       // Add the growth log to the repository
-      await _growthLogRepository.addGrowthLog(
-          plantID, plantNickname, growthLog);
+      await _growthLogRepository.addGrowthLog(plantID, growthLog);
       debugPrint('Growth log added successfully');
     } catch (e) {
       debugPrint('Failed to add growth log: $e');
