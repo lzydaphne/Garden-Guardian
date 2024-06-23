@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/appUser.dart';
 import 'package:flutter_app/models/plant.dart';
+import 'package:flutter_app/models/wiki.dart';
+import 'package:flutter_app/repositories/wiki_repo.dart';
 import 'package:flutter_app/repositories/appUser_repo.dart';
 import 'package:flutter_app/views/plant_family/plant_card_dialog.dart';
+import 'package:flutter_app/views/wiki/wiki_detail_page.dart';
 
 class PlantCard extends StatelessWidget {
   final Plant plant;
   final AppUserRepository _appUserRepo = AppUserRepository();
+  final WikiRepository wikiRepository = WikiRepository();
 
   PlantCard({super.key, required this.plant});
 
@@ -63,8 +67,19 @@ class PlantCard extends StatelessWidget {
                   // 小按鈕
                   IconButton(
                     icon: const Icon(Icons.info_outline),
-                    onPressed: () {
-                      // 按鈕功能待實現
+                    onPressed: () async {
+                      Wiki? wiki =
+                          await wikiRepository.getWikiByName(plant.species);
+                      if (wiki != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WikiDetailPage(wiki: wiki),
+                          ),
+                        );
+                      } else {
+                        // 顯示錯誤信息或提示
+                      }
                     },
                   ),
                 ],
@@ -93,7 +108,8 @@ class PlantCard extends StatelessWidget {
                     ),
                     onPressed: () async {
                       try {
-                        appUser? currentUser = await _appUserRepo.getCurrentAppUser("test");
+                        appUser? currentUser =
+                            await _appUserRepo.getCurrentAppUser("test");
                         if (currentUser != null) {
                           String userId = currentUser.id;
                           await _appUserRepo.incrementCntWatering(userId);
