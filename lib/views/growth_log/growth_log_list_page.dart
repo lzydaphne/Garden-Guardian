@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_app/views/growth_log/growth_log_detail_page.dart';
 
 class GrowthLogListPage extends StatelessWidget {
   final String plantID;
@@ -58,6 +59,13 @@ class GrowthLogListPage extends StatelessWidget {
                 ),
                 onTap: () {
                   // Handle growth log detail page navigation
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          GrowthLogDetailPage(growthLog: growthLog),
+                    ),
+                  );
                 },
               );
             },
