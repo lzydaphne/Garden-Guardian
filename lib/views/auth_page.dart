@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_app/services/navigation.dart';
 import 'package:flutter_app/views/nav_bar.dart';
 import 'package:flutter_app/services/authentication.dart';
-// import 'package:flutter_app/views/user_image_picker.dart';
+import 'package:flutter_app/views/user/user_image_picker.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -42,6 +42,19 @@ class _AuthPageState extends State<AuthPage> {
                                 child: Form(
                                     key: _form,
                                     child: Column(children: [
+                                      if (!_isLogin)
+                                        UserImagePicker(
+                                          context: context,
+                                          validator: (pickedImage) {
+                                            if (pickedImage == null) {
+                                              return 'Please pick your avatar image.';
+                                            }
+                                            return null;
+                                          },
+                                          onSave: (pickedImage) {
+                                            _selectedImage = pickedImage;
+                                          },
+                                        ),
                                       if (!_isLogin)
                                         TextFormField(
                                             key: const ValueKey('name'),
@@ -139,39 +152,24 @@ class _AuthPageState extends State<AuthPage> {
 
     final authenticationService =
         Provider.of<AuthenticationService>(context, listen: false);
-
     try {
       setState(() {
         _isAuthenticating = true;
       });
 
       if (_isLogin) {
-        try {
-          await authenticationService.logIn(
-            email: _enteredEmail,
-            password: _enteredPassword,
-          );
-        } catch (error) {
-          debugPrint('Authentication failed with error1: $error');
-        }
-
-        Provider.of<NavigationService>(context, listen: false)
-            .goHome(tab: HomeTab.home);
+        await authenticationService.logIn(
+          email: _enteredEmail,
+          password: _enteredPassword,
+        );
       } else {
-        try {
-          await authenticationService.signUp(
-            context: context,
-            email: _enteredEmail,
-            password: _enteredPassword,
-            name: _enteredUsername,
-            // avatarFile: _selectedImage!,
-          );
-        } catch (error) {
-          debugPrint('Authentication failed with error2: $error');
-        }
-        //* jump to home page
-        Provider.of<NavigationService>(context, listen: false)
-            .goHome(tab: HomeTab.home);
+        await authenticationService.signUp(
+          context: context,
+          email: _enteredEmail,
+          password: _enteredPassword,
+          name: _enteredUsername,
+          avatarFile: _selectedImage!,
+        );
       }
 
       if (mounted) {
@@ -180,7 +178,7 @@ class _AuthPageState extends State<AuthPage> {
         });
       }
     } catch (error) {
-      debugPrint('Authentication failed with error3: $error');
+      debugPrint('Authentication failed with error: $error');
       if (mounted) {
         setState(() {
           _isAuthenticating = false;

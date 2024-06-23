@@ -33,6 +33,7 @@ class Goal {
     int? progress,
     int? completed,
     bool? done,
+    Map<String, GoalDetail>? goaldetails
   }) {
     return Goal(
       id: id ?? this.id,
@@ -43,6 +44,7 @@ class Goal {
       progress: progress ?? this.progress,
       completed: completed ?? this.completed,
       done: done ?? this.done,
+      goaldetails: goaldetails ?? this.goaldetails
     );
   }
 }

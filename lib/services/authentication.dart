@@ -11,46 +11,37 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AuthenticationService {
-  final AppUserRepository _appUuserRepository;
+  final AppUserRepository _appUserRepository;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  List<Map<String, String>> registeredID = [];
 
-  AuthenticationService({AppUserRepository? userRepository})
-      : _appUuserRepository = userRepository ?? AppUserRepository();
+  AuthenticationService({AppUserRepository? appUserRepository})
+      : _appUserRepository = appUserRepository ?? AppUserRepository();
 
   /// Returns the user ID.
-  Future<String?> signUp({
-    required BuildContext context,
-    required String email,
-    required String password,
-    required String name,
-    // required XFile avatarFile
-  }) async {
+  Future<String?> signUp(
+      {required BuildContext context,
+      required String email,
+      required String password,
+      required String name,
+      required XFile avatarFile}) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
 
       String userId = userCredential.user!.uid;
-
-      try {
-        await _postSingUp(
-          userId: userId,
-          email: email,
-          name: name,
-          // avatarFile: avatarFile,
-          // logInMethods: [LogInMethod.emailAndPassword],
-        );
-        //* [ADD] add the successfully registered user id into the list of registered users
-        registeredID.add({'id': userId, 'email': email});
-      } catch (e) {
-        debugPrint('Error creating user4: $e');
-      }
+      _postSignUp(
+        userId: userId,
+        email: email,
+        name: name,
+        avatarFile: avatarFile,
+        // logInMethods: [LogInMethod.emailAndPassword],
+      );
       debugPrint('New email account created');
 
       return userId;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        final existingUserDoc = await _appUuserRepository.getUserByEmail(email);
+        final existingUserDoc = await _appUserRepository.getUserByEmail(email);
         if (existingUserDoc == null) {
           throw Exception('Email already in use but no user doc found');
         }
@@ -97,11 +88,11 @@ class AuthenticationService {
             debugPrint(
                 'Email account linked to existing Google account: $email');
 
-            _postSingUp(
+            _postSignUp(
               userId: user.uid,
               email: email,
               name: name,
-              // avatarFile: avatarFile,
+              avatarFile: avatarFile,
               // logInMethods: [
               //   LogInMethod.google,
               //   LogInMethod.emailAndPassword,
@@ -123,41 +114,40 @@ class AuthenticationService {
   }
 
   /// Param `avatarUrl` and `avatarFile` cannot be both `null`.
-  Future<void> _postSingUp({
+  Future<void> _postSignUp({
     required String userId,
     required String email,
     required name,
-    // String? avatarUrl,
-    // XFile? avatarFile,
-    // List<LogInMethod>? logInMethods,
+    String? avatarUrl,
+    XFile? avatarFile,
+    // required List<LogInMethod> logInMethods,
   }) async {
-    // if (avatarFile != null) {
-    //   final storageRef = FirebaseStorage.instance
-    //       .ref()
-    //       .child('apps/group_chat/use_avatars/$userId.jpg');
-    //   if (kIsWeb) {
-    //     await storageRef.putData(await avatarFile.readAsBytes());
-    //   } else {
-    //     await storageRef.putFile(File(avatarFile.path));
-    //   }
-    //   avatarUrl = await storageRef.getDownloadURL();
-    // }
-
-    try {
-      await _appUuserRepository.createOrUpdateUser(models.appUser(
-          id: userId,
-          email: email,
-          userName: name,
-          // avatarUrl: avatarUrl!,
-          // logInMethods: logInMethods,
-          cnt_signin: 0,
-          cnt_plantNum: 0,
-          cnt_watering: 0,
-          cnt_plantType: 0,
-          cnt_drink: 0));
-    } catch (e) {
-      debugPrint('Error creating user: $e');
+    if (avatarFile != null) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('apps')
+          .child('user_avatars')
+          .child('$userId.jpg');
+      if (kIsWeb) {
+        await storageRef.putData(await avatarFile.readAsBytes());
+      } else {
+        await storageRef.putFile(File(avatarFile.path));
+      }
+      avatarUrl = await storageRef.getDownloadURL();
     }
+
+    await _appUserRepository.createOrUpdateUser(models.appUser(
+      id: userId,
+      email: email,
+      userName: name,
+      avatarUrl: avatarUrl!,
+      // logInMethods: logInMethods,
+      cnt_drink: 0,
+      cnt_plantNum: 0,
+      cnt_plantType: 0,
+      cnt_signin: 0,
+      cnt_watering: 0
+    ));
   }
 
   Future<void> _promptLogInInstead(BuildContext context) async {
@@ -263,8 +253,7 @@ class AuthenticationService {
 
       // Check if the email is already associated with an email account
       final googleEmail = googleUser.email;
-      final existingUserDoc =
-          await _appUuserRepository.getUserByEmail(googleEmail);
+      final existingUserDoc = await _appUserRepository.getUserByEmail(googleEmail);
 
       if (!context.mounted) return null;
 
@@ -274,11 +263,11 @@ class AuthenticationService {
         user =
             (await _firebaseAuth.signInWithCredential(googleCredential)).user!;
 
-        _postSingUp(
+        _postSignUp(
           userId: user.uid,
           email: googleEmail,
           name: googleUser.displayName ?? googleEmail.split('@').first,
-          // avatarUrl: googleUser.photoUrl ?? 'https://via.placeholder.com/150',
+          avatarUrl: googleUser.photoUrl ?? 'https://via.placeholder.com/150',
           // logInMethods: [LogInMethod.google],
         );
         debugPrint('New Google account created');
@@ -301,11 +290,11 @@ class AuthenticationService {
           debugPrint(
               'Google account linked to existing email account: $googleEmail');
 
-          _postSingUp(
+          _postSignUp(
             userId: user.uid,
             email: googleEmail,
             name: existingUserDoc.userName, // No overwrite
-            // avatarUrl: existingUserDoc.avatarUrl, // No overwrite
+            avatarUrl: existingUserDoc.avatarUrl, // No overwrite
             // logInMethods: [LogInMethod.emailAndPassword, LogInMethod.google],
           );
         } else {

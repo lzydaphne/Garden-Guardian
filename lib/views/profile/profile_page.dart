@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_app/services/authentication.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_app/view_models/me_vm.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -87,6 +88,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final meViewModel = Provider.of<MeViewModel>(context);
+
+    if(meViewModel.isInitializing) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    final me = meViewModel.me;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile', style: TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.w500)),
@@ -123,11 +134,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         decoration: BoxDecoration(color: Colors.white),),
                     ],
                   ),
-                  const Positioned(
+                  Positioned(
                     top: 20,
                     child: CircleAvatar(
                       radius: 70,
-                      backgroundImage: AssetImage('images/user.png'),
+                      backgroundImage: me?.avatarUrl != null && me!.avatarUrl!.isNotEmpty
+                                    ? NetworkImage(me.avatarUrl!)
+                                    : const AssetImage('assets/placeholder.png') as ImageProvider,
                       backgroundColor: Colors.transparent,
                     ),
                   ),
@@ -137,8 +150,8 @@ class _ProfilePageState extends State<ProfilePage> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(color: Colors.white),
-                child:const Column(children: [
-                  Text('Victoria Robertson', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+                child: Column(children: [
+                  Text('${me?.userName}', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
                   Text('LVL. 5', style: TextStyle(fontSize: 16, color: Colors.grey)),
                 ],)
               ),

@@ -24,9 +24,29 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MyApp());
-  
-  FlutterNativeSplash.remove();
+  runApp(StreamBuilder<bool>(
+    // Listen to the auth state changes
+    stream: AuthenticationService().authStateChanges(),
+    builder: (context, snapshot) {
+      if(snapshot.connectionState != ConnectionState.active) {
+        // Keep splash screen until auth state is ready
+        return const SizedBox.shrink();
+      }
+
+      // Error might occur due to incorrect credentials, token refresh failures, revoked sessions, network failures, misconfigured Firebase settings, etc.
+      if (snapshot.hasError) {
+        debugPrint('Auth Error: ${snapshot.error}');
+      }
+
+      // Remove splash screen once auth state is initialized
+      FlutterNativeSplash.remove();
+
+      debugPrint('Auth state changed to ${snapshot.data}');
+
+      // Rebuild app to update the route based on the auth state. Do NOT use `const` here.
+      return MyApp(key: ValueKey(snapshot.data));
+    },
+  ));
 }
 
 class MyApp extends StatelessWidget {

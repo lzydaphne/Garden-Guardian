@@ -4,6 +4,8 @@ import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/models/todo.dart';
 import 'package:flutter_app/repositories/todo_repo.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_app/view_models/me_vm.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -68,6 +70,15 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final meViewModel = Provider.of<MeViewModel>(context);
+    final me = meViewModel.me;
+
+    if(meViewModel.isInitializing) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,
@@ -108,8 +119,8 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'Good morning, Victoria.',
+                Text(
+                  'Good morning, ${me?.userName!}.',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -156,8 +167,8 @@ class _HomePageState extends State<HomePage> {
                       child: Row(
                         children: [
                           const SizedBox(width: 80),
-                          const Text(
-                            'Victoria',
+                          Text(
+                            '${me?.userName!}',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -365,11 +376,13 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              const Positioned(
+              Positioned(
                 top: 15,
                 left: 15,
                 child: CircleAvatar(
-                  backgroundImage: AssetImage('images/user.png'),
+                  backgroundImage: me?.avatarUrl != null && me!.avatarUrl!.isNotEmpty
+                                    ? NetworkImage(me.avatarUrl!)
+                                    : const AssetImage('assets/placeholder.png') as ImageProvider,
                   radius: 30,
                 ),
               ),
@@ -395,7 +408,7 @@ class _HomePageState extends State<HomePage> {
                             '點擊查看紀錄',
                             0,
                             () {
-                              context.go('/goal');
+                              Provider.of<NavigationService>(context, listen: false).goDrinkWater();
                             },
                           ),
                         ),
