@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_app/models/todo.dart';
 import 'package:flutter_app/repositories/todo_repo.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:flutter_app/repositories/message_repo.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,26 +14,43 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TodoRepository _todoRepository = TodoRepository();
+  MessageRepository repo = MessageRepository();
   final List<Todo> _todoList = [];
+
+  // hard code for heat map
   Map<DateTime, int> heatMapDatasets = {
     DateTime(2024, 5, 6): 8,
     DateTime(2024, 5, 7): 7,
     DateTime(2024, 6, 8): 10,
-    DateTime(2024, 6, 22): 13,
+    DateTime(2024, 6, 22): 12,
     DateTime(2024, 6, 12): 10,
     DateTime(2024, 5, 20): 10,
-    DateTime(2024, 5, 30): 6,
+    // DateTime(2024, 5, 30): 6,
   };
 
   @override
   void initState() {
     super.initState();
+    updateHeatMapWithTodayActivity();
     _todoRepository.streamAllTodos().listen((todos) {
       setState(() {
         _todoList.clear();
         _todoList.addAll(todos);
       });
     });
+  }
+
+  void updateHeatMapWithTodayActivity() async {
+    int todayMessageCount = await repo.countTodayMessages();
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    setState(() {
+      heatMapDatasets[today] = todayMessageCount; // Update the map
+    });
+
+    print("todayMessageCount: ${todayMessageCount}");
+    print("today: ${today}");
+    print("${heatMapDatasets}");
   }
 
   void _updateTodoItem(Todo item) async {

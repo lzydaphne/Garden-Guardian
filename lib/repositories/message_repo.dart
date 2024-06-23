@@ -69,7 +69,7 @@ class MessageRepository {
       //   'stringtoEmbed': message.text + (message.imageDescription ?? '') + message.timeStamp.toString(),
       //  // 'servertimeStamp' : FieldValue.serverTimestamp()
       // });
-      
+
       DocumentReference docRef = await FirebaseFirestore.instance
           .collection('messages')
           .add(await message.toMap());
@@ -78,5 +78,20 @@ class MessageRepository {
     } catch (e) {
       debugPrint('Error storing message in database: $e');
     }
+  }
+
+  //* used in heatmap
+  Future<int> countTodayMessages() async {
+    DateTime now = DateTime.now();
+    DateTime startOfDay = DateTime(now.year, now.month, now.day);
+    DateTime endOfDay = startOfDay.add(Duration(days: 1));
+
+    QuerySnapshot snapshot = await _db
+        .collection('messages')
+        .where('timeStamp', isGreaterThanOrEqualTo: startOfDay)
+        .where('timeStamp', isLessThan: endOfDay)
+        .get();
+
+    return snapshot.docs.length;
   }
 }
