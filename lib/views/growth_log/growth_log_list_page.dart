@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/repositories/growth_log_repo.dart';
 import 'package:flutter_app/views/add_note_page.dart';
 import 'package:flutter_app/views/growth_log/growth_log_detail_page.dart';
+import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 //import 'package:flutter_app/views/navigation_bar.dart';
 
 class GrowthLogListPage extends StatelessWidget {
@@ -23,7 +24,7 @@ class GrowthLogListPage extends StatelessWidget {
       body: Stack(children: [
         Column(
           children: [
-            const Padding(
+            /*const Padding(
               padding: EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
               child: TextField(
                 decoration: InputDecoration(
@@ -34,7 +35,7 @@ class GrowthLogListPage extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
+            ),*/
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.only(left: 4, right: 4),

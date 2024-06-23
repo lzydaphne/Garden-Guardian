@@ -41,10 +41,13 @@ class _AddNotePageState extends State<AddNotePage> {
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         centerTitle: true,
-        title: const Text('Note', 
+        title: const Text(
+          'Note',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w900,
@@ -57,11 +60,17 @@ class _AddNotePageState extends State<AddNotePage> {
               padding: EdgeInsets.only(right: 16.0, top: 8.0),
               child: Column(
                 children: [
-                    Icon(Icons.attach_file, color: const Color.fromARGB(255, 93, 176, 117),),
-                    Text('附件', style: TextStyle(color: const Color.fromARGB(255, 93, 176, 117))),
+                  Icon(
+                    Icons.attach_file,
+                    color: Color.fromARGB(255, 93, 176, 117),
+                  ),
+                  Text(
+                    '附件',
+                    style: TextStyle(color: Color.fromARGB(255, 93, 176, 117)),
+                  ),
                 ],
               ),
-            )
+            ),
           ),
         ],
       ),
@@ -81,7 +90,10 @@ class _AddNotePageState extends State<AddNotePage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {},
-                child: Text('儲存', style: TextStyle(color: Colors.white),),
+                child: Text(
+                  '儲存',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 93, 176, 117),
                   padding: EdgeInsets.symmetric(vertical: 16.0),

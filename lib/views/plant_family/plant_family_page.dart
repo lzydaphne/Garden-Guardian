@@ -117,6 +117,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
                 },
               ),
               _buildPageIndicator(),
+              SizedBox(height: 25)
             ],
           ),
         ),
