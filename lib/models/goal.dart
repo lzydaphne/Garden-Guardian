@@ -45,7 +45,6 @@ class Goal {
       goaldetails: goaldetails ?? this.goaldetails,
       completed: completed ?? this.completed,
       done: done ?? this.done,
-      goaldetails: goaldetails ?? this.goaldetails
     );
   }
 }

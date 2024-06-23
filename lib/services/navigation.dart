@@ -1,4 +1,4 @@
-
+import 'package:flutter_app/view_models/all_drink_waters_vm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/view_models/me_vm.dart';
 import 'package:flutter_app/views/drink_water_page.dart';
@@ -38,6 +38,9 @@ final routerConfig = GoRouter(
           providers: [
             ChangeNotifierProvider<MeViewModel>(
               create: (_) => MeViewModel(myId),
+            ),
+            ChangeNotifierProvider<AllDrinkWatersViewModel>(
+              create: (_) => AllDrinkWatersViewModel(),
             ),
           ],
           child: child
@@ -136,6 +139,10 @@ class NavigationService {
 
   void goDrinkWater() {
     _router.go('/home/drinkwater');
+  }
+
+  void pop(BuildContext context) {
+    _router.pop(context);
   }
 
   // void goInform() {
