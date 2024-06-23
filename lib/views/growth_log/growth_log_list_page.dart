@@ -61,6 +61,13 @@ class GrowthLogListPage extends StatelessWidget {
                 ),
                 onTap: () {
                   // Handle growth log detail page navigation
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          GrowthLogDetailPage(growthLog: growthLog),
+                    ),
+                  );
                 },
               );
             },
