@@ -5,6 +5,8 @@ import 'package:flutter_app/data/dummy_data.dart';
 import 'package:flutter_app/views/goal/goal_item.dart';
 import 'package:flutter_app/services/navigation.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_app/services/authentication.dart';
+
 //import 'package:flutter_app/views/goal/goal_item.dart';
 
 class GoalsPage extends StatefulWidget {
@@ -23,6 +25,7 @@ class _GoalsPageState extends State<GoalsPage> {
     _fetchUserGoals();
   }
 
+//* dynamically fetch user data
   // Future<void> _fetchUserGoals() async {
   //   final authService =
   //       Provider.of<AuthenticationService>(context, listen: false);
@@ -38,11 +41,11 @@ class _GoalsPageState extends State<GoalsPage> {
   //     if (userDoc.exists) {
   //       final data = userDoc.data()!;
   //       setState(() {
-//  goals['g1']!.copyWith(progress: data['cnt_signin']);
-//         goals['g2']!.copyWith(progress: data['cnt_plantNum']);
-//         goals['g3']!.copyWith(progress: data['cnt_plantType']);
-//         goals['g4']!.copyWith(progress: data['cnt_watering']);
-//         goals['g5']!.copyWith(progress: data['cnt_drink']);
+  //         goals['g1']?.progress = data['cnt_signin'] ?? 0;
+  //         goals['g2']?.progress = data['cnt_plantNum'] ?? 0;
+  //         goals['g3']?.progress = data['cnt_plantType'] ?? 0;
+  //         goals['g4']?.progress = data['cnt_watering'] ?? 0;
+  //         goals['g5']?.progress = data['cnt_drink'] ?? 0;
   //       });
   //     }
   //   } else {

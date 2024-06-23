@@ -228,20 +228,29 @@ class AuthenticationService {
   // }
 
   /// Returns the user ID.
-  Future<String> logIn(
-      {required String email, required String password}) async {
+  Future<String> logIn({
+    required String email,
+    required String password,
+  }) async {
+    print('logIn called with email: $email'); // Debug message
     try {
       UserCredential userCredential =
           await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      print('Successfully signed in with email: $email'); // Debug message
       await _postLogIn(userCredential.user!);
+      print(
+          'Post logIn successful for user: ${userCredential.user!.uid}'); // Debug message
       _currentUser =
           await _appUserRepository.getUserById(userCredential.user!.uid);
+      print('User fetched: ${_currentUser!.id}'); // Debug message
 
       return userCredential.user!.uid;
     } on FirebaseAuthException catch (e) {
+      print(
+          'Failed to sign in with email: $email, code: ${e.code}, message: ${e.message}'); // Debug message
       throw Exception('${e.code}: ${e.message}');
     }
   }
