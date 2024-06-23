@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/models/appUser.dart';
 import 'package:flutter_app/models/plant.dart';
+import 'package:flutter_app/models/wiki.dart';
+import 'package:flutter_app/repositories/wiki_repo.dart';
+import 'package:flutter_app/repositories/appUser_repo.dart';
 import 'package:flutter_app/views/plant_family/plant_card_dialog.dart';
+import 'package:flutter_app/views/wiki/wiki_detail_page.dart';
 
 class PlantCard extends StatelessWidget {
   final Plant plant;
+  final AppUserRepository _appUserRepo = AppUserRepository();
+  final WikiRepository wikiRepository = WikiRepository();
 
-  const PlantCard({super.key, required this.plant});
+  PlantCard({super.key, required this.plant});
 
   void _showPlantDetailsDialog(BuildContext context) {
     showDialog(
@@ -60,8 +67,19 @@ class PlantCard extends StatelessWidget {
                   // 小按鈕
                   IconButton(
                     icon: const Icon(Icons.info_outline),
-                    onPressed: () {
-                      // 按鈕功能待實現
+                    onPressed: () async {
+                      Wiki? wiki =
+                          await wikiRepository.getWikiByName(plant.species);
+                      if (wiki != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WikiDetailPage(wiki: wiki),
+                          ),
+                        );
+                      } else {
+                        // 顯示錯誤信息或提示
+                      }
                     },
                   ),
                 ],
@@ -73,64 +91,91 @@ class PlantCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // 澆水按鈕
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.water_drop,
-                        size: 16, color: Color.fromARGB(255, 39, 159, 255)),
-                    label: const Text(
-                      "澆水",
-                      style: TextStyle(
+                  Tooltip(
+                    message: '澆水+1',
+                    child: ElevatedButton.icon(
+                      icon: const Icon(
+                        Icons.water_drop,
+                        size: 16,
+                        color: Color.fromARGB(255, 39, 159, 255),
+                      ),
+                      label: const Text(
+                        "澆水",
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color.fromARGB(255, 39, 159, 255)),
+                          color: Color.fromARGB(255, 39, 159, 255),
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 196, 228, 244),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        padding: const EdgeInsets.only(left: 7, right: 7),
+                      ),
+                      onPressed: () async {
+                        try {
+                          appUser? currentUser =
+                              await _appUserRepo.getCurrentAppUser("test");
+                          if (currentUser != null) {
+                            String userId = currentUser.id;
+                            await _appUserRepo.incrementCntWatering(userId);
+                            print('cnt_watering 已成功增加 1');
+                          } else {
+                            print('用戶未登錄');
+                          }
+                        } catch (e) {
+                          print('增加 cnt_watering 時發生錯誤: $e');
+                        }
+                      },
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 196, 228, 244),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      padding: const EdgeInsets.only(left: 7, right: 7),
-                    ),
-                    onPressed: () {
-                      // 按鈕功能待實現
-                    },
                   ),
                   // 施肥按鈕
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.local_florist,
-                        size: 16, color: Color.fromARGB(255, 97, 178, 121)),
-                    label: const Text(
-                      "施肥",
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: Color.fromARGB(255, 97, 178, 121)),
+                  Tooltip(
+                    message: "施肥+1",
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.local_florist,
+                          size: 16, color: Color.fromARGB(255, 97, 178, 121)),
+                      label: const Text(
+                        "施肥",
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color.fromARGB(255, 97, 178, 121)),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 196, 229, 202),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10))),
+                        padding: const EdgeInsets.only(left: 7, right: 7),
+                      ),
+                      onPressed: () {
+                        // 按鈕功能待實現
+                      },
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 196, 229, 202),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      padding: const EdgeInsets.only(left: 7, right: 7),
-                    ),
-                    onPressed: () {
-                      // 按鈕功能待實現
-                    },
                   ),
                   // 修剪按鈕
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.content_cut,
-                        size: 16, color: Color.fromARGB(255, 245, 121, 58)),
-                    label: const Text(
-                      "修剪",
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: Color.fromARGB(255, 245, 121, 58)),
+                  Tooltip(
+                    message: "修剪+1",
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.content_cut,
+                          size: 16, color: Color.fromARGB(255, 245, 121, 58)),
+                      label: const Text(
+                        "修剪",
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color.fromARGB(255, 245, 121, 58)),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 255, 223, 173),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10))),
+                        padding: const EdgeInsets.only(left: 7, right: 7),
+                      ),
+                      onPressed: () {
+                        // 按鈕功能待實現
+                      },
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 255, 223, 173),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      padding: const EdgeInsets.only(left: 7, right: 7),
-                    ),
-                    onPressed: () {
-                      // 按鈕功能待實現
-                    },
                   ),
                 ],
               ),

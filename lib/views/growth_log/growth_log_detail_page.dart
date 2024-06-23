@@ -1,9 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/models/growth_log.dart';
-import 'package:flutter_app/views/nav_bar.dart';
+//import 'package:flutter_app/models/growth_log.dart';
 
 class GrowthLogDetailPage extends StatelessWidget {
-  final GrowthLog growthLog;
+  final QueryDocumentSnapshot<Object?> growthLog;
 
   GrowthLogDetailPage({required this.growthLog});
 
@@ -26,21 +26,21 @@ class GrowthLogDetailPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          growthLog.name,
+                          growthLog['name'],
                           style: const TextStyle(
                             fontSize: 24, 
                             fontWeight: FontWeight.bold, 
                             ),
                         ),
                         const SizedBox(height: 16),
-                        Image.asset(
-                          growthLog.imageUrl,
-                          height: 150,
-                          width: 250/*double.infinity*/,
-                          //fit: BoxFit.cover,
+                        Image.network(
+                          growthLog['imageUrl'],
+                          height: 250,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
                         ),
                         const SizedBox(height: 16),
-                        Text(growthLog.description),
+                        Text(growthLog['description']),
                       ],
                     ),
                   ),

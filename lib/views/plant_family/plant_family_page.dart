@@ -18,9 +18,16 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
   final PlantRepository _plantRepo = PlantRepository();
 
   String searchVal = '';
+  List<Plant> searchResults = [];
   String selectedLocation = '';
   int currentPage = 0;
   PageController _pageController = PageController();
+
+  void _searchPlants(String query) {
+    setState(() {
+      searchVal = query;
+    });
+  }
 
   @override
   void initState() {
@@ -46,41 +53,6 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     });
   }
 
-  /*void _showAddLocationDialog() {
-    String newLocation = "";
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("新增地點"),
-          content: TextField(
-            onChanged: (value) {
-              newLocation = value;
-            },
-            decoration: const InputDecoration(hintText: "新地點名稱"),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("取消"),
-            ),
-            TextButton(
-              onPressed: () {
-                if (newLocation.isNotEmpty) {
-                  _addLocation(newLocation);
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text("確定"),
-            ),
-          ],
-        );
-      },
-    );
-  }*/
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -98,6 +70,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
                   setState(() {
                     searchVal = value;
                   });
+                  _searchPlants(value);
                 },
               ),
               const SizedBox(height: 10),
@@ -112,11 +85,20 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Text('No plants available');
                   } else {
-                    return _buildPlantGrid(snapshot.data!);
+                    List<Plant> allPlants = snapshot.data!;
+                    List<Plant> filteredPlants = searchVal.isEmpty
+                        ? allPlants
+                        : allPlants
+                            .where((plant) => plant.nickName!
+                                .toLowerCase()
+                                .startsWith(searchVal.toLowerCase()))
+                            .toList();
+                    return _buildPlantGrid(filteredPlants);
                   }
                 },
               ),
               _buildPageIndicator(),
+              SizedBox(height: 25)
             ],
           ),
         ),
@@ -167,7 +149,6 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     List<Plant> locationPlants =
         plants.where((plant) => plant.locationId == selectedLocation).toList();
     int pageCount = (locationPlants.length / 4).ceil();
-    //bool needsExtraPage = locationPlants.length % 4 == 0;
 
     return Expanded(
       child: GestureDetector(
@@ -195,24 +176,24 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
             });
           },
           itemBuilder: (context, pageIndex) {
-              int startIndex = pageIndex * 4;
-              int endIndex = (startIndex + 4).clamp(0, locationPlants.length);
-              List<Plant> pagePlants =
-                  locationPlants.sublist(startIndex, endIndex);
-              return Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                  ),
-                  itemCount: pagePlants.length,
-                  itemBuilder: (context, index) {
-                      return PlantCard(plant: pagePlants[index]);
-                  },
+            int startIndex = pageIndex * 4;
+            int endIndex = (startIndex + 4).clamp(0, locationPlants.length);
+            List<Plant> pagePlants =
+                locationPlants.sublist(startIndex, endIndex);
+            return Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
                 ),
-              );
+                itemCount: pagePlants.length,
+                itemBuilder: (context, index) {
+                  return PlantCard(plant: pagePlants[index]);
+                },
+              ),
+            );
           },
         ),
       ),
@@ -272,12 +253,13 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
               ),
             ),
             onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WikiListPage(),
-            ),
-          );}),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WikiListPage(),
+                ),
+              );
+            }),
       ],
     );
   }

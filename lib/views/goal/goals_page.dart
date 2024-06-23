@@ -5,7 +5,9 @@ import 'package:flutter_app/data/dummy_data.dart';
 import 'package:flutter_app/views/goal/goal_item.dart';
 import 'package:flutter_app/services/navigation.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_app/views/goal/goal_item.dart';
+import 'package:flutter_app/services/authentication.dart';
+
+//import 'package:flutter_app/views/goal/goal_item.dart';
 
 class GoalsPage extends StatefulWidget {
   const GoalsPage({super.key});
@@ -16,51 +18,6 @@ class GoalsPage extends StatefulWidget {
 
 class _GoalsPageState extends State<GoalsPage> {
   Map<String, Goal> goals = dummyGoals;
-  // Map<String, Goal> goals = {
-  //   'g1': Goal(
-  //     id: 'g1',
-  //     title: 'daily sign-in',
-  //     content: 'content1',
-  //     icon: Icons.check_box,
-  //     total: 1,
-  //     goaldetails: 
-  //   ),
-  //   'g2': Goal(
-  //     id: 'g2',
-  //     title: 'plant amount',
-  //     content: 'content2',
-  //     icon: Icons.nature,
-  //     total: 2,
-  //   ),
-  //   'g3': Goal(
-  //     id: 'g3',
-  //     title: 'plant category',
-  //     content: 'content3',
-  //     icon: Icons.face_3,
-  //     total: 3,
-  //   ),
-  //   'g4': Goal(
-  //     id: 'g4',
-  //     title: 'watering',
-  //     content: 'content4',
-  //     icon: Icons.water_drop,
-  //     total: 4,
-  //   ),
-  //   'g5': Goal(
-  //     id: 'g5',
-  //     title: 'drink water',
-  //     content: 'content5',
-  //     icon: Icons.local_drink,
-  //     total: 5,
-  //   ),
-  //   'g6': Goal(
-  //     id: 'g6',
-  //     title: 'all achievements',
-  //     content: 'achieve all the goals',
-  //     icon: Icons.stars_rounded,
-  //     total: 1,
-  //   ),
-  // };
 
   @override
   void initState() {
@@ -68,20 +25,49 @@ class _GoalsPageState extends State<GoalsPage> {
     _fetchUserGoals();
   }
 
+//* dynamically fetch user data
+  // Future<void> _fetchUserGoals() async {
+  //   final authService =
+  //       Provider.of<AuthenticationService>(context, listen: false);
+  //   final currentUser = authService.currentUser;
+
+  //   if (currentUser != null) {
+  //     final userId = currentUser.id;
+  //     final userDoc = await FirebaseFirestore.instance
+  //         .collection('users')
+  //         .doc(userId)
+  //         .get();
+
+  //     if (userDoc.exists) {
+  //       final data = userDoc.data()!;
+  //       setState(() {
+  //         goals['g1']?.progress = data['cnt_signin'] ?? 0;
+  //         goals['g2']?.progress = data['cnt_plantNum'] ?? 0;
+  //         goals['g3']?.progress = data['cnt_plantType'] ?? 0;
+  //         goals['g4']?.progress = data['cnt_watering'] ?? 0;
+  //         goals['g5']?.progress = data['cnt_drink'] ?? 0;
+  //       });
+  //     }
+  //   } else {
+  //     // Handle the case when there is no current user
+  //     debugPrint('No current user found');
+  //   }
+  // }
+
   Future<void> _fetchUserGoals() async {
     final userId =
-        'cV8dyoEmSUZo7QXUiceE1g4YvLm1'; // Replace with the actual user ID
+        'cV8dyoEmSUZo7QXUiceE1g4YvLm1'; //! [TODO] Replace with the actual user ID
     final userDoc =
         await FirebaseFirestore.instance.collection('users').doc(userId).get();
 
     if (userDoc.exists) {
       final data = userDoc.data()!;
       setState(() {
-        goals['g1'] = goals['g1']!.copyWith(progress: data['cnt_signin']);
-        goals['g2'] = goals['g2']!.copyWith(progress: data['cnt_plantNum']);
-        goals['g3'] = goals['g3']!.copyWith(progress: data['cnt_plantType']);
-        goals['g4'] = goals['g4']!.copyWith(progress: data['cnt_watering']);
-        goals['g5'] = goals['g5']!.copyWith(progress: data['cnt_drink']);
+        goals['g1']?.progress = data['cnt_signin'] ?? 0;
+        goals['g2']?.progress = data['cnt_plantNum'] ?? 0;
+        goals['g3']?.progress = data['cnt_plantType'] ?? 0;
+        goals['g4']?.progress = data['cnt_watering'] ?? 0;
+        goals['g5']?.progress = data['cnt_drink'] ?? 0;
       });
     }
   }

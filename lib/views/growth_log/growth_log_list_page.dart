@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter_app/models/growth_log.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app/repositories/growth_log_repo.dart';
 import 'package:flutter_app/views/add_note_page.dart';
 import 'package:flutter_app/views/growth_log/growth_log_detail_page.dart';
-//import 'package:flutter_app/views/navigation_bar.dart';
 
 class GrowthLogListPage extends StatelessWidget {
-  final GrowthLogRepository growthRepository = GrowthLogRepository();
+  final String plantID;
+
+  GrowthLogListPage({required this.plantID});
 
   @override
   Widget build(BuildContext context) {
@@ -20,86 +21,76 @@ class GrowthLogListPage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
-      body: Stack(children: [
-        Column(
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('plants')
+            .doc(plantID)
+            .collection('growth_logs')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text('No growth logs found.'));
+          }
+          final growthLogs = snapshot.data!.docs;
+          return ListView.builder(
+            padding: const EdgeInsets.only(left: 4, right: 4),
+            itemCount: growthLogs.length,
+            itemBuilder: (context, index) {
+              final growthLog = growthLogs[index];
+              return ListTile(
+                title: Container(
+                  child: Column(
+                    children: [
+                      Image.network(
+                        growthLog['imageUrl'],
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      Text(growthLog['name']),
+                    ],
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(left: 4, right: 4),
-                itemCount: growthRepository.GrowthLogList.length,
-                itemBuilder: (context, index) {
-                  final growthLog = growthRepository.GrowthLogList[index];
-                  return ListTile(
-                    /*leading: Image.asset(
-                      wiki.imageUrl,
-                      /*height: 150,
-                      width: 150/*double.infinity*/,*/
-                      //fit: BoxFit.cover,
-                    ),*/
-                    title: Container(
-                        child: Column(
-                      children: [
-                        Image.asset(
-                          growthLog.imageUrl,
-                          height: 220,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                        Text(growthLog.name),
-                      ],
-                    )),
-                    subtitle: Text(
-                      growthLog.description.length > 120
-                          ? growthLog.description.substring(0, 120) + '...'
-                          : growthLog.description,
+                subtitle: Text(
+                  growthLog['description'].length > 120
+                      ? growthLog['description'].substring(0, 120) + '...'
+                      : growthLog['description'],
+                ),
+                onTap: () {
+                  // Handle growth log detail page navigation
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          GrowthLogDetailPage(growthLog: growthLog),
                     ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              GrowthLogDetailPage(growthLog: growthLog),
-                        ),
-                      );
-                    },
                   );
                 },
-              ),
-            ),
-           // const NavigationBottomBar(),
-          ],
-        ),
-        Positioned(
-          bottom: 30.0,
-          right: 16.0,
-          child: FloatingActionButton(
-            shape: CircleBorder(eccentricity: 1.0),
-            elevation: 5,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddNotePage(),
-                ),
               );
             },
-            child: Icon(Icons.add, color: Colors.white),
-            backgroundColor: const Color.fromARGB(255, 93, 176, 117),
-          ),
-        ),
-      ]),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        shape: CircleBorder(eccentricity: 1.0),
+        elevation: 5,
+        onPressed: () {
+          // Handle add growth log navigation
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddNotePage(
+                plantID: plantID,
+              ),
+            ),
+          );
+        },
+        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: const Color.fromARGB(255, 93, 176, 117),
+      ),
     );
   }
 }
