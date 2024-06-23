@@ -43,7 +43,7 @@ class Goal {
       progress: progress ?? this.progress,
       goaldetails: goaldetails ?? this.goaldetails,
       completed: completed ?? this.completed,
-      done: done ?? this.done, goaldetails: {},
+      done: done ?? this.done,
     );
   }
 }
