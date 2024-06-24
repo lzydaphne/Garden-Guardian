@@ -137,7 +137,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile', style: TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.w500)),
+        title: const Text('Profile', style: TextStyle(fontSize: 28, color: Colors.white, 
+            fontWeight: FontWeight.bold,)),
         backgroundColor: const Color.fromARGB(255, 93, 176, 117),
         centerTitle: true,
         actions: [

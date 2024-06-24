@@ -144,12 +144,12 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Text(
                           'GARDEN',
-                          style: TextStyle(fontFamily: 'JuliusSansOne',fontSize: 12),
+                          style: TextStyle(color: Colors.white,fontFamily: 'JuliusSansOne',fontSize: 20,fontWeight: FontWeight.bold,),
                           
                         ),
                         Text(
                           'GUARDIAN',
-                          style: TextStyle(fontFamily: 'JuliusSansOne',fontSize: 15),
+                          style: TextStyle(color: Colors.white,fontFamily: 'JuliusSansOne',fontSize: 23,fontWeight: FontWeight.bold,),
                         ),
                       ],
                     ),

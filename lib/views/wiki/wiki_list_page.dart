@@ -25,14 +25,16 @@ class _WikiListPageState extends State<WikiListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.green[50],
       appBar: AppBar(
         title: const Text(
-          'wiki',
-          style: TextStyle(fontWeight: FontWeight.w800),
+          'Plant Wiki',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 93, 176, 117),
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
@@ -68,35 +70,73 @@ class _WikiListPageState extends State<WikiListPage> {
                               .startsWith(searchVal.toLowerCase()))
                           .toList();
                   return ListView.builder(
-                    padding: const EdgeInsets.only(left: 4, right: 4),
+                    padding: const EdgeInsets.all(8.0),
                     itemCount: filteredWikis.length,
                     itemBuilder: (context, index) {
                       final wiki = filteredWikis[index];
-                      return ListTile(
-                        title: Column(
-                          children: [
-                            Image.network(
-                              wiki.imageUrl,
-                              height: 220,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
+                      return AnimatedOpacity(
+                        opacity: 1.0,
+                        duration: Duration(milliseconds: 500),
+                        child: Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: ListTile(
+                            contentPadding: EdgeInsets.all(16.0),
+                            title: Column(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 2,
+                                        blurRadius: 7,
+                                        offset: Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    child: Image.network(
+                                      wiki.imageUrl,
+                                      height: 220,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  wiki.name,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(wiki.name),
-                          ],
-                        ),
-                        subtitle: Text(
-                          wiki.description.length > 120
-                              ? '${wiki.description.substring(0, 120)}...'
-                              : wiki.description,
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WikiDetailPage(wiki: wiki),
+                            subtitle: Text(
+                              wiki.description.length > 120
+                                  ? '${wiki.description.substring(0, 120)}...'
+                                  : wiki.description,
+                              style: TextStyle(
+                                color: Color.fromARGB(
+                                              255, 129, 129, 129),
+                              ),
                             ),
-                          );
-                        },
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => WikiDetailPage(wiki: wiki),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       );
                     },
                   );

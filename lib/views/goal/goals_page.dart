@@ -7,8 +7,6 @@ import 'package:flutter_app/services/navigation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/services/authentication.dart';
 
-//import 'package:flutter_app/views/goal/goal_item.dart';
-
 class GoalsPage extends StatefulWidget {
   const GoalsPage({super.key});
 
@@ -25,40 +23,9 @@ class _GoalsPageState extends State<GoalsPage> {
     _fetchUserGoals();
   }
 
-//* dynamically fetch user data
-  // Future<void> _fetchUserGoals() async {
-  //   final authService =
-  //       Provider.of<AuthenticationService>(context, listen: false);
-  //   final currentUser = authService.currentUser;
-
-  //   if (currentUser != null) {
-  //     final userId = currentUser.id;
-  //     final userDoc = await FirebaseFirestore.instance
-  //         .collection('users')
-  //         .doc(userId)
-  //         .get();
-
-  //     if (userDoc.exists) {
-  //       final data = userDoc.data()!;
-  //       setState(() {
-  //         goals['g1']?.progress = data['cnt_signin'] ?? 0;
-  //         goals['g2']?.progress = data['cnt_plantNum'] ?? 0;
-  //         goals['g3']?.progress = data['cnt_plantType'] ?? 0;
-  //         goals['g4']?.progress = data['cnt_watering'] ?? 0;
-  //         goals['g5']?.progress = data['cnt_drink'] ?? 0;
-  //       });
-  //     }
-  //   } else {
-  //     // Handle the case when there is no current user
-  //     debugPrint('No current user found');
-  //   }
-  // }
-
   Future<void> _fetchUserGoals() async {
-    final userId =
-        'cV8dyoEmSUZo7QXUiceE1g4YvLm1'; //! [TODO] Replace with the actual user ID
-    final userDoc =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    final userId = 'cV8dyoEmSUZo7QXUiceE1g4YvLm1'; //! [TODO] Replace with the actual user ID
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
 
     if (userDoc.exists) {
       final data = userDoc.data()!;
@@ -80,25 +47,47 @@ class _GoalsPageState extends State<GoalsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: Text(
-            "Achivement",
-            style: TextStyle(fontWeight: FontWeight.w600),
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 93, 176, 117),
+        title: Text(
+          "Achievement",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
-          centerTitle: true,
         ),
-        backgroundColor: Colors.white,
-        body: ListView(
-          children: [
-            for (final goal in goals.values)
-              GoalItem(
-                goal: goal,
-                onSelectGoal: () {
-                  _selectGoal(context, goal);
-                },
-              )
-          ],
-        ));
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      backgroundColor: Colors.green[50],
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: goals.values.map((goal) {
+          return AnimatedContainer(
+            duration: Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            margin: const EdgeInsets.only(bottom: 16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 7,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: GoalItem(
+              goal: goal,
+              onSelectGoal: () {
+                _selectGoal(context, goal);
+              },
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 }

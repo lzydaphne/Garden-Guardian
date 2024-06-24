@@ -99,7 +99,7 @@ class NavBar extends StatelessWidget {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.hotel_class_rounded),
-              label: 'Achivements'//'種植挑戰',
+              label: 'Achievements'//'種植挑戰',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.account_circle),
