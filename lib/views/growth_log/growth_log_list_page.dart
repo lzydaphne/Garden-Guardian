@@ -12,14 +12,19 @@ class GrowthLogListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.green[50],
       appBar: AppBar(
         title: const Text(
           'Growth Log',
-          style: TextStyle(fontWeight: FontWeight.w800),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 93, 176, 117),
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -36,49 +41,83 @@ class GrowthLogListPage extends StatelessWidget {
           }
           final growthLogs = snapshot.data!.docs;
           return ListView.builder(
-            padding: const EdgeInsets.only(left: 4, right: 4),
+            padding: const EdgeInsets.all(8.0),
             itemCount: growthLogs.length,
             itemBuilder: (context, index) {
               final growthLog = growthLogs[index];
-              return ListTile(
-                title: Container(
-                  child: Column(
-                    children: [
-                      Image.network(
-                        growthLog['imageUrl'],
-                        height: 220,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
+              return AnimatedOpacity(
+                opacity: 1.0,
+                duration: Duration(milliseconds: 500),
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.all(16.0),
+                    title: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 7,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12.0),
+                            child: Image.network(
+                              growthLog['imageUrl'],
+                              height: 220,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          growthLog['name'],
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Text(
+                      growthLog['description'].length > 120
+                          ? '${growthLog['description'].substring(0, 120)}...'
+                          : growthLog['description'],
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 129, 129, 129),
                       ),
-                      Text(growthLog['name']),
-                    ],
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GrowthLogDetailPage(
+                            growthLog: growthLog,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                subtitle: Text(
-                  growthLog['description'].length > 120
-                      ? growthLog['description'].substring(0, 120) + '...'
-                      : growthLog['description'],
-                ),
-                onTap: () {
-                  // Handle growth log detail page navigation
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          GrowthLogDetailPage(growthLog: growthLog),
-                    ),
-                  );
-                },
               );
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        shape: CircleBorder(eccentricity: 1.0),
+        shape: CircleBorder(),
         elevation: 5,
         onPressed: () {
-          // Handle add growth log navigation
           Navigator.push(
             context,
             MaterialPageRoute(
