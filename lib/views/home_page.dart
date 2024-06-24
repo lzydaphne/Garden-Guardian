@@ -57,20 +57,26 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _addTodoItem(String item) async {
-    Todo newItem = Todo(
-      id: '',
-      title: item,
-      isCompleted: false,
-    );
-    await _todoRepository.addTodoItem(newItem);
-    Navigator.of(context).pop();
+    try {
+      Todo newItem = Todo(
+        id: '',
+        title: item,
+        isCompleted: false,
+      );
+      await _todoRepository.addTodoItem(newItem);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add to-do item: $e')),
+      );
+    }
   }
 
   void _showAddTodoDialog() {
     final TextEditingController _textFieldController = TextEditingController();
+
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text('Add to-do'),
           content: TextField(
@@ -81,13 +87,20 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               child: Text('Cancel'),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
             ),
             TextButton(
               child: Text('Confirm'),
               onPressed: () {
-                _addTodoItem(_textFieldController.text);
+                if (_textFieldController.text.isNotEmpty) {
+                  _addTodoItem(_textFieldController.text);
+                  Navigator.of(dialogContext).pop();
+                } else {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    SnackBar(content: Text('Please enter some text')),
+                  );
+                }
               },
             ),
           ],

@@ -141,12 +141,13 @@ class ChatBot extends ChangeNotifier {
           //     toolChoice: "auto"
         );
         CCrequestDescribeImage = ChatCompleteText(
-          messages: sysMessages4describe + imageMessage,
-          maxToken: 200,
-          model: ChatModelFromValue(model: 'gpt-4o'),
-          //     tools: tools,
-          //     toolChoice: "auto"
-        );
+            messages: sysMessages4describe + imageMessage,
+            maxToken: 200,
+            model: ChatModelFromValue(model: 'gpt-4o'),
+            temperature: 0
+            //     tools: tools,
+            //     toolChoice: "auto"
+            );
       } else {
         contentMessage = [
           {"type": "text", "text": message.text}

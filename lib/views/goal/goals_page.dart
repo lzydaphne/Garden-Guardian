@@ -83,7 +83,7 @@ class _GoalsPageState extends State<GoalsPage> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           title: Text(
-            "種植挑戰",
+            "Achivement",
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           centerTitle: true,
