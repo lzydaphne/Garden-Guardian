@@ -17,7 +17,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TodoRepository _todoRepository = TodoRepository();
   final MessageRepository repo = MessageRepository();
-  final List<Todo> _todoList = [];
 
   // hard code for heat map
   Map<DateTime, int> heatMapDatasets = {
@@ -33,14 +32,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     updateHeatMapWithTodayActivity();
-    _todoRepository.streamAllTodos().listen((todos) {
-      print('Todos received: $todos'); // Debugging log
-      setState(() {
-        _todoList
-          ..clear()
-          ..addAll(todos);
-      });
-    });
   }
 
   void updateHeatMapWithTodayActivity() async {
@@ -60,9 +51,6 @@ class _HomePageState extends State<HomePage> {
     try {
       await _todoRepository
           .updateTodoItem(item.id, {'isCompleted': !item.isCompleted});
-      setState(() {
-        item.isCompleted = !item.isCompleted;
-      });
     } catch (e) {
       print('Error updating todo item: $e');
     }
@@ -246,7 +234,7 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      height: 200,
+                      height: 300,
                       padding: const EdgeInsets.all(0.0),
                       child: Row(
                         children: [
@@ -354,43 +342,64 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   Expanded(
-                                    child: ListView.builder(
-                                      padding: EdgeInsets.all(0),
-                                      itemCount: _todoList.length,
-                                      itemBuilder: (context, index) {
-                                        final todo = _todoList[index];
-                                        return ListTileTheme(
-                                          contentPadding:
-                                              EdgeInsets.only(left: 12),
-                                          minVerticalPadding: 0,
-                                          child: ListTile(
-                                            leading: Checkbox(
-                                              side: BorderSide(
-                                                color: Color.fromARGB(
-                                                    144, 0, 0, 0),
-                                              ),
-                                              shape: CircleBorder(),
-                                              value: todo.isCompleted,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  todo.isCompleted = value!;
-                                                });
-                                                _updateTodoItem(todo);
-                                              },
-                                            ),
-                                            title: Text(
-                                              todo.title,
-                                              style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    144, 0, 0, 0),
-                                                fontSize: 14,
-                                                decoration: todo.isCompleted
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                              ),
-                                            ),
-                                          ),
-                                        );
+                                    child: StreamBuilder<List<Todo>>(
+                                      stream: _todoRepository.streamAllTodos(),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return Center(
+                                              child:
+                                                  CircularProgressIndicator());
+                                        } else if (snapshot.hasError) {
+                                          return Center(
+                                              child: Text(
+                                                  'Error: ${snapshot.error}'));
+                                        } else if (!snapshot.hasData ||
+                                            snapshot.data!.isEmpty) {
+                                          return Center(
+                                              child:
+                                                  Text('No to-dos available'));
+                                        } else {
+                                          final _todoList = snapshot.data!;
+                                          return ListView.builder(
+                                            padding: EdgeInsets.all(0),
+                                            itemCount: _todoList.length,
+                                            itemBuilder: (context, index) {
+                                              final todo = _todoList[index];
+                                              return ListTileTheme(
+                                                contentPadding:
+                                                    EdgeInsets.only(left: 12),
+                                                minVerticalPadding: 0,
+                                                child: ListTile(
+                                                  leading: Checkbox(
+                                                    side: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          144, 0, 0, 0),
+                                                    ),
+                                                    shape: CircleBorder(),
+                                                    value: todo.isCompleted,
+                                                    onChanged: (bool? value) {
+                                                      _updateTodoItem(todo);
+                                                    },
+                                                  ),
+                                                  title: Text(
+                                                    todo.title,
+                                                    style: TextStyle(
+                                                      color: Color.fromARGB(
+                                                          144, 0, 0, 0),
+                                                      fontSize: 14,
+                                                      decoration: todo
+                                                              .isCompleted
+                                                          ? TextDecoration
+                                                              .lineThrough
+                                                          : TextDecoration.none,
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        }
                                       },
                                     ),
                                   ),

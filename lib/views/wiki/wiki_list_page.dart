@@ -39,14 +39,14 @@ class _WikiListPageState extends State<WikiListPage> {
           Padding(
             padding: EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
             child: SearchAppBarWiki(
-                hintLabel: "Search",
-                onSubmitted: (value) {
-                  setState(() {
-                    searchVal = value;
-                  });
-                  _searchWikis(value);
-                },
-              ),
+              hintLabel: "Search",
+              onSubmitted: (value) {
+                setState(() {
+                  searchVal = value;
+                });
+                _searchWikis(value);
+              },
+            ),
           ),
           Expanded(
             child: StreamBuilder<List<Wiki>>(
@@ -61,12 +61,12 @@ class _WikiListPageState extends State<WikiListPage> {
                 } else {
                   final allWikis = snapshot.data!;
                   List<Wiki> filteredWikis = searchVal.isEmpty
-                        ? allWikis
-                        : allWikis
-                            .where((Wiki) => Wiki.name!
-                                .toLowerCase()
-                                .startsWith(searchVal.toLowerCase()))
-                            .toList();
+                      ? allWikis
+                      : allWikis
+                          .where((Wiki) => Wiki.name!
+                              .toLowerCase()
+                              .startsWith(searchVal.toLowerCase()))
+                          .toList();
                   return ListView.builder(
                     padding: const EdgeInsets.only(left: 4, right: 4),
                     itemCount: filteredWikis.length,
