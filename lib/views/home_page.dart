@@ -6,6 +6,8 @@ import 'package:flutter_app/models/todo.dart';
 import 'package:flutter_app/repositories/todo_repo.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/me_vm.dart';
+import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:flutter_app/repositories/message_repo.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -14,26 +16,64 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TodoRepository _todoRepository = TodoRepository();
+  final MessageRepository repo = MessageRepository();
   final List<Todo> _todoList = [];
+
+  // hard code for heat map
+  Map<DateTime, int> heatMapDatasets = {
+    DateTime(2024, 5, 6): 8,
+    DateTime(2024, 5, 7): 7,
+    DateTime(2024, 6, 8): 10,
+    DateTime(2024, 6, 22): 12,
+    DateTime(2024, 6, 12): 10,
+    DateTime(2024, 5, 20): 10,
+  };
 
   @override
   void initState() {
     super.initState();
+    updateHeatMapWithTodayActivity();
     _todoRepository.streamAllTodos().listen((todos) {
+      print('Todos received: $todos'); // Debugging log
       setState(() {
-        _todoList.clear();
-        _todoList.addAll(todos);
+        _todoList
+          ..clear()
+          ..addAll(todos);
       });
     });
   }
 
+  void updateHeatMapWithTodayActivity() async {
+    int todayMessageCount = await repo.countTodayMessages();
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    setState(() {
+      heatMapDatasets[today] = todayMessageCount; // Update the map
+    });
+
+    print("todayMessageCount: $todayMessageCount");
+    print("today: $today");
+    print("$heatMapDatasets");
+  }
+
   void _updateTodoItem(Todo item) async {
-    await _todoRepository
-        .updateTodoItem(item.id, {'isCompleted': !item.isCompleted});
+    try {
+      await _todoRepository
+          .updateTodoItem(item.id, {'isCompleted': !item.isCompleted});
+      setState(() {
+        item.isCompleted = !item.isCompleted;
+      });
+    } catch (e) {
+      print('Error updating todo item: $e');
+    }
   }
 
   void _addTodoItem(String item) async {
-    Todo newItem = Todo(id: '', title: item, isCompleted: false);
+    Todo newItem = Todo(
+      id: '',
+      title: item,
+      isCompleted: false,
+    );
     await _todoRepository.addTodoItem(newItem);
     Navigator.of(context).pop();
   }
@@ -51,7 +91,7 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('cancel'),
+              child: Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -73,7 +113,7 @@ class _HomePageState extends State<HomePage> {
     final meViewModel = Provider.of<MeViewModel>(context);
     final me = meViewModel.me;
 
-    if(meViewModel.isInitializing) {
+    if (meViewModel.isInitializing) {
       return const Center(
         child: CircularProgressIndicator(),
       );
@@ -120,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Good morning, ${me?.userName!}.',
+                  'Good morning, ${me?.userName}.',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -134,7 +174,6 @@ class _HomePageState extends State<HomePage> {
                     const Expanded(
                       child: Text(
                         'Pumpkin is usually considered a vegetable, it contains many seeds inside and is actually a member of the fruit family!',
-                        //'南瓜通常被認為是蔬菜，但它與其他葫蘆瓜一樣，切開後會發現內裡有大量種子，其實它們都是水果家族的一員！',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w100,
@@ -218,73 +257,70 @@ class _HomePageState extends State<HomePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Column(
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '28°C  ',
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.orange),
-                                          ),
-                                          Icon(
-                                            Icons.wb_sunny,
-                                            color: Colors.orange,
-                                          ),
-                                        ],
-                                      ),
-                                      const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            'June 21, 2024',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 129, 129, 129)),
-                                          ),
-                                          Text(
-                                            ' | Hsinchu',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 129, 129, 129)),
-                                          ),
-                                        ],
-                                      ),
-                                      Container(
-                                        width: 200,
-                                        height: 110,
-                                        decoration: const BoxDecoration(
-                                          image: DecorationImage(
-                                            image: AssetImage(
-                                                'images/timetable.png'),
-                                            fit: BoxFit.cover,
-                                          ),
+                                      Text(
+                                        '28°C  ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange,
                                         ),
                                       ),
-                                      const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'May                ',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 129, 129, 129)),
-                                          ),
-                                          Text(
-                                            'June',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 129, 129, 129)),
-                                          ),
-                                        ],
+                                      Icon(
+                                        Icons.wb_sunny,
+                                        color: Colors.orange,
                                       ),
                                     ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'June 21, 2024',
+                                        style: TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 129, 129, 129),
+                                        ),
+                                      ),
+                                      Text(
+                                        ' | Hsinchu',
+                                        style: TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 129, 129, 129),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      child: HeatMap(
+                                        scrollable: true,
+                                        datasets: heatMapDatasets,
+                                        colorsets: const {
+                                          1: Colors.red,
+                                          3: Colors.orange,
+                                          5: Colors.yellow,
+                                          7: Colors.green,
+                                          9: Colors.blue,
+                                          11: Colors.indigo,
+                                          13: Colors.purple,
+                                        },
+                                        startDate: DateTime.now()
+                                            .subtract(Duration(days: 60)),
+                                        endDate: DateTime.now(),
+                                        showColorTip: true,
+                                        onClick: (value) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content:
+                                                    Text(value.toString())),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -323,33 +359,35 @@ class _HomePageState extends State<HomePage> {
                                       itemCount: _todoList.length,
                                       itemBuilder: (context, index) {
                                         final todo = _todoList[index];
-                                        return ListTile(
+                                        return ListTileTheme(
                                           contentPadding:
                                               EdgeInsets.only(left: 12),
-                                          minTileHeight: 0,
-                                          leading: Checkbox(
-                                            side: BorderSide(
-                                              color:
-                                                  Color.fromARGB(144, 0, 0, 0),
+                                          minVerticalPadding: 0,
+                                          child: ListTile(
+                                            leading: Checkbox(
+                                              side: BorderSide(
+                                                color: Color.fromARGB(
+                                                    144, 0, 0, 0),
+                                              ),
+                                              shape: CircleBorder(),
+                                              value: todo.isCompleted,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  todo.isCompleted = value!;
+                                                });
+                                                _updateTodoItem(todo);
+                                              },
                                             ),
-                                            shape: CircleBorder(),
-                                            value: todo.isCompleted,
-                                            onChanged: (bool? value) {
-                                              setState(() {
-                                                todo.isCompleted = value!;
-                                              });
-                                              _updateTodoItem(todo);
-                                            },
-                                          ),
-                                          title: Text(
-                                            todo.title,
-                                            style: TextStyle(
-                                              color:
-                                                  Color.fromARGB(144, 0, 0, 0),
-                                              fontSize: 14,
-                                              decoration: todo.isCompleted
-                                                  ? TextDecoration.lineThrough
-                                                  : TextDecoration.none,
+                                            title: Text(
+                                              todo.title,
+                                              style: TextStyle(
+                                                color: Color.fromARGB(
+                                                    144, 0, 0, 0),
+                                                fontSize: 14,
+                                                decoration: todo.isCompleted
+                                                    ? TextDecoration.lineThrough
+                                                    : TextDecoration.none,
+                                              ),
                                             ),
                                           ),
                                         );
@@ -381,9 +419,11 @@ class _HomePageState extends State<HomePage> {
                 top: 15,
                 left: 15,
                 child: CircleAvatar(
-                  backgroundImage: me?.avatarUrl != null && me!.avatarUrl!.isNotEmpty
-                                    ? NetworkImage(me.avatarUrl!)
-                                    : const AssetImage('assets/placeholder.png') as ImageProvider,
+                  backgroundImage:
+                      me?.avatarUrl != null && me!.avatarUrl!.isNotEmpty
+                          ? NetworkImage(me.avatarUrl!)
+                          : const AssetImage('assets/placeholder.png')
+                              as ImageProvider,
                   radius: 30,
                 ),
               ),
@@ -396,23 +436,21 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 children: [
                   Expanded(
-                    //height: 125,
                     child: Row(
                       children: [
                         Expanded(
                           child: _buildButton(
                             'Water intake record',
-                            //'飲水紀錄',
                             const Color.fromARGB(255, 196, 228, 244),
                             const Color.fromARGB(255, 49, 163, 254),
                             Icons.local_drink,
                             'Goal 2000ml\nachieved for 6 days',
-                            //'目標2000ml\n已連續達成6日',
                             'Click to view record',
-                            //'點擊查看紀錄',
                             0,
                             () {
-                              Provider.of<NavigationService>(context, listen: false).goDrinkWater();
+                              Provider.of<NavigationService>(context,
+                                      listen: false)
+                                  .goDrinkWater();
                             },
                           ),
                         ),
@@ -420,14 +458,11 @@ class _HomePageState extends State<HomePage> {
                         Expanded(
                           child: _buildButton(
                             'Planting challenge',
-                            //'種植挑戰',
                             const Color.fromARGB(255, 216, 243, 224),
                             const Color.fromARGB(255, 112, 187, 134),
                             Icons.hotel_class_rounded,
                             'Planted 8 plants\nhighest difficulty 3★',
-                            //'已種植8株植物\n最高難度3★',
                             'Click to view record',
-                            //'點擊查看紀錄',
                             0,
                             () {
                               context.go('/goal');
@@ -445,12 +480,10 @@ class _HomePageState extends State<HomePage> {
                           flex: 1,
                           child: _buildButton(
                             'Profile',
-                            //'帳號維護',
                             const Color.fromARGB(255, 255, 225, 197),
                             const Color.fromARGB(255, 255, 149, 52),
                             Icons.account_circle,
                             'Edit user information\nset preferences',
-                            //'編輯用戶資訊\n設定使用偏好',
                             '',
                             0,
                             () {
@@ -465,22 +498,22 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: _buildButton(
-                                    'Plant encyclopedia',
-                                    //'植物百科',
-                                    const Color.fromARGB(255, 148, 223, 170),
-                                    Colors.white,
-                                    Icons.book,
-                                    'Science encyclopedia\nplant care guide',
-                                    //'科普百科\n植物照顧指南',
-                                    '',
-                                    0, () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => WikiListPage(),
-                                    ),
-                                  );
-                                }),
+                                  'Plant encyclopedia',
+                                  const Color.fromARGB(255, 148, 223, 170),
+                                  Colors.white,
+                                  Icons.book,
+                                  'Science encyclopedia\nplant care guide',
+                                  '',
+                                  0,
+                                  () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => WikiListPage(),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           ),
@@ -507,15 +540,8 @@ class _HomePageState extends State<HomePage> {
     int type,
     VoidCallback onPressed,
   ) {
-    double? iconSize = 0;
-    double? topPadding = 0;
-    if (type == 0) {
-      iconSize = 40;
-      topPadding = 12;
-    } else {
-      iconSize = 24;
-      topPadding = 7;
-    }
+    double iconSize = type == 0 ? 40 : 24;
+    double topPadding = type == 0 ? 12 : 7;
 
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -541,14 +567,13 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Row(
                   children: [
-                    //Icon(icon, size: 28, color: iconColor),
-                    //const SizedBox(width: 8),
                     Text(
                       text,
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: iconColor),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: iconColor,
+                      ),
                     ),
                   ],
                 ),
@@ -564,19 +589,9 @@ class _HomePageState extends State<HomePage> {
                 ],
                 if (linkText.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  /*Expanded(
-                  child: Text(
-                      linkText,
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: iconColor),
-                    ),
-                ),*/
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      //const SizedBox(width: 88),
                       Padding(
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
@@ -584,12 +599,6 @@ class _HomePageState extends State<HomePage> {
                           style: TextStyle(fontSize: 10, color: iconColor),
                         ),
                       ),
-                      /*Text(
-                      linkText,
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: iconColor),
-                    ),*/
                     ],
                   ),
                 ],

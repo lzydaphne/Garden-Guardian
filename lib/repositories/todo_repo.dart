@@ -34,10 +34,15 @@ class TodoRepository {
   }
 
   Stream<List<Todo>> streamAllTodos() {
-    return _db.collection('todos').snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => Todo.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
-    });
+    return FirebaseFirestore.instance
+        .collection('todos')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+              return Todo(
+                id: doc.id,
+                title: doc['title'],
+                isCompleted: doc['isCompleted'],
+              );
+            }).toList());
   }
 }
