@@ -44,20 +44,20 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('新增事項'),
+          title: Text('Add to-do'),
           content: TextField(
             controller: _textFieldController,
-            decoration: InputDecoration(hintText: "輸入事項:"),
+            decoration: InputDecoration(hintText: "content:"),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('取消'),
+              child: Text('cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('新增'),
+              child: Text('Confirm'),
               onPressed: () {
                 _addTodoItem(_textFieldController.text);
               },
@@ -133,7 +133,8 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     const Expanded(
                       child: Text(
-                        '南瓜通常被認為是蔬菜，但它與其他葫蘆瓜一樣，切開後會發現內裡有大量種子，其實它們都是水果家族的一員！',
+                        'Pumpkin is usually considered a vegetable, it contains many seeds inside and is actually a member of the fruit family!',
+                        //'南瓜通常被認為是蔬菜，但它與其他葫蘆瓜一樣，切開後會發現內裡有大量種子，其實它們都是水果家族的一員！',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w100,
@@ -400,12 +401,15 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Expanded(
                           child: _buildButton(
-                            '飲水紀錄',
+                            'Water intake record',
+                            //'飲水紀錄',
                             const Color.fromARGB(255, 196, 228, 244),
                             const Color.fromARGB(255, 49, 163, 254),
                             Icons.local_drink,
-                            '目標2000ml\n已連續達成6日',
-                            '點擊查看紀錄',
+                            'Goal 2000ml\nachieved for 6 days',
+                            //'目標2000ml\n已連續達成6日',
+                            'Click to view record',
+                            //'點擊查看紀錄',
                             0,
                             () {
                               Provider.of<NavigationService>(context, listen: false).goDrinkWater();
@@ -415,12 +419,15 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: _buildButton(
-                            '種植挑戰',
+                            'Planting challenge',
+                            //'種植挑戰',
                             const Color.fromARGB(255, 216, 243, 224),
                             const Color.fromARGB(255, 112, 187, 134),
                             Icons.hotel_class_rounded,
-                            '已種植8株植物\n最高難度3★',
-                            '點擊查看紀錄',
+                            'Planted 8 plants\nhighest difficulty 3★',
+                            //'已種植8株植物\n最高難度3★',
+                            'Click to view record',
+                            //'點擊查看紀錄',
                             0,
                             () {
                               context.go('/goal');
@@ -437,11 +444,13 @@ class _HomePageState extends State<HomePage> {
                         Expanded(
                           flex: 1,
                           child: _buildButton(
-                            '帳號維護',
+                            'Profile',
+                            //'帳號維護',
                             const Color.fromARGB(255, 255, 225, 197),
                             const Color.fromARGB(255, 255, 149, 52),
                             Icons.account_circle,
-                            '編輯用戶資訊\n設定使用偏好',
+                            'Edit user information\nset preferences',
+                            //'編輯用戶資訊\n設定使用偏好',
                             '',
                             0,
                             () {
@@ -456,11 +465,13 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: _buildButton(
-                                    '植物百科',
+                                    'Plant encyclopedia',
+                                    //'植物百科',
                                     const Color.fromARGB(255, 148, 223, 170),
                                     Colors.white,
                                     Icons.book,
-                                    '科普百科\n植物照顧指南',
+                                    'Science encyclopedia\nplant care guide',
+                                    //'科普百科\n植物照顧指南',
                                     '',
                                     0, () {
                                   Navigator.push(

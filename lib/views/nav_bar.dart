@@ -91,7 +91,7 @@ class NavBar extends StatelessWidget {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.local_florist),
-              label: '我的植物',
+              label: 'My Plants',   //'我的植物',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat_outlined),
@@ -99,11 +99,11 @@ class NavBar extends StatelessWidget {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.hotel_class_rounded),
-              label: '種植挑戰',
+              label: 'Achivements'//'種植挑戰',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.account_circle),
-              label: '帳號維護',
+              label: 'Profile',//'帳號維護',
             ),
           ],
           currentIndex: selectedTab.index,

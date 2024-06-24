@@ -40,8 +40,8 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
 
   void _initializeData() {
     _locationRepo.addLocation("living room");
-    _locationRepo.addLocation("後陽台");
-    _locationRepo.addLocation("臥房陽台");
+    _locationRepo.addLocation("balcony");   //"陽台"
+    _locationRepo.addLocation("yard"); //"臥房陽台"
   }
 
   void _addLocation(String location) {
@@ -65,7 +65,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
             children: [
               const SizedBox(height: 10),
               SearchAppBar(
-                hintLabel: "尋找我的植物",
+                hintLabel: "Search",
                 onSubmitted: (value) {
                   setState(() {
                     searchVal = value;
@@ -240,7 +240,7 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     return AppBar(
       backgroundColor: const Color.fromARGB(255, 93, 176, 117),
       centerTitle: true,
-      title: const Text("我的植物", style: TextStyle(color: Colors.white)),
+      title: const Text("My Plants", style: TextStyle(color: Colors.white)),
       actions: [
         InkWell(
             child: const Padding(

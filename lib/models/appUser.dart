@@ -10,6 +10,8 @@ class appUser {
   String? pushMessagingToken;
   int cnt_signin;
   int cnt_watering;
+  //int cnt_fertilizing;
+  //int cnt_pruning;
   int cnt_plantNum;
   int cnt_plantType;
   int cnt_drink;
@@ -21,6 +23,8 @@ class appUser {
     this.avatarUrl,
     required this.cnt_signin,
     required this.cnt_watering,
+    //required this.cnt_fertilizing,
+    //required this.cnt_pruning,
     required this.cnt_plantNum,
     required this.cnt_plantType,
     required this.cnt_drink,
@@ -36,6 +40,8 @@ class appUser {
       avatarUrl: map['avatarUrl'],
       cnt_signin: map['cnt_signin'],
       cnt_watering: map['cnt_watering'],
+      //cnt_fertilizing: map['cnt_fertilizing'],
+      //cnt_pruning: map['cnt_pruning'],
       cnt_plantNum: map['cnt_plantNum'],
       cnt_plantType: map['cnt_plantType'],
       cnt_drink: map['cnt_drink'],
@@ -53,6 +59,8 @@ class appUser {
       'pushMessagingToken': pushMessagingToken,
       'cnt_signin': cnt_signin,
       'cnt_watering': cnt_watering,
+      //'cnt_fertilizing': cnt_fertilizing,
+      //'cnt_pruning': cnt_pruning,
       'cnt_plantNum': cnt_plantNum,
       'cnt_plantType': cnt_plantType,
       'cnt_drink': cnt_drink,
