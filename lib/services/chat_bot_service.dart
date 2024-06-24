@@ -134,12 +134,13 @@ class ChatBot extends ChangeNotifier {
         // debugPrint('Image Message: ${sysMessages + imageMessage}');
 
         CCrequestImage = ChatCompleteText(
-          messages: sysMessages + imageMessage,
-          maxToken: 200,
-          model: ChatModelFromValue(model: 'gpt-4o'),
-          //     tools: tools,
-          //     toolChoice: "auto"
-        );
+            messages: sysMessages + imageMessage,
+            maxToken: 200,
+            model: ChatModelFromValue(model: 'gpt-4o'),
+            temperature: 0
+            //     tools: tools,
+            //     toolChoice: "auto"
+            );
         CCrequestDescribeImage = ChatCompleteText(
             messages: sysMessages4describe + imageMessage,
             maxToken: 200,
@@ -165,12 +166,13 @@ class ChatBot extends ChangeNotifier {
       // debugPrint('Image Message: ${sysMessages + imageMessage}');
 
       CCrequestMessageKeyword = ChatCompleteText(
-        messages: sysMessages + keywordMessage,
-        maxToken: 50,
-        model: ChatModelFromValue(model: 'gpt-4o'),
-        //     tools: tools,
-        //     toolChoice: "auto"
-      );
+          messages: sysMessages + keywordMessage,
+          maxToken: 50,
+          model: ChatModelFromValue(model: 'gpt-4o'),
+          temperature: 0
+          //     tools: tools,
+          //     toolChoice: "auto"
+          );
 
 //################Run chat model  ###########################
 
@@ -191,6 +193,7 @@ class ChatBot extends ChangeNotifier {
           messages: iptMsg,
           maxToken: 200,
           model: ChatModelFromValue(model: 'gpt-4o'),
+          temperature: 0,
           tools: tools,
           toolChoice: "auto");
 
@@ -261,6 +264,7 @@ class ChatBot extends ChangeNotifier {
             messages: iptMsg,
             model: ChatModelFromValue(model: 'gpt-4o'),
             maxToken: 200,
+            temperature: 0,
           );
 
           try {
@@ -299,6 +303,7 @@ class ChatBot extends ChangeNotifier {
             messages: iptMsg,
             model: ChatModelFromValue(model: 'gpt-4o'),
             maxToken: 200,
+            temperature: 0,
           );
 
           try {
@@ -344,6 +349,7 @@ class ChatBot extends ChangeNotifier {
             messages: iptMsg,
             model: ChatModelFromValue(model: 'gpt-4o'),
             maxToken: 200,
+            temperature: 0,
           );
 
           try {
@@ -384,6 +390,7 @@ class ChatBot extends ChangeNotifier {
             messages: iptMsg,
             model: ChatModelFromValue(model: 'gpt-4o'),
             maxToken: 200,
+            temperature: 0,
           );
 
           try {
@@ -421,6 +428,7 @@ class ChatBot extends ChangeNotifier {
               messages: iptMsg,
               model: ChatModelFromValue(model: 'gpt-4o'),
               maxToken: 200,
+              temperature: 0,
             );
             final finalResponse = await openAI.onChatCompletion(
                 request: CCrequestWithFunctionResponse);

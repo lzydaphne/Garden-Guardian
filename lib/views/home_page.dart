@@ -380,10 +380,15 @@ class _HomePageState extends State<HomePage> {
                                             itemBuilder: (context, index) {
                                               final todo = _todoList[index];
                                               return ListTileTheme(
+                                                dense: true,
                                                 contentPadding:
-                                                    EdgeInsets.only(left: 12),
-                                                minVerticalPadding: 0,
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: 3,
+                                                        vertical: 2),
+                                                minVerticalPadding: 2,
                                                 child: ListTile(
+                                                  visualDensity: VisualDensity(
+                                                      vertical: 0.5),
                                                   leading: Checkbox(
                                                     side: BorderSide(
                                                       color: Color.fromARGB(
