@@ -143,11 +143,12 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Text(
                           'GARDEN',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(fontFamily: 'JuliusSansOne',fontSize: 12),
+                          
                         ),
                         Text(
                           'GUARDIAN',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(fontFamily: 'JuliusSansOne',fontSize: 15),
                         ),
                       ],
                     ),
@@ -445,7 +446,8 @@ class _HomePageState extends State<HomePage> {
               Positioned(
                 top: 15,
                 left: 15,
-                child: CircleAvatar(
+                child: 
+                CircleAvatar(
                   backgroundImage:
                       me?.avatarUrl != null && me!.avatarUrl!.isNotEmpty
                           ? NetworkImage(me.avatarUrl!)
