@@ -4,6 +4,7 @@ import 'package:flutter_app/models/drink_water.dart';
 import 'package:flutter_app/view_models/all_drink_waters_vm.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/repositories/appUser_repo.dart';
 
 class DrinkWaterPage extends StatefulWidget {
   const DrinkWaterPage({super.key});
@@ -14,7 +15,7 @@ class DrinkWaterPage extends StatefulWidget {
 
 class _DrinkWaterPageState extends State<DrinkWaterPage> {
   final _form = GlobalKey<FormState>();
-
+  var dailyWater = 2000;
   var _enteredWater = 0;
 
   @override
@@ -26,6 +27,10 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
 
     for (var water in drinkwaters) {
       total += water.water;
+    }
+
+    if (total > dailyWater) {
+      _incrementCntDrink();
     }
 
     if (allDrinkWatersViewModel.isInitializing) {
@@ -48,7 +53,7 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
                     width: 200,
                     height: 200,
                     child: CircularProgressIndicator(
-                      value: total / 2000,
+                      value: total / dailyWater,
                       color: Theme.of(context).colorScheme.primary,
                       backgroundColor: Colors.grey,
                     ),
@@ -222,5 +227,11 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
         );
       }
     }
+  }
+
+  Future<void> _incrementCntDrink() async {
+    final appUserRepo = AppUserRepository();
+    // final userId = appUserRepo.getCurrentUserId();
+    await appUserRepo.incrementCntDrink('cV8dyoEmSUZo7QXUiceE1g4YvLm1');
   }
 }
