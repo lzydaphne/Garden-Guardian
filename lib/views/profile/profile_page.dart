@@ -12,22 +12,44 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final List<Map<String, String>> items = [
-    {
-      'title': 'Notes for seeding',
-      'content': 'Essential information and tips to ensure successful seed planting and ...',
-      'date': '2024/4/13'
+    { 
+      'category': "water",
+      'title': 'Watering Reminder',
+      'content': 'Time to water Snaky today!',
+      'date': '2024/6/25',
+    },
+    { 
+      'category': "fertilize",
+      'title': 'Fertilizing Reminder',
+      'content': 'Don\'t forget to fertilize Snaky today!',
+      'date': '2024/6/24',
+    },
+    { 
+      'category': "prune",
+      'title': 'Pruning Reminder',
+      'content': 'It\'s time to prune Snaky today!',
+      'date': '2024/6/21'
     },
     {
+      'category': "app update",
+      'title': 'App Update Notification',
+      'content': 'New update available! Enjoy the latest features and improvements in your app.',
+      'date': '2024/4/13'
+    },
+    { 
+      'category': "fertilize",
       'title': 'Being a gardener',
       'content': 'A hands-on experience that involves nurturing plants from seed to maturity ...',
       'date': '2024/3/23'
     },
-    {
+    { 
+      'category': "app update",
       'title': 'Manual for this app',
       'content': 'A comprehensive guide that can be adapted to practically any app, helping users ...',
       'date': '2024/1/21'
     },
-    {
+    { 
+      'category': "water",
       'title': 'Hydration Hero',
       'content': 'Achieve the title of Hydration Hero by watering your plants a total of 1000 times.',
       'date': '2024/1/21'
@@ -98,6 +120,21 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final me = meViewModel.me;
 
+    Icon _getIconByCategory(String category) {
+    switch (category) {
+      case 'water':
+        return Icon(Icons.water_drop, color: Colors.blue);
+      case 'fertilize':
+        return Icon(Icons.compost, color: Colors.brown);
+      case 'prune':
+        return Icon(Icons.eco, color: Colors.green);
+      case 'app update':
+        return Icon(Icons.app_settings_alt, color: Colors.orange);
+      default:
+        return Icon(Icons.notification_important, color: Colors.grey);
+    }
+  }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile', style: TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.w500)),
@@ -163,6 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       return ListTile(
+                        leading: _getIconByCategory(items[index]['category']!),
                         title: Text(items[index]['title']!, style: TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text(items[index]['content']!),
                         trailing: Text(items[index]['date']!, style: TextStyle(color: Colors.grey)),
