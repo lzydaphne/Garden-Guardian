@@ -19,24 +19,23 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final allDrinkWatersViewModel = Provider.of<AllDrinkWatersViewModel>(context);
+    final allDrinkWatersViewModel =
+        Provider.of<AllDrinkWatersViewModel>(context);
     final drinkwaters = allDrinkWatersViewModel.drinkwaters;
     var total = 0;
 
-    for(var water in drinkwaters) {
+    for (var water in drinkwaters) {
       total += water.water;
     }
 
-    if(allDrinkWatersViewModel.isInitializing) {
+    if (allDrinkWatersViewModel.isInitializing) {
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Water Yourself!')
-      ),
+      appBar: AppBar(title: const Text('Water Yourself!')),
       body: Consumer<AllDrinkWatersViewModel>(
         builder: (context, viewModel, _) {
           return Column(
@@ -49,7 +48,7 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
                     width: 200,
                     height: 200,
                     child: CircularProgressIndicator(
-                      value: total/2000,
+                      value: total / 2000,
                       color: Theme.of(context).colorScheme.primary,
                       backgroundColor: Colors.grey,
                     ),
@@ -57,11 +56,9 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
                   Text(
                     '$total mL',
                     style: const TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w400
-                    )
+                        fontSize: 25, fontWeight: FontWeight.w400),
                   )
-                ]
+                ],
               ),
               const SizedBox(height: 10),
               const Align(
@@ -70,10 +67,7 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
                   padding: EdgeInsets.all(15),
                   child: Text(
                     'Records',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w600
-                    )
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -83,12 +77,13 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
                 child: Stack(
                   alignment: Alignment.bottomRight,
                   children: [
-                    if(drinkwaters.isEmpty)
+                    if (drinkwaters.isEmpty)
                       const Center(child: Text('No records.'))
                     else
                       ListView.builder(
                         itemCount: viewModel.drinkwaters.length,
-                        itemBuilder: (context, index) => _buildItem(context, viewModel, index)
+                        itemBuilder: (context, index) =>
+                            _buildItem(context, viewModel, index),
                       ),
                     Padding(
                       padding: const EdgeInsets.all(10),
@@ -97,25 +92,42 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
                         iconSize: 40,
                         color: Theme.of(context).colorScheme.primary,
                         onPressed: () => _showAddDialog(context, viewModel),
-                      )
+                      ),
                     )
-                  ]
-                )
+                  ],
+                ),
               )
-            ]
+            ],
           );
-        }
-      )
+        },
+      ),
     );
   }
 
-  Widget _buildItem(BuildContext context, AllDrinkWatersViewModel viewModel, int index) {
+  Widget _buildItem(
+      BuildContext context, AllDrinkWatersViewModel viewModel, int index) {
     final drinkwater = viewModel.drinkwaters[index];
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        // Handle tap if needed
+      },
       child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Row(
           children: [
             Container(
@@ -128,8 +140,8 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(drinkwater.toString())
-            ),
+                child: Text('${drinkwater.water} mL',
+                    style: const TextStyle(fontSize: 16))),
           ],
         ),
       ),
@@ -146,14 +158,21 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
             title: const Text('Add Record'),
             content: TextFormField(
               key: const ValueKey('water'),
-              decoration: const InputDecoration(hintText: "Type the amount of water in mL:"),
+              decoration: const InputDecoration(
+                  hintText: "Type the amount of water in mL:"),
               keyboardType: TextInputType.number,
               inputFormatters: <TextInputFormatter>[
                 FilteringTextInputFormatter.digitsOnly
               ],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a valid amount';
+                }
+                return null;
+              },
               onSaved: (value) {
                 _enteredWater = int.parse(value!);
-              }
+              },
             ),
             actions: <Widget>[
               TextButton(
@@ -167,25 +186,29 @@ class _DrinkWaterPageState extends State<DrinkWaterPage> {
                 onPressed: () => _submit(context, viewModel),
               ),
             ],
-          )
+          ),
         );
       },
     );
   }
 
-  Future<void> _submit(BuildContext dialogContext, AllDrinkWatersViewModel viewModel) async {
+  Future<void> _submit(
+      BuildContext dialogContext, AllDrinkWatersViewModel viewModel) async {
+    if (!_form.currentState!.validate()) {
+      return;
+    }
     _form.currentState!.save();
 
-    final viewModel = Provider.of<AllDrinkWatersViewModel>(context, listen: false);
-    final newItem = DrinkWater(
-      water: _enteredWater,
-    );
+    final newItem = DrinkWater(water: _enteredWater);
 
     try {
       await viewModel.addDrinkWater(newItem);
 
       // Check if the widget is still mounted after async gap
-      if (context.mounted) {
+      if (mounted) {
+        setState(() {
+          // Force rebuild to reflect the new data
+        });
         Navigator.of(dialogContext).pop();
       }
     } on TimeoutException catch (e) {

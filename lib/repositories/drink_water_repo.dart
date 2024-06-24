@@ -7,14 +7,10 @@ class DrinkWaterRepository {
   final timeout = const Duration(seconds: 10);
 
   Stream<List<DrinkWater>> streamDrinkWaters() {
-    return _db
-        .collection('drinkwaters')
-        .orderBy('itemCount', descending: true)
-        .snapshots()
-        .map((snapshot) {
+    return _db.collection('drinkwaters').snapshots().map((snapshot) {
       return snapshot.docs
-          .map(
-              (doc) => DrinkWater.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .map((doc) =>
+              DrinkWater.fromMap(doc.data() as Map<String, dynamic>, doc.id))
           .toList();
     });
   }
@@ -31,7 +27,7 @@ class DrinkWaterRepository {
           .timeout(timeout); // Add timeout to handle network issues
 
       debugPrint('Drinkwater added with ID: ${docRef.id}');
-    } catch(e) {
+    } catch (e) {
       debugPrint('Error adding drinkwater: $e');
     }
   }

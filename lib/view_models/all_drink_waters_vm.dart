@@ -14,12 +14,20 @@ class AllDrinkWatersViewModel with ChangeNotifier {
 
   AllDrinkWatersViewModel({DrinkWaterRepository? drinkwaterRepository})
       : _drinkwaterRepository = drinkwaterRepository ?? DrinkWaterRepository() {
-    _drinkwatersSubscription = _drinkwaterRepository.streamDrinkWaters().listen((drinkwatersData) {
+    _drinkwatersSubscription =
+        _drinkwaterRepository.streamDrinkWaters().listen((drinkwatersData) {
       _isInitializing = false;
       _drinkwaters = drinkwatersData;
       notifyListeners();
+    }, onError: (error) {
+      _isInitializing = false;
+      _drinkwaters = [];
+      notifyListeners();
     });
   }
+
+  Stream<List<DrinkWater>> get drinkWatersStream =>
+      _drinkwaterRepository.streamDrinkWaters();
 
   @override
   void dispose() {

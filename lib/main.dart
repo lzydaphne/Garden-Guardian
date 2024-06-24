@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/services/chat_bot_service.dart';
 import 'package:flutter_app/services/navigation.dart';
-
 import 'package:flutter_app/views/cover_page.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/all_messages_vm.dart';
-
+import 'package:flutter_app/view_models/all_drink_waters_vm.dart';
 import 'package:flutter_app/services/authentication.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
-//import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +26,7 @@ Future<void> main() async {
     // Listen to the auth state changes
     stream: AuthenticationService().authStateChanges(),
     builder: (context, snapshot) {
-      if(snapshot.connectionState != ConnectionState.active) {
+      if (snapshot.connectionState != ConnectionState.active) {
         // Keep splash screen until auth state is ready
         return const SizedBox.shrink();
       }
@@ -71,10 +69,13 @@ class MyApp extends StatelessWidget {
           update: (BuildContext context, A) => AllMessagesViewModel(
               chatService: Provider.of<ChatBot>(context, listen: false)),
         ),
+        ChangeNotifierProvider<AllDrinkWatersViewModel>(
+          create: (BuildContext context) => AllDrinkWatersViewModel(),
+        ),
       ],
       child: MaterialApp.router(
-        theme: materialTheme.light(), //Apply the light theme
-        // darkTheme: materialTheme.dark(), //Apply the dark theme
+        theme: materialTheme.light(), // Apply the light theme
+        // darkTheme: materialTheme.dark(), // Apply the dark theme
         routerConfig: routerConfig,
         restorationScopeId: 'app',
       ),
