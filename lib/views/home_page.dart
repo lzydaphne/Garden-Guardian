@@ -4,6 +4,7 @@ import 'package:flutter_app/views/wiki/wiki_list_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_app/models/todo.dart';
 import 'package:flutter_app/repositories/todo_repo.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/view_models/me_vm.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
@@ -280,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       Text(
-                                        'June 21, 2024',
+                                        DateFormat('MMMM d, yyyy').format(DateTime.now()),
                                         style: TextStyle(
                                           color: Color.fromARGB(
                                               255, 129, 129, 129),
