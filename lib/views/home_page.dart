@@ -144,12 +144,21 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Text(
                           'GARDEN',
-                          style: TextStyle(color: Colors.white,fontFamily: 'JuliusSansOne',fontSize: 20,fontWeight: FontWeight.bold,),
-                          
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'JuliusSansOne',
+                            fontSize: 21,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           'GUARDIAN',
-                          style: TextStyle(color: Colors.white,fontFamily: 'JuliusSansOne',fontSize: 23,fontWeight: FontWeight.bold,),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'JuliusSansOne',
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -166,7 +175,7 @@ class _HomePageState extends State<HomePage> {
                   'Good morning, ${me?.userName}.',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -179,6 +188,7 @@ class _HomePageState extends State<HomePage> {
                         'Pumpkin is usually considered a vegetable, it contains many seeds inside and is actually a member of the fruit family!',
                         style: TextStyle(
                           color: Colors.white,
+                          fontSize: 18,
                           fontWeight: FontWeight.w100,
                         ),
                       ),
@@ -213,7 +223,7 @@ class _HomePageState extends State<HomePage> {
                           Text(
                             '${me?.userName!}',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 20,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -228,7 +238,7 @@ class _HomePageState extends State<HomePage> {
                             child: const Text(
                               'Lv.5',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 16,
                                 color: Colors.green,
                                 fontWeight: FontWeight.w900,
                               ),
@@ -266,7 +276,7 @@ class _HomePageState extends State<HomePage> {
                                       Text(
                                         '28°C  ',
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 20,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.orange,
                                         ),
@@ -281,7 +291,8 @@ class _HomePageState extends State<HomePage> {
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       Text(
-                                        DateFormat('MMMM d, yyyy').format(DateTime.now()),
+                                        DateFormat('MMMM d, yyyy')
+                                            .format(DateTime.now()),
                                         style: TextStyle(
                                           color: Color.fromARGB(
                                               255, 129, 129, 129),
@@ -348,7 +359,7 @@ class _HomePageState extends State<HomePage> {
                                           'To-do list',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            fontSize: 20,
+                                            fontSize: 24,
                                             fontWeight: FontWeight.bold,
                                             color: Color.fromARGB(144, 0, 0, 0),
                                           ),
@@ -407,7 +418,7 @@ class _HomePageState extends State<HomePage> {
                                                     style: TextStyle(
                                                       color: Color.fromARGB(
                                                           144, 0, 0, 0),
-                                                      fontSize: 14,
+                                                      fontSize: 20,
                                                       decoration: todo
                                                               .isCompleted
                                                           ? TextDecoration
@@ -447,8 +458,7 @@ class _HomePageState extends State<HomePage> {
               Positioned(
                 top: 15,
                 left: 15,
-                child: 
-                CircleAvatar(
+                child: CircleAvatar(
                   backgroundImage:
                       me?.avatarUrl != null && me!.avatarUrl!.isNotEmpty
                           ? NetworkImage(me.avatarUrl!)
@@ -600,7 +610,7 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       text,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: iconColor,
                       ),
@@ -612,7 +622,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     description,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 20,
                       color: Color.fromARGB(255, 120, 120, 120),
                     ),
                   ),
@@ -626,7 +636,7 @@ class _HomePageState extends State<HomePage> {
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
                           linkText,
-                          style: TextStyle(fontSize: 10, color: iconColor),
+                          style: TextStyle(fontSize: 20, color: iconColor),
                         ),
                       ),
                     ],
