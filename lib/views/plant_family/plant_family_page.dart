@@ -240,7 +240,8 @@ class _PlantFamilyPageState extends State<PlantFamilyPage> {
     return AppBar(
       backgroundColor: const Color.fromARGB(255, 93, 176, 117),
       centerTitle: true,
-      title: const Text("My Plants", style: TextStyle(color: Colors.white)),
+      title: const Text("My Plants", style: TextStyle(color: Colors.white,
+            fontWeight: FontWeight.bold,)),
       actions: [
         InkWell(
             child: const Padding(
